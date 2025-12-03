@@ -13,9 +13,7 @@
     - 🚪 calcolaPrezzoPortoncinoFindoor(): Calcolo automatico con supplementi
     - 🚪 Integrazione portoncini in calcolaPreventivo()
     - 🚪 mostraDettaglioCostiPortoncino(): Popup dettaglio costi 🔍
-    - 🚪 Supporto tipi: 720, 625, 621, 622, 633, 636, 624, 623
-    - 🚪 Materiali: ALU-ALU, PVC-PVC, misti
-    - 🚪 Supplementi: modello anta, colori, maniglie, cilindri, cerniere, fonoassorbente
+    - 🚪 Tipi apertura: 720, 625, 621, 622, 633, 636, 624, 623
     
     🔧 AGGIORNAMENTI v7.98 (03 DIC 2025):
     - 🚪 PORTONCINO: Aggiunto tab portoncino nella vista dettagli posizione
@@ -14517,18 +14515,17 @@ if (typeof module !== 'undefined' && module.exports) {
         }
         
         // ============================================================================
-        // LISTINO FIN-DOOR PORTONCINI FINSTRAL - EUR 2025/3
+        // 🚪 LISTINO FIN-DOOR PORTONCINI FINSTRAL - EUR 2025/3
         // ============================================================================
         const LISTINO_FINDOOR_PORTONCINI = {
-            // PREZZI BASE TIPO 720 - PORTA SINGOLA
-            // Flat Frame - Flat Frame (ALU-ALU)
+            // PREZZI BASE TIPO 720 - Flat Frame ALU-ALU
             prezziBase720_ALU: {
                 990: { 2040: 1240, 2165: 1272, 2290: 1303, 2415: 1412, 2540: 1443, 2665: 1475, 2790: 1506, 2915: 1537 },
                 1115: { 2040: 1297, 2165: 1329, 2290: 1362, 2415: 1474, 2540: 1507, 2665: 1540, 2790: 1573, 2915: 1607 },
                 1240: { 2040: 1351, 2165: 1388, 2290: 1422, 2415: 1535, 2540: 1570, 2665: 1606, 2790: 1640, 2915: 1675 },
                 1365: { 2040: 1408, 2165: 1444, 2290: 1482, 2415: 1597, 2540: 1633, 2665: 1670, 2790: 1708, 2915: 1744 }
             },
-            // Step Frame - Step Frame (PVC-PVC)
+            // PREZZI BASE TIPO 720 - Step Frame PVC-PVC
             prezziBase720_PVC: {
                 990: { 2040: 1871, 2165: 1922, 2290: 1973, 2415: 2036, 2540: 2087, 2665: 2139, 2790: 2190, 2915: 2241 },
                 1115: { 2040: 1944, 2165: 1998, 2290: 2051, 2415: 2117, 2540: 2169, 2665: 2223, 2790: 2276, 2915: 2329 },
@@ -14559,83 +14556,54 @@ if (typeof module !== 'undefined' && module.exports) {
                 '48': { standard: 1058, grande: 1322 },
                 '49': { standard: 1190, grande: 1487 }
             },
-            // SUPPLEMENTI COLORE (gruppi)
+            // SUPPLEMENTI COLORE
             supplementiColore: {
-                'gruppoA': 0,
-                'gruppoB': 95,
-                'gruppoC': 185,
-                'legno': 250,
-                'speciale': 380
+                'gruppoA': 0, 'gruppoB': 95, 'gruppoC': 185, 'legno': 250, 'speciale': 380
             },
-            // MANIGLIE (pag. 59-61)
+            // MANIGLIE
             maniglie: {
-                set: {
-                    '100': 0, '101': 45, '102': 85, '103': 125, '104': 180, '105': 240
-                },
-                maniglioni: {
-                    '340': 185, '341': 245, '342': 310, '343': 395, '350': 450, '351': 520
-                }
+                set: { '100': 0, '101': 45, '102': 85, '103': 125, '104': 180, '105': 240 },
+                maniglioni: { '340': 185, '341': 245, '342': 310, '343': 395, '350': 450, '351': 520 }
             },
             // CILINDRI
-            cilindri: {
-                '1P': 0, '1P+TP': 95, '2P': 145, '2P+TP': 195, '3P+TP': 280
-            },
+            cilindri: { '1P': 0, '1P+TP': 95, '2P': 145, '2P+TP': 195, '3P+TP': 280 },
             // CERNIERE
-            cerniere: {
-                'standard': 0, 'scomparsa': 185
-            },
+            cerniere: { 'standard': 0, 'scomparsa': 185 },
             // FONOASSORBENTE
             fonoassorbente: 320,
-            // TIPI APERTURA - MOLTIPLICATORI
+            // MOLTIPLICATORI TIPO APERTURA
             moltiplicatoriTipo: {
                 '720': 1.0, '625': 1.0, '621': 1.45, '622': 1.45,
                 '633': 1.85, '636': 1.75, '624': 1.35, '623': 1.40
             }
         };
         
-        // Funzione calcolo prezzo Portoncino Fin-Door
+        // 🚪 Funzione calcolo prezzo Portoncino Fin-Door
         function calcolaPrezzoPortoncinoFindoor(ptc) {
             const dettaglio = {
-                prezzoBase: 0,
-                supplementoModello: 0,
-                supplementoColoreInt: 0,
-                supplementoColoreEst: 0,
-                maniglia: 0,
-                cilindro: 0,
-                cerniere: 0,
-                fonoassorbente: 0,
-                moltiplicatoreTipo: 1,
-                totale: 0
+                prezzoBase: 0, supplementoModello: 0, supplementoColoreInt: 0, supplementoColoreEst: 0,
+                maniglia: 0, cilindro: 0, cerniere: 0, fonoassorbente: 0, moltiplicatoreTipo: 1, totale: 0
             };
-            
             if (!ptc) return dettaglio;
             
-            // 1. Determina combinazione materiali per tabella prezzi
+            // 1. Tabella prezzi base
             const isALU = (ptc.materialeInt === 'ALU' && ptc.materialeEst === 'ALU');
-            const tabella = isALU ? 
-                LISTINO_FINDOOR_PORTONCINI.prezziBase720_ALU : 
-                LISTINO_FINDOOR_PORTONCINI.prezziBase720_PVC;
+            const tabella = isALU ? LISTINO_FINDOOR_PORTONCINI.prezziBase720_ALU : LISTINO_FINDOOR_PORTONCINI.prezziBase720_PVC;
             
-            // 2. Trova prezzo base da griglia dimensionale
+            // 2. Trova prezzo base da griglia
             const L = parseInt(ptc.BRM_L) || 1000;
             const H = parseInt(ptc.BRM_H) || 2100;
-            
-            // Trova larghezza più vicina
             const larghezze = Object.keys(tabella).map(Number).sort((a,b) => a-b);
             const largBase = larghezze.find(l => l >= L) || larghezze[larghezze.length - 1];
-            
-            // Trova altezza più vicina
             const altezze = Object.keys(tabella[largBase] || {}).map(Number).sort((a,b) => a-b);
             const altBase = altezze.find(a => a >= H) || altezze[altezze.length - 1];
-            
             dettaglio.prezzoBase = tabella[largBase]?.[altBase] || 1500;
             
             // 3. Supplemento modello anta
             const isGrande = (L > 1115 || H > 2355);
             const modello = ptc.modelloAnta || '01';
             const supplMod = LISTINO_FINDOOR_PORTONCINI.supplementiModello[modello];
-            dettaglio.supplementoModello = supplMod ? 
-                (isGrande ? supplMod.grande : supplMod.standard) : 0;
+            dettaglio.supplementoModello = supplMod ? (isGrande ? supplMod.grande : supplMod.standard) : 0;
             
             // 4. Supplementi colore
             dettaglio.supplementoColoreInt = LISTINO_FINDOOR_PORTONCINI.supplementiColore[ptc.gruppoColoreInt] || 0;
@@ -14648,34 +14616,21 @@ if (typeof module !== 'undefined' && module.exports) {
                 dettaglio.maniglia = LISTINO_FINDOOR_PORTONCINI.maniglie.set[ptc.codManiglia] || 0;
             }
             
-            // 6. Cilindro
+            // 6-8. Cilindro, Cerniere, Fonoassorbente
             dettaglio.cilindro = LISTINO_FINDOOR_PORTONCINI.cilindri[ptc.cilindro] || 0;
-            
-            // 7. Cerniere
             dettaglio.cerniere = LISTINO_FINDOOR_PORTONCINI.cerniere[ptc.cerniere] || 0;
-            
-            // 8. Fonoassorbente
-            if (ptc.fonoassorbente) {
-                dettaglio.fonoassorbente = LISTINO_FINDOOR_PORTONCINI.fonoassorbente;
-            }
+            if (ptc.fonoassorbente) dettaglio.fonoassorbente = LISTINO_FINDOOR_PORTONCINI.fonoassorbente;
             
             // 9. Moltiplicatore tipo apertura
             dettaglio.moltiplicatoreTipo = LISTINO_FINDOOR_PORTONCINI.moltiplicatoriTipo[ptc.tipoApertura] || 1;
             
             // 10. Calcolo totale
-            const subtotale = dettaglio.prezzoBase + 
-                              dettaglio.supplementoModello + 
-                              dettaglio.supplementoColoreInt + 
-                              dettaglio.supplementoColoreEst + 
-                              dettaglio.maniglia + 
-                              dettaglio.cilindro + 
-                              dettaglio.cerniere + 
-                              dettaglio.fonoassorbente;
-            
+            const subtotale = dettaglio.prezzoBase + dettaglio.supplementoModello + dettaglio.supplementoColoreInt + 
+                              dettaglio.supplementoColoreEst + dettaglio.maniglia + dettaglio.cilindro + 
+                              dettaglio.cerniere + dettaglio.fonoassorbente;
             dettaglio.totale = Math.round(subtotale * dettaglio.moltiplicatoreTipo);
             
-            console.log(`🚪 Calcolo Findoor: Base €${dettaglio.prezzoBase} + Mod €${dettaglio.supplementoModello} + ColInt €${dettaglio.supplementoColoreInt} + ColEst €${dettaglio.supplementoColoreEst} + Man €${dettaglio.maniglia} + Cil €${dettaglio.cilindro} + Cer €${dettaglio.cerniere} + Fono €${dettaglio.fonoassorbente} × ${dettaglio.moltiplicatoreTipo} = €${dettaglio.totale}`);
-            
+            console.log(`🚪 Calcolo Findoor: Base €${dettaglio.prezzoBase} + Mod €${dettaglio.supplementoModello} + Col €${dettaglio.supplementoColoreInt + dettaglio.supplementoColoreEst} + Man €${dettaglio.maniglia} × ${dettaglio.moltiplicatoreTipo} = €${dettaglio.totale}`);
             return dettaglio;
         }
         
@@ -17243,9 +17198,9 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
                 
                 // ============================================================================
-                // PORTONCINI FIN-DOOR FINSTRAL - v7.99
+                // 🚪 PORTONCINI FIN-DOOR FINSTRAL - v7.99
                 // ============================================================================
-                // 🚪 v7.99: Normalizza portoncino da ingresso.portoncino se non già presente
+                // Normalizza portoncino da ingresso.portoncino se non già presente
                 if (pos.ingresso?.portoncino && !pos.portoncino) {
                     pos.portoncino = pos.ingresso.portoncino;
                     console.log(`   🚪 NORMALIZZATO pos ${index + 1}: ingresso.portoncino → portoncino`);
@@ -17259,26 +17214,22 @@ if (typeof module !== 'undefined' && module.exports) {
                 
                 if (hasPortoncinoData) {
                     const ptc = pos.portoncino;
-                    const quantita = 1; // Portoncini sempre qta 1
+                    const quantita = 1;
                     
-                    // Leggi misure BRM
                     const L_mm = parseInt(ptc.BRM_L) || 0;
                     const H_mm = parseInt(ptc.BRM_H) || 0;
                     
                     console.log(`🚪 Portoncino Pos ${index + 1}: BRM=${L_mm}×${H_mm}mm, tipo=${ptc.tipoApertura}`);
                     
                     if (L_mm > 0 && H_mm > 0) {
-                        // Calcola prezzo con funzione Findoor
                         const prezzoCalcolato = calcolaPrezzoPortoncinoFindoor(ptc);
                         const prezzoUnitario = prezzoCalcolato.totale || 0;
                         const totaleRiga = prezzoUnitario * quantita;
                         
-                        // Descrizione configurazione
                         const configDesc = [
                             `Tipo ${ptc.tipoApertura || '720'}`,
                             ptc.materialeInt && ptc.materialeEst ? `${ptc.materialeInt}-${ptc.materialeEst}` : '',
-                            ptc.modelloAnta ? `Mod.${ptc.modelloAnta}` : '',
-                            ptc.direzioneApertura || ''
+                            ptc.modelloAnta ? `Mod.${ptc.modelloAnta}` : ''
                         ].filter(x => x).join(' | ');
                         
                         righe.push({
@@ -18269,11 +18220,6 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         }
 
-        window.mostraDettaglioCostiTapparella = mostraDettaglioCostiTapparella;
-        window.mostraDettaglioCostiPersiana = mostraDettaglioCostiPersiana;
-        window.mostraDettaglioCostiInfisso = mostraDettaglioCostiInfisso;
-        window.mostraDettaglioCostiBlindato = mostraDettaglioCostiBlindato;
-        
         // ═══════════════════════════════════════════════════════════════════
         // 🚪 v7.99 DETTAGLIO COSTI PORTONCINO FIN-DOOR
         // ═══════════════════════════════════════════════════════════════════
@@ -18281,43 +18227,24 @@ if (typeof module !== 'undefined' && module.exports) {
             try {
                 console.log('🚪 mostraDettaglioCostiPortoncino posizione:', posIndex);
                 
-                // Trova la posizione nei dati caricati
                 const data = window.projectData || window.currentData;
-                if (!data) {
-                    alert('Dati progetto non trovati');
-                    return;
-                }
+                if (!data) { alert('Dati progetto non trovati'); return; }
                 
                 const posizioni = data.positions || data.posizioni || [];
                 const pos = posizioni[posIndex - 1];
-                if (!pos) {
-                    alert('Posizione non trovata');
-                    return;
-                }
+                if (!pos) { alert('Posizione non trovata'); return; }
                 
-                // Prendi i dati portoncino (normalizzati)
                 const ptc = pos.portoncino || pos.ingresso?.portoncino;
-                if (!ptc) {
-                    alert('Dati portoncino non trovati');
-                    return;
-                }
+                if (!ptc) { alert('Dati portoncino non trovati'); return; }
                 
-                // Ricalcola prezzo per avere il dettaglio
                 const prezzoCalcolato = calcolaPrezzoPortoncinoFindoor(ptc);
                 
-                // Descrizione tipo apertura
                 const tipiApertura = {
-                    '720': 'Porta singola',
-                    '625': 'Porta singola variante',
-                    '621': 'Porta + laterale',
-                    '622': 'Porta + laterale',
-                    '633': 'Porta + 2 laterali',
-                    '636': 'Doppia porta',
-                    '624': 'Porta + sopraluce',
-                    '623': 'Porta + anta superiore'
+                    '720': 'Porta singola', '625': 'Porta singola (var.)', '621': 'Porta + laterale sx',
+                    '622': 'Porta + laterale dx', '633': 'Porta + 2 laterali', '636': 'Doppia porta',
+                    '624': 'Porta + sopraluce', '623': 'Porta + anta sup.'
                 };
                 
-                // Costruisci HTML del popup
                 const contenutoHTML = `
                     <div style="padding: 1rem;">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
@@ -18335,31 +18262,12 @@ if (typeof module !== 'undefined' && module.exports) {
                         <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                             <div style="font-weight: 600; margin-bottom: 0.5rem;">📋 Configurazione</div>
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; font-size: 0.85rem;">
-                                <div><strong>Materiale Int:</strong> ${ptc.materialeInt || 'PVC'}</div>
-                                <div><strong>Materiale Est:</strong> ${ptc.materialeEst || 'PVC'}</div>
-                                <div><strong>Modello Anta:</strong> ${ptc.modelloAnta || '01'}</div>
-                                <div><strong>Apertura:</strong> ${ptc.direzioneApertura || 'tirare'}</div>
-                                <div><strong>Cerniere:</strong> ${ptc.latoCerniere || 'SX'}</div>
-                                <div><strong>Tipo Cerniere:</strong> ${ptc.cerniere || 'standard'}</div>
+                                <div><strong>Mat. Int:</strong> ${ptc.materialeInt || 'PVC'}</div>
+                                <div><strong>Mat. Est:</strong> ${ptc.materialeEst || 'PVC'}</div>
+                                <div><strong>Modello:</strong> ${ptc.modelloAnta || '01'}</div>
+                                <div><strong>Apertura:</strong> ${ptc.direzioneApertura || '-'}</div>
+                                <div><strong>Cerniere:</strong> ${ptc.latoCerniere || '-'}</div>
                                 <div><strong>Cilindro:</strong> ${ptc.cilindro || '1P'}</div>
-                                <div><strong>Tipo Maniglia:</strong> ${ptc.tipoManiglia || 'set'}</div>
-                                <div><strong>Fonoassorbente:</strong> ${ptc.fonoassorbente ? 'Sì' : 'No'}</div>
-                            </div>
-                        </div>
-                        
-                        <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-                            <div style="font-weight: 600; margin-bottom: 0.5rem;">🎨 Colori</div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
-                                <div>
-                                    <strong>Interno:</strong><br>
-                                    Gruppo: ${ptc.gruppoColoreInt || 'A'}<br>
-                                    Colore: ${ptc.coloreInt || 'std'}
-                                </div>
-                                <div>
-                                    <strong>Esterno:</strong><br>
-                                    Gruppo: ${ptc.gruppoColoreEst || 'A'}<br>
-                                    Colore: ${ptc.coloreEst || 'std'}
-                                </div>
                             </div>
                         </div>
                         
@@ -18367,62 +18275,19 @@ if (typeof module !== 'undefined' && module.exports) {
                             <thead>
                                 <tr style="background: #db2777; color: white;">
                                     <th style="padding: 0.75rem; text-align: left;">Voce</th>
-                                    <th style="padding: 0.75rem; text-align: right;">Importo €</th>
+                                    <th style="padding: 0.75rem; text-align: right;">€</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr style="background: #fff;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Prezzo Base (${ptc.materialeInt || 'PVC'}-${ptc.materialeEst || 'PVC'})</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${(prezzoCalcolato.prezzoBase || 0).toFixed(2)}</td>
-                                </tr>
-                                ${prezzoCalcolato.supplementoModello > 0 ? `
-                                <tr style="background: #f9fafb;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Modello Anta ${ptc.modelloAnta || '01'}</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoModello.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.supplementoColoreInt > 0 ? `
-                                <tr style="background: #fff;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Colore Interno (${ptc.gruppoColoreInt || 'A'})</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoColoreInt.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.supplementoColoreEst > 0 ? `
-                                <tr style="background: #f9fafb;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Colore Esterno (${ptc.gruppoColoreEst || 'A'})</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoColoreEst.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.maniglia > 0 ? `
-                                <tr style="background: #fff;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🚪 ${ptc.tipoManiglia === 'maniglione' ? 'Maniglione' : 'Set Maniglie'} (cod. ${ptc.codManiglia || 'std'})</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.maniglia.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.cilindro > 0 ? `
-                                <tr style="background: #f9fafb;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🔑 Cilindro ${ptc.cilindro || '1P'}</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.cilindro.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.cerniere > 0 ? `
-                                <tr style="background: #fff;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">⚙️ Cerniere ${ptc.cerniere || 'standard'}</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.cerniere.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.fonoassorbente > 0 ? `
-                                <tr style="background: #f9fafb;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🔇 Fonoassorbente 42dB</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.fonoassorbente.toFixed(2)}</td>
-                                </tr>
-                                ` : ''}
-                                ${prezzoCalcolato.moltiplicatoreTipo !== 1 ? `
-                                <tr style="background: #fef3c7;">
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; font-style: italic;">📐 Moltiplicatore tipo ${ptc.tipoApertura} (×${prezzoCalcolato.moltiplicatoreTipo})</td>
-                                    <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right; font-style: italic;">applicato</td>
-                                </tr>
-                                ` : ''}
+                                <tr style="background: #fff;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Prezzo Base</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${(prezzoCalcolato.prezzoBase || 0).toFixed(2)}</td></tr>
+                                ${prezzoCalcolato.supplementoModello > 0 ? `<tr style="background: #f9fafb;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Modello Anta ${ptc.modelloAnta}</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoModello.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.supplementoColoreInt > 0 ? `<tr style="background: #fff;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Colore Int (${ptc.gruppoColoreInt})</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoColoreInt.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.supplementoColoreEst > 0 ? `<tr style="background: #f9fafb;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">Colore Est (${ptc.gruppoColoreEst})</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.supplementoColoreEst.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.maniglia > 0 ? `<tr style="background: #fff;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🚪 Maniglia ${ptc.codManiglia}</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.maniglia.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.cilindro > 0 ? `<tr style="background: #f9fafb;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🔑 Cilindro ${ptc.cilindro}</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.cilindro.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.cerniere > 0 ? `<tr style="background: #fff;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">⚙️ Cerniere scomparsa</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.cerniere.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.fonoassorbente > 0 ? `<tr style="background: #f9fafb;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">🔇 Fonoassorbente 42dB</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right;">€ ${prezzoCalcolato.fonoassorbente.toFixed(2)}</td></tr>` : ''}
+                                ${prezzoCalcolato.moltiplicatoreTipo !== 1 ? `<tr style="background: #fef3c7;"><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; font-style: italic;">📐 Moltiplicatore ×${prezzoCalcolato.moltiplicatoreTipo}</td><td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb; text-align: right; font-style: italic;">applicato</td></tr>` : ''}
                             </tbody>
                             <tfoot>
                                 <tr style="background: #db2777; color: white; font-weight: bold;">
@@ -18434,7 +18299,6 @@ if (typeof module !== 'undefined' && module.exports) {
                     </div>
                 `;
                 
-                // Usa la funzione modale generica
                 mostraModalDettaglioCosti(`🚪 Dettaglio Portoncino - Pos. ${posIndex}`, contenutoHTML);
                 
             } catch (e) {
@@ -18442,7 +18306,11 @@ if (typeof module !== 'undefined' && module.exports) {
                 alert('Errore dettaglio costi: ' + e.message);
             }
         }
-        
+
+        window.mostraDettaglioCostiTapparella = mostraDettaglioCostiTapparella;
+        window.mostraDettaglioCostiPersiana = mostraDettaglioCostiPersiana;
+        window.mostraDettaglioCostiInfisso = mostraDettaglioCostiInfisso;
+        window.mostraDettaglioCostiBlindato = mostraDettaglioCostiBlindato;
         window.mostraDettaglioCostiPortoncino = mostraDettaglioCostiPortoncino;
         
         /**
