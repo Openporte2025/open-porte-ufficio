@@ -6,32 +6,32 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.97_08 - CHANGELOG
+    DASHBOARD RILIEVI v7.98 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.98 (03 DIC 2025):
+    - 🚪 PORTONCINO: Aggiunto tab portoncino nella vista dettagli posizione
+    - 🚪 renderPortoncinoContent(): Nuova funzione per visualizzare config portoncino FIN-Door
+    - 🔐 BLINDATA: Aggiunto campo versoApertura (tirare/spingere) nella visualizzazione
+    - 📊 Supporto completo campi: tipoApertura, direzioneApertura, latoCerniere per portoncini
+    - 📊 Array prodotti ora include: infisso, tapparella, cassonetto, persiana, zanzariera, blindata, portoncino
     
     🔧 AGGIORNAMENTI v7.97_08 (28 NOV 2025):
-    - 📐 IMBOTTI: Calcolo prezzi imbotte esterno (altezza × larghezza × essenza)
-    - 🖼️ CORNICI: Ferma pannello e interne calcolate per luce
-    - 🚪 MANIGLIE: INT/EST con modelli (MO-05..MO-13, PO-05, JUMBO) e finiture (OL, CS, CL, VP, VL, VS)
-    - 🔑 CHIAVI EXTRA: €25 per ogni chiave oltre le 3 di serie
-    - 🔍 POPUP DETTAGLIO: Mostra tutte le nuove voci nel breakdown
-    
-    🔧 AGGIORNAMENTI v7.97_07 (28 NOV 2025):
     - 🔐 FIX PREVENTIVO BLINDATE: Normalizza pos.ingresso.blindata → pos.blindata in calcolaPreventivo()
     - ✅ Ora le blindate appaiono correttamente nella tabella preventivo
     
-    🔧 AGGIORNAMENTI v7.97_06 (28 NOV 2025):
+    🔧 AGGIORNAMENTI v7.98_06 (28 NOV 2025):
     - 🔐 FIX CRITICO: convertGitHubToDashboardFormat() ora estrae blindata da pos.ingresso.blindata
     - ✅ FORMATO 3 (positions): Supporta struttura ingresso.blindata e ingresso.portoncino
     - ✅ Crea sia pos.blindata che pos.ingresso per retrocompatibilità
     
-    🔧 AGGIORNAMENTI v7.97_05 (28 NOV 2025):
+    🔧 AGGIORNAMENTI v7.98_05 (28 NOV 2025):
     - 🔐 RIVESTIMENTI NON DI SERIE: Prezzi specifici da listino EVO 2025 pag. 99
     - ✅ Prezzi differenziati per essenza (Noce Canaletto, Teak, Altre Essenze)
     - ✅ Calcolo rivestimenti con chiavi composte (es. "Piano Non di serie Teak")
     - ✅ Fallback a prezzo generico linea se chiave specifica non trovata
     - ✅ Log dettagliato prezzi rivestimenti INT/EST
     
-    🔧 AGGIORNAMENTI v7.97_04 (28 NOV 2025):
+    🔧 AGGIORNAMENTI v7.98_04 (28 NOV 2025):
     - 🔐 FIX IMPORTAZIONE BLINDATE: Supporta struttura pos.ingresso.blindata
     - ✅ Conversione automatica da formato export OpenPorte v5.14+
     - ✅ Retrocompatibilità: pos.blindata accessibile come alias
@@ -40,7 +40,7 @@
     - ✅ Campi imbotte (imbotteEst, imbotteEstAltezza, imbotteEstLargh, imbotteEstEssenza)
     - ✅ Campi cornici (corniciInt, corniciFermaPannello)
     
-    🔧 AGGIORNAMENTI v7.97 (28 NOV 2025):
+    🔧 AGGIORNAMENTI v7.98 (28 NOV 2025):
     - 🔐 PORTE BLINDATE OIKOS: Integrazione completa nel dashboard
     - ✅ LISTINO_OIKOS_BLINDATE: Prezzi base, controtelaio, cilindri, colori
     - ✅ calcolaLuceOikos(): Determina luce da dimensioni LNP
@@ -1128,7 +1128,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.97_08 - Imbotti Cornici Maniglie</title>
+    <title>Dashboard Rilievi v7.98 - Imbotti Cornici Maniglie</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10454,7 +10454,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.97_08</span>
+                <span class="logo-version" id="version-badge">v7.98</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -11268,7 +11268,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 quantita: pos.zanzariera.qta || 1
                             } : null,
                             
-                            // 🔐 v7.97_04: INGRESSO (Porte Blindate/Portoncini)
+                            // 🔐 v7.98_04: INGRESSO (Porte Blindate/Portoncini)
                             // Supporta entrambi i formati: pos.ingresso.blindata (nuovo) e pos.blindata (legacy)
                             ingresso: (pos.ingresso || pos.blindata || pos.portoncino) ? {
                                 tipo: pos.ingresso?.tipo || (pos.blindata ? 'blindata' : (pos.portoncino ? 'portoncino' : null)),
@@ -11307,7 +11307,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 portoncino: (pos.ingresso?.portoncino || pos.portoncino) ? (pos.ingresso?.portoncino || pos.portoncino) : null
                             } : null,
                             
-                            // 🔐 v7.97_04: ALIAS DI PRIMO LIVELLO per retrocompatibilità
+                            // 🔐 v7.98_04: ALIAS DI PRIMO LIVELLO per retrocompatibilità
                             // Il resto del codice accede a pos.blindata direttamente
                             blindata: (() => {
                                 const bld = pos.ingresso?.blindata || pos.blindata;
@@ -11363,7 +11363,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         n_cassonetti: (project.positions || []).filter(p => p.cassonetto && p.cassonetto.qta).length,
                         n_persiane: (project.positions || []).filter(p => p.persiana && p.persiana.qta).length,
                         n_zanzariere: (project.positions || []).filter(p => p.zanzariera && p.zanzariera.qta).length,
-                        // 🔐 v7.97_04: Conta ingressi da entrambi i formati
+                        // 🔐 v7.98_04: Conta ingressi da entrambi i formati
                         n_ingressi: (project.positions || []).filter(p => p.ingresso || p.blindata || p.portoncino).length,
                         n_blindate: (project.positions || []).filter(p => p.ingresso?.tipo === 'blindata' || p.ingresso?.blindata || p.blindata).length,
                         n_portoncini: (project.positions || []).filter(p => p.ingresso?.tipo === 'portoncino' || p.ingresso?.portoncino || p.portoncino).length
@@ -11382,7 +11382,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (data.posizioni) {
                 console.log('✅ Detected: STANDARD format (already compatible)');
                 
-                // 🔐 v7.97_04: Normalizza posizioni per estrarre blindata da ingresso
+                // 🔐 v7.98_04: Normalizza posizioni per estrarre blindata da ingresso
                 data.posizioni = data.posizioni.map(pos => {
                     // Se ha ingresso.blindata, copia in pos.blindata per retrocompatibilità
                     if (pos.ingresso?.blindata && !pos.blindata) {
@@ -14143,7 +14143,7 @@ if (typeof module !== 'undefined' && module.exports) {
             rivestimenti: {
                 // Piano - Di Serie (pag. 94)
                 'Piano Di Serie': { 'luce0': 192, 'luce1': 192, 'luce2': 235, 'luce3': 346, 'luce4': 414 },
-                // 🔐 v7.97_05: Piano - Non di serie (pag. 99)
+                // 🔐 v7.98_05: Piano - Non di serie (pag. 99)
                 'Piano Non di serie': { 'luce0': 405, 'luce1': 405, 'luce2': 483, 'luce5': 526, 'luce6': 585, 'luce3': 626, 'luce4': 811 },
                 'Piano Non di serie Noce Canaletto': { 'luce0': 458, 'luce1': 458, 'luce2': 545, 'luce3': 700, 'luce4': 889 },
                 'Piano Non di serie Teak': { 'luce0': 520, 'luce1': 520, 'luce2': 620, 'luce3': 782, 'luce4': 1005 },
@@ -14211,7 +14211,7 @@ if (typeof module !== 'undefined' && module.exports) {
             // Verniciatura esterni
             verniciaturaEst: 150,
             
-            // 🆕 v7.97_08: IMBOTTI (da listino EVO 2025 pag. 142-143)
+            // 🆕 v7.98: IMBOTTI (da listino EVO 2025 pag. 142-143)
             imbotti: {
                 // Imbotte esterno in legno - prezzo per altezza × larghezza
                 'imbotte_cornici': {
@@ -14240,13 +14240,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             },
             
-            // 🆕 v7.97_08: CORNICI FERMA PANNELLO (pag. 142)
+            // 🆕 v7.98: CORNICI FERMA PANNELLO (pag. 142)
             cornici: {
                 'fermaPannello': { 'luce0': 96, 'luce1': 108, 'luce2': 125, 'luce3': 145, 'luce4': 165 },
                 'interne': { 'luce0': 85, 'luce1': 95, 'luce2': 110, 'luce3': 125, 'luce4': 145 }
             },
             
-            // 🆕 v7.97_08: MANIGLIE E POMOLI (pag. 144-148)
+            // 🆕 v7.98: MANIGLIE E POMOLI (pag. 144-148)
             maniglie: {
                 // Maniglie interne
                 'MO-05': { 'OL': 0, 'OL_TZ': 45, 'CS': 35, 'CL': 40, 'VP': 50, 'VL': 60, 'VS': 55 },
@@ -14266,7 +14266,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 'JUMBO-600': { 'VP': 240, 'VL': 280, 'VS': 260, 'OB': 295 }
             },
             
-            // 🆕 v7.97_08: CHIAVI EXTRA (oltre le 3 di serie)
+            // 🆕 v7.98: CHIAVI EXTRA (oltre le 3 di serie)
             chiaviExtra: 25  // €25 per ogni chiave aggiuntiva
         };
         
@@ -14295,7 +14295,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 kitAAV: 0,
                 rivestimenti: 0,
                 optional: 0,
-                // 🆕 v7.97_08: Nuovi campi
+                // 🆕 v7.98: Nuovi campi
                 imbotti: 0,
                 cornici: 0,
                 maniglie: 0,
@@ -14320,7 +14320,7 @@ if (typeof module !== 'undefined' && module.exports) {
             dettaglio.cilindro = LISTINO_OIKOS_BLINDATE.cilindri[bld.cilindro] || 
                                  LISTINO_OIKOS_BLINDATE.cilindri['BASIC'] || 0;
             
-            // 🆕 v7.97_08: CHIAVI EXTRA (oltre le 3 di serie)
+            // 🆕 v7.98: CHIAVI EXTRA (oltre le 3 di serie)
             const numChiavi = parseInt(bld.numChiavi) || 3;
             if (numChiavi > 3) {
                 dettaglio.chiaviExtra = (numChiavi - 3) * (LISTINO_OIKOS_BLINDATE.chiaviExtra || 25);
@@ -14330,14 +14330,14 @@ if (typeof module !== 'undefined' && module.exports) {
             // Colore telaio
             dettaglio.colore = LISTINO_OIKOS_BLINDATE.colori[bld.coloreTelaio] || 0;
             
-            // 🆕 v7.97_08: MANIGLIA INTERNA
+            // 🆕 v7.98: MANIGLIA INTERNA
             if (bld.manigliaInt && bld.finituraInt) {
                 const prezzoManInt = LISTINO_OIKOS_BLINDATE.maniglie[bld.manigliaInt]?.[bld.finituraInt] || 0;
                 dettaglio.maniglie += prezzoManInt;
                 console.log(`   Maniglia INT: ${bld.manigliaInt} ${bld.finituraInt} → €${prezzoManInt}`);
             }
             
-            // 🆕 v7.97_08: MANIGLIA/POMOLO ESTERNO
+            // 🆕 v7.98: MANIGLIA/POMOLO ESTERNO
             if (bld.manigliaEst && bld.finituraEst) {
                 let finitura = bld.finituraEst;
                 // PO-INOX usa sempre finitura INOX
@@ -14364,7 +14364,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // Rivestimento INTERNO
             if (bld.rivestimentoInt?.linea) {
-                // 🔐 v7.97_05: Chiave composita linea+modello per prezzi specifici
+                // 🔐 v7.98_05: Chiave composita linea+modello per prezzi specifici
                 const linea = bld.rivestimentoInt.linea;
                 const modello = bld.rivestimentoInt.modello || '';
                 const essenza = bld.rivestimentoInt.essenza || '';
@@ -14396,7 +14396,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // Rivestimento ESTERNO
             if (bld.rivestimentoEst?.linea) {
-                // 🔐 v7.97_05: Chiave composita linea+modello per prezzi specifici
+                // 🔐 v7.98_05: Chiave composita linea+modello per prezzi specifici
                 const linea = bld.rivestimentoEst.linea;
                 const modello = bld.rivestimentoEst.modello || '';
                 const essenza = bld.rivestimentoEst.essenza || '';
@@ -14429,7 +14429,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
             }
             
-            // 🆕 v7.97_08: IMBOTTI ESTERNO
+            // 🆕 v7.98: IMBOTTI ESTERNO
             if (bld.imbotteEst && bld.imbotteEst !== '' && bld.imbotteEstAltezza && bld.imbotteEstLargh) {
                 const tipoImbotte = bld.imbotteEst; // 'imbotte_cornici' o 'imbotte_solo'
                 const altezza = bld.imbotteEstAltezza; // 'H1' o 'H2'
@@ -14445,13 +14445,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 console.log(`   Imbotte: ${tipoImbotte} ${altezza}×${larghezza} ${essenza} → €${dettaglio.imbotti}`);
             }
             
-            // 🆕 v7.97_08: CORNICI FERMA PANNELLO
+            // 🆕 v7.98: CORNICI FERMA PANNELLO
             if (bld.corniciFermaPannello) {
                 dettaglio.cornici += LISTINO_OIKOS_BLINDATE.cornici.fermaPannello[luce] || 0;
                 console.log(`   Cornici ferma pannello: €${dettaglio.cornici}`);
             }
             
-            // 🆕 v7.97_08: CORNICI INTERNE
+            // 🆕 v7.98: CORNICI INTERNE
             if (bld.corniciInt) {
                 dettaglio.cornici += LISTINO_OIKOS_BLINDATE.cornici.interne[luce] || 0;
                 console.log(`   Cornici interne: €${dettaglio.cornici}`);
@@ -16310,7 +16310,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // Processa ogni posizione
             posizioni.forEach((pos, index) => {
-                // 🔐 v7.97_07: NORMALIZZA BLINDATA da ingresso.blindata se non già presente
+                // 🔐 v7.98_07: NORMALIZZA BLINDATA da ingresso.blindata se non già presente
                 if (pos.ingresso?.blindata && !pos.blindata) {
                     pos.blindata = pos.ingresso.blindata;
                     console.log(`   🔐 NORMALIZZATO pos ${index + 1}: ingresso.blindata → blindata`);
@@ -17006,7 +17006,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 // ============================================================================
                 // PORTE BLINDATE - OIKOS
                 // ============================================================================
-                // 🔐 v7.97: blindata esiste se ha LNP o versione (LNP può essere stringa)
+                // 🔐 v7.98: blindata esiste se ha LNP o versione (LNP può essere stringa)
                 const hasBlindataData = pos.blindata && (
                     parseInt(pos.blindata.LNP_L) > 0 || 
                     parseInt(pos.blindata.LNP_H) > 0 || 
@@ -17844,7 +17844,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         }
 
-        // 🔐 v7.97_07: DETTAGLIO COSTI BLINDATA
+        // 🔐 v7.98_07: DETTAGLIO COSTI BLINDATA
         function mostraDettaglioCostiBlindato(posIndex, rigaPreventivo = {}) {
             try {
                 console.log('🔐 mostraDettaglioCostiBlindato posizione:', posIndex);
@@ -18217,7 +18217,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     const prodotto = tipoProdotto === 'blindata' ? pos.blindata : pos[tipoProdotto];
                     
                     // ✅ FIX: Accetta anche quantita undefined/null (tratta come 1)
-                    // 🔐 v7.97: Per blindata usa campo 'attivo' invece di 'quantita'
+                    // 🔐 v7.98: Per blindata usa campo 'attivo' invece di 'quantita'
                     let quantitaProdotto = 0;
                     let hasProdotto = false;
                     
@@ -18231,7 +18231,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     }
                     
                     if (hasProdotto) {
-                        // 🔐 v7.97: Per blindata azienda di default è Oikos
+                        // 🔐 v7.98: Per blindata azienda di default è Oikos
                         const aziendaRaw = tipoProdotto === 'blindata' ? 
                             (prodotto.azienda || 'Oikos') : 
                             (prodotto.azienda || 'Azienda Non Specificata');
@@ -18324,7 +18324,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                         
                         // ✅ v7.73: Calcola misure corrette CON FONTE per debug
-                        // 🔐 v7.97: Per blindata usa LNP_L/LNP_H
+                        // 🔐 v7.98: Per blindata usa LNP_L/LNP_H
                         let misureL = 0, misureH = 0;
                         let fonteL = '', fonteH = '';
                         
@@ -18366,7 +18366,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                         
                         // Aggiungi prodotto
-                        // 🔐 v7.97: Per blindata modello = versione
+                        // 🔐 v7.98: Per blindata modello = versione
                         aziendaData.prodotti.push({
                             tipo: tipoProdotto,
                             posizione: pos.ambiente || pos.nome || pos.stanza || pos.id,
@@ -19389,7 +19389,7 @@ if (typeof module !== 'undefined' && module.exports) {
         // SEZIONE D: PRODOTTI E CONFIGURAZIONI
         // ============================================================================
         function renderPositionProducts(pos) {
-            // 🔐 v7.97: Aggiunto blindata
+            // 🔐 v7.98: Aggiunto blindata
             const hasProdotti = (pos.infisso && pos.infisso.quantita > 0) ||
                               (pos.tapparella && pos.tapparella.quantita > 0) ||
                               (pos.cassonetto && pos.cassonetto.quantita > 0) ||
@@ -19410,23 +19410,28 @@ if (typeof module !== 'undefined' && module.exports) {
             }
             
             // ✅ v7.76 FIX: Determina quale prodotto è il PRIMO disponibile (sarà active)
-            // 🔐 v7.97: Aggiunto blindata
+            // 🔐 v7.98: Aggiunto blindata e portoncino
             const prodotti = [
                 { key: 'infisso', label: '🪟 Infisso', data: pos.infisso },
                 { key: 'tapparella', label: '🔽 Tapparella', data: pos.tapparella },
                 { key: 'cassonetto', label: '📦 Cassonetto', data: pos.cassonetto },
                 { key: 'persiana', label: '🪟 Persiana', data: pos.persiana },
                 { key: 'zanzariera', label: '🦟 Zanzariera', data: pos.zanzariera },
-                { key: 'blindata', label: '🔐 Blindata', data: pos.blindata }
+                { key: 'blindata', label: '🔐 Blindata', data: pos.blindata },
+                { key: 'portoncino', label: '🚪 Portoncino', data: pos.portoncino || pos.ingresso?.portoncino }
             ];
             
             // 🆕 v7.82: Filtra solo quelli con quantita > 0 (supporta sia qta che quantita)
-            // 🔐 v7.97: Blindata non usa quantita, controlla se esiste
+            // 🔐 v7.98: Blindata e Portoncino non usano quantita, controlla se esistono
             const prodottiDisponibili = prodotti.filter(p => {
                 if (!p.data) return false;
                 if (p.key === 'blindata') {
                     // Blindata esiste se ha LNP (possono essere stringhe) o versione
                     return parseInt(p.data.LNP_L) > 0 || parseInt(p.data.LNP_H) > 0 || p.data.versione;
+                }
+                if (p.key === 'portoncino') {
+                    // 🚪 v7.98: Portoncino esiste se ha azienda, modelloAnta o tipoApertura
+                    return p.data.azienda || p.data.modelloAnta || p.data.tipoApertura || p.data.formaTelaio;
                 }
                 const qty = parseInt(p.data.quantita) || parseInt(p.data.qta) || 0;
                 return qty > 0;
@@ -19462,9 +19467,14 @@ if (typeof module !== 'undefined' && module.exports) {
         }
 
         function renderProductContent(tipo, prodotto, isActive) {
-            // 🔐 v7.97: Blindata non usa quantita
+            // 🔐 v7.98: Blindata non usa quantita
             if (tipo === 'blindata') {
                 return renderBlindataContent(prodotto, isActive);
+            }
+            
+            // 🚪 v7.98: Portoncino non usa quantita
+            if (tipo === 'portoncino') {
+                return renderPortoncinoContent(prodotto, isActive);
             }
             
             // 🆕 v7.82: Supporta sia qta che quantita
@@ -19735,7 +19745,7 @@ if (typeof module !== 'undefined' && module.exports) {
         }
         
         // ============================================================================
-        // 🔐 RENDER BLINDATA CONTENT - v7.97
+        // 🔐 RENDER BLINDATA CONTENT - v7.98
         // ============================================================================
         function renderBlindataContent(bld, isActive) {
             if (!bld) return '';
@@ -19818,6 +19828,12 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div class="wall-char-value">${bld.sensoApertura}</div>
                             </div>
                         ` : ''}
+                        ${bld.versoApertura ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Verso Apertura</div>
+                                <div class="wall-char-value">${bld.versoApertura === 'tirare' ? '⬅️ Tirare (interno)' : '➡️ Spingere (esterno)'}</div>
+                            </div>
+                        ` : ''}
                         ${bld.controtelaio ? `
                             <div class="wall-char-item">
                                 <div class="wall-char-label">Controtelaio</div>
@@ -19851,6 +19867,191 @@ if (typeof module !== 'undefined' && module.exports) {
                             <div style="font-size: 1.5rem; font-weight: bold; color: #15803d;">€ ${prezzoStimato.toFixed(2)}</div>
                         </div>
                     ` : ''}
+                </div>
+            `;
+        }
+        
+        // ============================================================================
+        // 🚪 v7.98: RENDER PORTONCINO CONTENT - FIN-Door Finstral
+        // ============================================================================
+        function renderPortoncinoContent(ptc, isActive) {
+            if (!ptc) return '';
+            
+            // Helper per descrizione tipo apertura
+            const getTipoAperturaDesc = (tipo) => {
+                const desc = {
+                    '720': 'Porta singola',
+                    '625': 'Porta singola (variante)',
+                    '621': 'Porta + laterale sx',
+                    '622': 'Porta + laterale dx',
+                    '621C': 'Accoppiata + lat. sx',
+                    '622C': 'Accoppiata + lat. dx',
+                    '633': 'Porta + 2 laterali',
+                    '633C': 'Accoppiata + 2 lat.',
+                    '624': 'Porta + sopraluce',
+                    '623': 'Porta + anta sup.',
+                    '636': 'Doppia porta',
+                    '626': 'Doppia + lat. sx',
+                    '627': 'Doppia + lat. dx',
+                    '649': 'Doppia + 2 laterali'
+                };
+                return desc[tipo] || tipo || '-';
+            };
+            
+            return `
+                <div class="product-content ${isActive ? 'active' : ''}" data-product="portoncino">
+                    
+                    <!-- Tipo Apertura (grande e visibile) -->
+                    <div class="brm-box" style="background: #f3e8ff; border-color: #c4b5fd;">
+                        <div class="brm-title" style="color: #6b21a8;">📐 Tipo Apertura</div>
+                        <div class="brm-grid">
+                            <div class="brm-item">
+                                <div class="brm-label">Configurazione</div>
+                                <div class="brm-value" style="color: #7c3aed;">${ptc.tipoApertura || '720'} - ${getTipoAperturaDesc(ptc.tipoApertura)}</div>
+                            </div>
+                            ${ptc.direzioneApertura ? `
+                                <div class="brm-item">
+                                    <div class="brm-label">Direzione</div>
+                                    <div class="brm-value">${ptc.direzioneApertura === 'tirare' ? '⬅️ Tirare (interno)' : '➡️ Spingere (esterno)'}</div>
+                                </div>
+                            ` : ''}
+                            ${ptc.latoCerniere ? `
+                                <div class="brm-item">
+                                    <div class="brm-label">Cerniere</div>
+                                    <div class="brm-value">${ptc.latoCerniere === 'sx' ? '◀️ Sinistra' : '▶️ Destra'}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Dimensioni BRM -->
+                    ${ptc.BRM_L || ptc.BRM_H ? `
+                        <div class="brm-box" style="background: #f0fdfa; border-color: #99f6e4; margin-top: 1rem;">
+                            <div class="brm-title" style="color: #0f766e;">📏 Dimensioni BRM</div>
+                            <div class="brm-grid">
+                                ${ptc.BRM_L ? `
+                                    <div class="brm-item">
+                                        <div class="brm-label">Larghezza</div>
+                                        <div class="brm-value">${ptc.BRM_L} mm</div>
+                                    </div>
+                                ` : ''}
+                                ${ptc.BRM_H ? `
+                                    <div class="brm-item">
+                                        <div class="brm-label">Altezza</div>
+                                        <div class="brm-value">${ptc.BRM_H} mm</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Configurazione Materiali e Anta -->
+                    <div class="wall-chars-grid" style="margin-top: 1.5rem;">
+                        ${ptc.azienda ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Azienda</div>
+                                <div class="wall-char-value">${ptc.azienda}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.materialeInt ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Mat. Interno</div>
+                                <div class="wall-char-value">${ptc.materialeInt}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.materialeEst ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Mat. Esterno</div>
+                                <div class="wall-char-value">${ptc.materialeEst}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.formaTelaio ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Forma Telaio</div>
+                                <div class="wall-char-value">${ptc.formaTelaio === 'Z' ? 'Z (soglia 20mm)' : 'S (soglia 0mm)'}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.codTelaio ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Cod. Telaio</div>
+                                <div class="wall-char-value">${ptc.codTelaio}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.tipoAnta ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Tipo Anta</div>
+                                <div class="wall-char-value">${ptc.tipoAnta}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.modelloAnta ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Modello Anta</div>
+                                <div class="wall-char-value" style="font-weight: bold; color: #0f766e;">${ptc.modelloAnta}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Maniglie e Colori -->
+                    <div class="wall-chars-grid" style="margin-top: 1rem;">
+                        ${ptc.tipoManiglia ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Tipo Maniglia</div>
+                                <div class="wall-char-value">${ptc.tipoManiglia === 'maniglione' ? 'Maniglione' : 'Set maniglia'}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.codManiglia ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Cod. Maniglia</div>
+                                <div class="wall-char-value">${ptc.codManiglia}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.gruppoColoreInt ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Gruppo Col. Int</div>
+                                <div class="wall-char-value">${ptc.gruppoColoreInt}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.coloreInt ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Colore Int.</div>
+                                <div class="wall-char-value">${ptc.coloreInt}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.gruppoColoreEst ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Gruppo Col. Est</div>
+                                <div class="wall-char-value">${ptc.gruppoColoreEst}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.coloreEst ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Colore Est.</div>
+                                <div class="wall-char-value">${ptc.coloreEst}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Sicurezza -->
+                    <div class="wall-chars-grid" style="margin-top: 1rem;">
+                        ${ptc.cilindro ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Cilindro</div>
+                                <div class="wall-char-value">${ptc.cilindro}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.cerniere ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Cerniere</div>
+                                <div class="wall-char-value">${ptc.cerniere === 'scomparsa' ? 'A scomparsa' : 'Standard'}</div>
+                            </div>
+                        ` : ''}
+                        ${ptc.fonoassorbente ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">Fonoassorbente</div>
+                                <div class="wall-char-value">✅ Sì (42dB)</div>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -22477,7 +22678,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     },
                     // ✅ v7.73: FIX - Preserva configInfissi
                     configInfissi: githubData.configInfissi || {},
-                    // 🔐 v7.97: Preserva configBlindate
+                    // 🔐 v7.98: Preserva configBlindate
                     configBlindate: githubData.configBlindate || {},
                     data_rilievo: githubData.metadata?.created || Date.now()
                 };
@@ -22552,7 +22753,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                     });
                     
-                    // 🔐 v7.97_06: Converti BLINDATA/PORTONCINO (supporta pos.ingresso.blindata e pos.blindata)
+                    // 🔐 v7.98_06: Converti BLINDATA/PORTONCINO (supporta pos.ingresso.blindata e pos.blindata)
                     const blindataSource = posGitHub.ingresso?.blindata || posGitHub.blindata;
                     if (blindataSource) {
                         posDash.blindata = { ...blindataSource };
@@ -22563,7 +22764,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         console.log(`✅ blindata Pos ${index + 1}: ${blindataSource.LNP_L}×${blindataSource.LNP_H} (${blindataSource.versione})`);
                     }
                     
-                    // 🔐 v7.97_06: Converti PORTONCINO
+                    // 🔐 v7.98_06: Converti PORTONCINO
                     const portoncinoSource = posGitHub.ingresso?.portoncino || posGitHub.portoncino;
                     if (portoncinoSource) {
                         posDash.portoncino = { ...portoncinoSource };
@@ -22595,7 +22796,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     },
                     // ✅ v7.73: FIX - Preserva configInfissi
                     configInfissi: githubData.configInfissi || {},
-                    // 🔐 v7.97: Preserva configBlindate
+                    // 🔐 v7.98: Preserva configBlindate
                     configBlindate: githubData.configBlindate || {},
                     data_rilievo: githubData.created || Date.now()
                 };
