@@ -6,7 +6,18 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.99 - CHANGELOG
+    DASHBOARD RILIEVI v7.993 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.993 (03 DIC 2025):
+    - 🚪 Supporto nuovi campi: versoApertura, sensoApertura (con fallback vecchi)
+    - 🚪 Popup dettaglio: Apertura unificato (verso + senso)
+    
+    🔧 AGGIORNAMENTI v7.992 (03 DIC 2025):
+    - 🚪 renderPortoncinoContent(): Nuova struttura campi
+    - 🚪 Apertura: Tirare/Spingere + SX/DX (unificato)
+    - 🚪 Finiture INT/EST con colore
+    - 🚪 Sezioni: Tipo Apertura, BRM, Finiture, Telaio/Anta, Maniglie, Colori, Optional
+    - 🐛 FIX: Rimosso testo che chiudeva commento HTML
     
     🔧 AGGIORNAMENTI v7.99 (03 DIC 2025):
     - 🚪 LISTINO_FINDOOR_PORTONCINI: Database prezzi portoncini Finstral EUR 2025/3
@@ -1135,7 +1146,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.99 - Portoncini Findoor</title>
+    <title>Dashboard Rilievi v7.993 - Portoncini Apertura</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10461,7 +10472,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.99</span>
+                <span class="logo-version" id="version-badge">v7.993</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -18254,8 +18265,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div><strong>Mat. Int:</strong> ${ptc.materialeInt || 'PVC'}</div>
                                 <div><strong>Mat. Est:</strong> ${ptc.materialeEst || 'PVC'}</div>
                                 <div><strong>Modello:</strong> ${ptc.modelloAnta || '01'}</div>
-                                <div><strong>Apertura:</strong> ${ptc.direzioneApertura || '-'}</div>
-                                <div><strong>Cerniere:</strong> ${ptc.latoCerniere || '-'}</div>
+                                <div><strong>Apertura:</strong> ${ptc.versoApertura || ptc.direzioneApertura || '-'} + ${ptc.sensoApertura || ptc.latoCerniere || '-'}</div>
                                 <div><strong>Cilindro:</strong> ${ptc.cilindro || '1P'}</div>
                             </div>
                         </div>
@@ -20174,10 +20184,21 @@ if (typeof module !== 'undefined' && module.exports) {
                 return desc[tipo] || tipo || '-';
             };
             
+            // Costruisci Apertura: tirare/spingere + SX/DX
+            const buildApertura = () => {
+                const verso = ptc.versoApertura || ptc.direzioneApertura || '';
+                const senso = ptc.sensoApertura || ptc.latoCerniere || '';
+                if (!verso && !senso) return '-';
+                let result = '';
+                if (verso) result += verso === 'tirare' ? 'Tirare' : 'Spingere';
+                if (senso) result += (result ? ' + ' : '') + (senso.toUpperCase() === 'SX' ? 'SX' : 'DX');
+                return result || '-';
+            };
+            
             return `
                 <div class="product-content ${isActive ? 'active' : ''}" data-product="portoncino">
                     
-                    <!-- Tipo Apertura (grande e visibile) -->
+                    <!-- Tipo Apertura -->
                     <div class="brm-box" style="background: #f3e8ff; border-color: #c4b5fd;">
                         <div class="brm-title" style="color: #6b21a8;">📐 Tipo Apertura</div>
                         <div class="brm-grid">
@@ -20185,18 +20206,10 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div class="brm-label">Configurazione</div>
                                 <div class="brm-value" style="color: #7c3aed;">${ptc.tipoApertura || '720'} - ${getTipoAperturaDesc(ptc.tipoApertura)}</div>
                             </div>
-                            ${ptc.direzioneApertura ? `
-                                <div class="brm-item">
-                                    <div class="brm-label">Direzione</div>
-                                    <div class="brm-value">${ptc.direzioneApertura === 'tirare' ? '⬅️ Tirare (interno)' : '➡️ Spingere (esterno)'}</div>
-                                </div>
-                            ` : ''}
-                            ${ptc.latoCerniere ? `
-                                <div class="brm-item">
-                                    <div class="brm-label">Cerniere</div>
-                                    <div class="brm-value">${ptc.latoCerniere === 'sx' ? '◀️ Sinistra' : '▶️ Destra'}</div>
-                                </div>
-                            ` : ''}
+                            <div class="brm-item">
+                                <div class="brm-label">Apertura</div>
+                                <div class="brm-value">${buildApertura()}</div>
+                            </div>
                         </div>
                     </div>
                     
@@ -20221,53 +20234,44 @@ if (typeof module !== 'undefined' && module.exports) {
                         </div>
                     ` : ''}
                     
-                    <!-- Configurazione Materiali e Anta -->
+                    <!-- Finiture -->
+                    <div class="brm-box" style="background: #fef3c7; border-color: #fcd34d; margin-top: 1rem;">
+                        <div class="brm-title" style="color: #92400e;">🎨 Finiture</div>
+                        <div class="brm-grid">
+                            <div class="brm-item">
+                                <div class="brm-label">Finitura INT</div>
+                                <div class="brm-value">${ptc.finituraInt || ptc.materialeInt || '-'}${ptc.coloreInt ? ' - ' + ptc.coloreInt : ''}</div>
+                            </div>
+                            <div class="brm-item">
+                                <div class="brm-label">Finitura EST</div>
+                                <div class="brm-value">${ptc.finituraEst || ptc.materialeEst || '-'}${ptc.coloreEst ? ' - ' + ptc.coloreEst : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Configurazione Telaio e Anta -->
                     <div class="wall-chars-grid" style="margin-top: 1.5rem;">
-                        ${ptc.azienda ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Azienda</div>
-                                <div class="wall-char-value">${ptc.azienda}</div>
-                            </div>
-                        ` : ''}
-                        ${ptc.materialeInt ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Mat. Interno</div>
-                                <div class="wall-char-value">${ptc.materialeInt}</div>
-                            </div>
-                        ` : ''}
-                        ${ptc.materialeEst ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Mat. Esterno</div>
-                                <div class="wall-char-value">${ptc.materialeEst}</div>
-                            </div>
-                        ` : ''}
-                        ${ptc.formaTelaio ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Forma Telaio</div>
-                                <div class="wall-char-value">${ptc.formaTelaio === 'Z' ? 'Z (soglia 20mm)' : 'S (soglia 0mm)'}</div>
-                            </div>
-                        ` : ''}
                         ${ptc.codTelaio ? `
                             <div class="wall-char-item">
                                 <div class="wall-char-label">Cod. Telaio</div>
                                 <div class="wall-char-value">${ptc.codTelaio}</div>
                             </div>
                         ` : ''}
-                        ${ptc.tipoAnta ? `
+                        ${ptc.codTagli ? `
                             <div class="wall-char-item">
-                                <div class="wall-char-label">Tipo Anta</div>
-                                <div class="wall-char-value">${ptc.tipoAnta}</div>
+                                <div class="wall-char-label">Cod. Tagli</div>
+                                <div class="wall-char-value">${ptc.codTagli}</div>
                             </div>
                         ` : ''}
                         ${ptc.modelloAnta ? `
                             <div class="wall-char-item">
                                 <div class="wall-char-label">Modello Anta</div>
-                                <div class="wall-char-value" style="font-weight: bold; color: #0f766e;">${ptc.modelloAnta}</div>
+                                <div class="wall-char-value" style="font-weight: bold; color: #7c3aed;">${ptc.modelloAnta}</div>
                             </div>
                         ` : ''}
                     </div>
                     
-                    <!-- Maniglie e Colori -->
+                    <!-- Maniglie -->
                     <div class="wall-chars-grid" style="margin-top: 1rem;">
                         ${ptc.tipoManiglia ? `
                             <div class="wall-char-item">
@@ -20281,16 +20285,14 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div class="wall-char-value">${ptc.codManiglia}</div>
                             </div>
                         ` : ''}
+                    </div>
+                    
+                    <!-- Colori (gruppi) -->
+                    <div class="wall-chars-grid" style="margin-top: 1rem;">
                         ${ptc.gruppoColoreInt ? `
                             <div class="wall-char-item">
                                 <div class="wall-char-label">Gruppo Col. Int</div>
                                 <div class="wall-char-value">${ptc.gruppoColoreInt}</div>
-                            </div>
-                        ` : ''}
-                        ${ptc.coloreInt ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Colore Int.</div>
-                                <div class="wall-char-value">${ptc.coloreInt}</div>
                             </div>
                         ` : ''}
                         ${ptc.gruppoColoreEst ? `
@@ -20299,34 +20301,25 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div class="wall-char-value">${ptc.gruppoColoreEst}</div>
                             </div>
                         ` : ''}
-                        ${ptc.coloreEst ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Colore Est.</div>
-                                <div class="wall-char-value">${ptc.coloreEst}</div>
-                            </div>
-                        ` : ''}
                     </div>
                     
-                    <!-- Sicurezza -->
-                    <div class="wall-chars-grid" style="margin-top: 1rem;">
-                        ${ptc.cilindro ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Cilindro</div>
-                                <div class="wall-char-value">${ptc.cilindro}</div>
+                    <!-- Optional -->
+                    <div class="brm-box" style="background: #fee2e2; border-color: #fca5a5; margin-top: 1rem;">
+                        <div class="brm-title" style="color: #991b1b;">⚙️ Optional</div>
+                        <div class="brm-grid">
+                            <div class="brm-item">
+                                <div class="brm-label">Cilindro</div>
+                                <div class="brm-value">${ptc.cilindro || '1P'}</div>
                             </div>
-                        ` : ''}
-                        ${ptc.cerniere ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Cerniere</div>
-                                <div class="wall-char-value">${ptc.cerniere === 'scomparsa' ? 'A scomparsa' : 'Standard'}</div>
+                            <div class="brm-item">
+                                <div class="brm-label">Cerniere</div>
+                                <div class="brm-value">${ptc.cerniere === 'scomparsa' ? 'A scomparsa' : 'Standard'}</div>
                             </div>
-                        ` : ''}
-                        ${ptc.fonoassorbente ? `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">Fonoassorbente</div>
-                                <div class="wall-char-value">✅ Sì (42dB)</div>
+                            <div class="brm-item">
+                                <div class="brm-label">Fonoassorbente</div>
+                                <div class="brm-value">${ptc.fonoassorbente ? '✅ Sì (42dB)' : '❌ No'}</div>
                             </div>
-                        ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
