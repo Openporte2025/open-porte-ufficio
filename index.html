@@ -6,15 +6,25 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.999 - CHANGELOG
+    DASHBOARD RILIEVI v8.00 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.00 (04 DIC 2025):
+    - 🔌 MOTORI NEL PREVENTIVO: Righe separate per motori Somfy con prezzi calcolati
+    - 🔌 CALCOLO AUTOMATICO: Motore + Comando + Accessori da database SOMFY_PREZZI
+    - 🔌 VISTA POSIZIONI: Sezione "🔌 Motore Somfy" nel tab Tapparella
+    - 🔌 DETTAGLIO PREZZI: Breakdown componenti kit motore
+    - ⚙️ VERSIONE CENTRALIZZATA: Costante DASHBOARD_VERSION aggiorna tutto automaticamente
+    - 🐛 FIX: Motori aggiunti SEMPRE quando serveMotore=true (non solo se serveTapparella=false)
     
     🔧 AGGIORNAMENTI v7.999 (04 DIC 2025):
+    - 🔌 PREVENTIVO: Motori aggiunti SEMPRE quando serveMotore=true (anche con tapparella)
+    - 🔌 PREVENTIVO: Calcolo prezzi automatico motore + comando + accessori da SOMFY_PREZZI
+    - 🔌 VISTA POSIZIONI: Nuova sezione "🔌 Motore Somfy" nel tab Tapparella
+    - 🔌 VISTA POSIZIONI: Dettaglio prezzo kit con breakdown componenti
     - 🔌 SEPARAZIONE TAPPARELLA/MOTORE: Prodotti distinti con aziende diverse
-    - 🔌 TAPPARELLA: Azienda da campo "azienda" (es. Plasticino)
-    - 🔌 MOTORE: Azienda da campo "motoreAzienda" (es. Somfy)
-    - 🔌 PREZZI MOTORI: Calcolo automatico motore + comando + accessori
     - 🔌 SOMFY_PREZZI: Chiavi normalizzate (oximo_20, amy1, supporto)
     - 🔌 calcolaPrezzoKit(): Calcola totale kit con dettaglio componenti
+    - 🔌 renderMotoreSection(): Rendering sezione motore in Vista Posizioni
     
     🔧 AGGIORNAMENTI v7.998 (04 DIC 2025):
     - 🔌 DATABASE SOMFY: Listino prezzi motori, comandi e accessori
@@ -1187,13 +1197,13 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.999 - Tapparelle + Motori Separati</title>
+    <title>Dashboard Rilievi v8.00 - Motori nel Preventivo</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "7.994";
-        const DASHBOARD_DATE = "03 DIC 2025";
+        const DASHBOARD_VERSION = "8.00";
+        const DASHBOARD_DATE = "04 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
         // 🔄 FUNZIONE AGGIORNAMENTO VERSIONE AUTOMATICO
@@ -10515,7 +10525,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.999</span>
+                <span class="logo-version" id="version-badge">v8.00</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -17400,80 +17410,99 @@ if (typeof module !== 'undefined' && module.exports) {
                 }
                 
                 // ============================================================================
-                // 🆕 v7.996: MOTORI - Quando serveMotore=true e serveTapparella=false
+                // 🔌 v7.999: MOTORI - Aggiunge riga SEMPRE quando serveMotore=true
+                // (indipendentemente da serveTapparella - possono coesistere)
                 // ============================================================================
-                if (pos.tapparella && serveMotore && !serveTapparella) {
+                if (pos.tapparella && serveMotore) {
                     const tapp = pos.tapparella;
                     const motori = tapp.motori || [];
-                    const quantita = parseInt(tapp.qta) || 1;
+                    const quantita = parseInt(tapp.qta || tapp.quantita) || 1;
                     
-                    console.log(`🔌 v7.996 Pos ${index + 1}: Solo MOTORE (serveTapparella=false, serveMotore=true)`);
+                    console.log(`🔌 v7.999 Pos ${index + 1}: MOTORE (serveMotore=true)`);
                     console.log(`   Motori array:`, motori);
                     
                     // Se ci sono motori nell'array, creane una riga per ciascuno
                     if (motori.length > 0) {
                         motori.forEach((motore, motIdx) => {
-                            const modelloId = motore.modelloId || 'N/D';
-                            const comandoId = motore.comandoId || '';
+                            const modelloId = motore.modelloId || tapp.motoreModelloDefault || 'oximo_20';
+                            const comandoId = motore.comandoId || tapp.comandoDefault || '';
                             const accessori = motore.accessori || {};
                             const noteMotore = motore.note || '';
                             
-                            // TODO: Implementare listino prezzi motori Somfy
-                            // Per ora inseriamo riga placeholder
-                            const prezzoMotore = 0; // Da implementare con listino
+                            // 🔌 v7.999: Calcola prezzo con SOMFY_PREZZI
+                            const prezzoKit = SOMFY_PREZZI.calcolaPrezzoKit(motore);
+                            const prezzoMotore = prezzoKit.totale;
+                            
+                            // Genera descrizione accessori per la riga
+                            let descAccessori = [];
+                            const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloId);
+                            if (motoreDb) descAccessori.push(motoreDb.nome);
+                            const comandoDb = SOMFY_PREZZI.getPrezzoComando(comandoId);
+                            if (comandoDb) descAccessori.push(comandoDb.nome);
+                            if (accessori.supporto) descAccessori.push('Supporto');
+                            if (accessori.ruota_60) descAccessori.push('Ruota 60');
+                            if (accessori.corona_60) descAccessori.push('Corona');
                             
                             righe.push({
                                 posizione: index + 1,
                                 ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
                                 tipo: 'Motore',
-                                azienda: 'Somfy',  // TODO: leggere da config
-                                telaio: modelloId,
+                                azienda: tapp.motoreAzienda || 'Somfy',
+                                telaio: modelloId.replace(/_/g, ' ').toUpperCase(),
                                 larghezza: '-',
                                 altezza: '-',
                                 superficie: '-',
                                 perimetro: '-',
-                                prezzoBase: prezzoMotore.toFixed(2),
-                                supplementoTelaio: '0.00',
-                                supplementoAnta: '0.00',
-                                supplementoVetro: '0.00',
+                                prezzoBase: (motoreDb?.prezzo || 0).toFixed(2),
+                                supplementoTelaio: (comandoDb?.prezzo || 0).toFixed(2),  // Comando
+                                supplementoAnta: (accessori.supporto ? 94.60 : 0).toFixed(2),  // Supporto
+                                supplementoVetro: (accessori.ruota_60 ? 21.00 : 0).toFixed(2),  // Ruota
                                 supplementoManiglia: '0.00',
                                 prezzoUnitario: prezzoMotore.toFixed(2),
                                 quantita: quantita,
                                 totale: (prezzoMotore * quantita).toFixed(2),
-                                _tipoMotore: true,  // Flag per riconoscimento
+                                _tipoMotore: true,
                                 _accessori: accessori,
-                                _comandoId: comandoId
+                                _comandoId: comandoId,
+                                _dettaglioKit: prezzoKit.dettaglio
                             });
                             
-                            console.log(`✅ Motore Pos ${index + 1}: ${modelloId} (comando: ${comandoId || 'manuale'})`);
+                            console.log(`✅ Motore Pos ${index + 1}: ${modelloId} = €${prezzoMotore.toFixed(2)}`);
+                            console.log(`   Dettaglio:`, prezzoKit.dettaglio);
                         });
                     } else {
                         // Nessun motore specificato, ma serveMotore=true
                         // Usa modelloDefault se presente
-                        const modelloDefault = tapp.motoreModelloDefault || 'N/D';
+                        const modelloDefault = tapp.motoreModelloDefault || 'oximo_20';
+                        const comandoDefault = tapp.comandoDefault || '';
+                        
+                        // Calcola prezzo default
+                        const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloDefault);
+                        const comandoDb = SOMFY_PREZZI.getPrezzoComando(comandoDefault);
+                        const prezzoMotore = (motoreDb?.prezzo || 0) + (comandoDb?.prezzo || 0);
                         
                         righe.push({
                             posizione: index + 1,
                             ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
                             tipo: 'Motore',
-                            azienda: 'Somfy',
-                            telaio: modelloDefault,
+                            azienda: tapp.motoreAzienda || 'Somfy',
+                            telaio: modelloDefault.replace(/_/g, ' ').toUpperCase(),
                             larghezza: '-',
                             altezza: '-',
                             superficie: '-',
                             perimetro: '-',
-                            prezzoBase: '0.00',
-                            supplementoTelaio: '0.00',
+                            prezzoBase: (motoreDb?.prezzo || 0).toFixed(2),
+                            supplementoTelaio: (comandoDb?.prezzo || 0).toFixed(2),
                             supplementoAnta: '0.00',
                             supplementoVetro: '0.00',
                             supplementoManiglia: '0.00',
-                            prezzoUnitario: '0.00',
+                            prezzoUnitario: prezzoMotore.toFixed(2),
                             quantita: quantita,
-                            totale: '0.00',
+                            totale: (prezzoMotore * quantita).toFixed(2),
                             _tipoMotore: true
                         });
                         
-                        console.log(`✅ Motore Pos ${index + 1}: ${modelloDefault} (default)`);
+                        console.log(`✅ Motore Pos ${index + 1}: ${modelloDefault} (default) = €${prezzoMotore.toFixed(2)}`);
                     }
                 }
                 
@@ -21190,6 +21219,88 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <div class="wall-char-value">${prodotto.note}</div>
                             </div>
                         ` : ''}
+                    </div>
+                    
+                    ${tipo === 'tapparella' && prodotto.serveMotore === true ? renderMotoreSection(prodotto) : ''}
+                </div>
+            `;
+        }
+        
+        // ============================================================================
+        // 🔌 v7.999: RENDER SEZIONE MOTORE IN TAB TAPPARELLA
+        // ============================================================================
+        function renderMotoreSection(tapparella) {
+            if (!tapparella || !tapparella.serveMotore) return '';
+            
+            const motori = tapparella.motori || [];
+            const motoreInfo = motori[0] || {};
+            const modelloId = motoreInfo.modelloId || tapparella.motoreModelloDefault || 'oximo_20';
+            const comandoId = motoreInfo.comandoId || tapparella.comandoDefault || '';
+            const accessori = motoreInfo.accessori || {};
+            
+            // Ottieni info dai database
+            const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloId);
+            const comandoDb = SOMFY_PREZZI.getPrezzoComando(comandoId);
+            
+            // Calcola prezzo kit
+            const prezzoKit = SOMFY_PREZZI.calcolaPrezzoKit(motoreInfo);
+            
+            return `
+                <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border: 2px solid #f59e0b;">
+                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🔌 Motore Somfy
+                    </h4>
+                    
+                    <div class="wall-chars-grid">
+                        <div class="wall-char-item" style="background: white;">
+                            <div class="wall-char-label">Azienda</div>
+                            <div class="wall-char-value">${tapparella.motoreAzienda || 'Somfy'}</div>
+                        </div>
+                        <div class="wall-char-item" style="background: white;">
+                            <div class="wall-char-label">Modello</div>
+                            <div class="wall-char-value">${motoreDb?.nome || modelloId.replace(/_/g, ' ').toUpperCase()}</div>
+                        </div>
+                        ${comandoDb ? `
+                            <div class="wall-char-item" style="background: white;">
+                                <div class="wall-char-label">Comando</div>
+                                <div class="wall-char-value">${comandoDb.nome}</div>
+                            </div>
+                        ` : ''}
+                        ${accessori.supporto ? `
+                            <div class="wall-char-item" style="background: white;">
+                                <div class="wall-char-label">Supporto</div>
+                                <div class="wall-char-value">✅ Incluso</div>
+                            </div>
+                        ` : ''}
+                        ${accessori.ruota_60 ? `
+                            <div class="wall-char-item" style="background: white;">
+                                <div class="wall-char-label">Ruota 60mm</div>
+                                <div class="wall-char-value">✅ Inclusa</div>
+                            </div>
+                        ` : ''}
+                        ${accessori.corona_60 ? `
+                            <div class="wall-char-item" style="background: white;">
+                                <div class="wall-char-label">Corona 60</div>
+                                <div class="wall-char-value">✅ Inclusa</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Dettaglio Prezzi -->
+                    <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px;">
+                        <div style="font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">💰 Dettaglio Prezzo Kit</div>
+                        <div style="display: grid; gap: 0.25rem; font-size: 0.9rem;">
+                            ${prezzoKit.dettaglio.map(item => `
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>${item.nome}</span>
+                                    <span style="font-weight: 600;">€ ${item.prezzo.toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #f59e0b; font-weight: 700; font-size: 1.1rem;">
+                                <span>TOTALE KIT</span>
+                                <span style="color: #b45309;">€ ${prezzoKit.totale.toFixed(2)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
