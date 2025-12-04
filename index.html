@@ -15,6 +15,9 @@
     - 🔍 mostraDettaglioCostiCassonetto(): Popup dettaglio con breakdown costi
     - 🔍 Click su riga cassonetto per vedere dettaglio (hover arancione #ffedd5)
     - 🧊 Supporto isolamento termico cod. 40830/40831
+    - 🔌 FIX TAPPARELLE/MOTORI: Controlla serveTapparella prima di creare riga
+    - 🔌 MOTORI: Se serveTapparella=false e serveMotore=true → riga "Motore" invece di "Tapparella"
+    - 📦 CASSONETTI PREVENTIVO: Usa BRM_L/BRM_H/B con calcolo automatico Finstral
     
     🔧 AGGIORNAMENTI v7.995 (04 DIC 2025):
     - 🔌 FIX IMPORTAZIONE MOTORI: Aggiunto supporto per nuova struttura tapparelle
@@ -17074,11 +17077,17 @@ if (typeof module !== 'undefined' && module.exports) {
                     ha_tapparella: !!pos.tapparella,
                     tapparella_completo: pos.tapparella,
                     quantita: pos.tapparella?.quantita,
-                    azienda: pos.tapparella?.azienda
+                    azienda: pos.tapparella?.azienda,
+                    serveTapparella: pos.tapparella?.serveTapparella,
+                    serveMotore: pos.tapparella?.serveMotore
                 });
                 
-                // ✅ FIX: Accetta anche quantita undefined/null (tratta come 1)
-                if (pos.tapparella && (pos.tapparella.quantita === undefined || pos.tapparella.quantita === null || pos.tapparella.quantita > 0)) {
+                // 🆕 v7.996: Controlla serveTapparella - se false, salta telo e vai a motore
+                const serveTapparella = pos.tapparella?.serveTapparella !== false;
+                const serveMotore = pos.tapparella?.serveMotore === true;
+                
+                // ✅ FIX v7.996: Solo se serveTapparella è true (o undefined per retrocompatibilità)
+                if (pos.tapparella && serveTapparella && (pos.tapparella.quantita === undefined || pos.tapparella.quantita === null || pos.tapparella.quantita > 0)) {
                     const tapp = pos.tapparella;
                     const azienda = (tapp.azienda || '').toLowerCase();
                     
@@ -17217,6 +17226,84 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                     } else {
                         console.warn(`⚠️ Pos ${index + 1}: Azienda tapparelle "${tapp.azienda}" non ha listino prezzi`);
+                    }
+                }
+                
+                // ============================================================================
+                // 🆕 v7.996: MOTORI - Quando serveMotore=true e serveTapparella=false
+                // ============================================================================
+                if (pos.tapparella && serveMotore && !serveTapparella) {
+                    const tapp = pos.tapparella;
+                    const motori = tapp.motori || [];
+                    const quantita = parseInt(tapp.qta) || 1;
+                    
+                    console.log(`🔌 v7.996 Pos ${index + 1}: Solo MOTORE (serveTapparella=false, serveMotore=true)`);
+                    console.log(`   Motori array:`, motori);
+                    
+                    // Se ci sono motori nell'array, creane una riga per ciascuno
+                    if (motori.length > 0) {
+                        motori.forEach((motore, motIdx) => {
+                            const modelloId = motore.modelloId || 'N/D';
+                            const comandoId = motore.comandoId || '';
+                            const accessori = motore.accessori || {};
+                            const noteMotore = motore.note || '';
+                            
+                            // TODO: Implementare listino prezzi motori Somfy
+                            // Per ora inseriamo riga placeholder
+                            const prezzoMotore = 0; // Da implementare con listino
+                            
+                            righe.push({
+                                posizione: index + 1,
+                                ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
+                                tipo: 'Motore',
+                                azienda: 'Somfy',  // TODO: leggere da config
+                                telaio: modelloId,
+                                larghezza: '-',
+                                altezza: '-',
+                                superficie: '-',
+                                perimetro: '-',
+                                prezzoBase: prezzoMotore.toFixed(2),
+                                supplementoTelaio: '0.00',
+                                supplementoAnta: '0.00',
+                                supplementoVetro: '0.00',
+                                supplementoManiglia: '0.00',
+                                prezzoUnitario: prezzoMotore.toFixed(2),
+                                quantita: quantita,
+                                totale: (prezzoMotore * quantita).toFixed(2),
+                                _tipoMotore: true,  // Flag per riconoscimento
+                                _accessori: accessori,
+                                _comandoId: comandoId
+                            });
+                            
+                            console.log(`✅ Motore Pos ${index + 1}: ${modelloId} (comando: ${comandoId || 'manuale'})`);
+                        });
+                    } else {
+                        // Nessun motore specificato, ma serveMotore=true
+                        // Usa modelloDefault se presente
+                        const modelloDefault = tapp.motoreModelloDefault || 'N/D';
+                        
+                        righe.push({
+                            posizione: index + 1,
+                            ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
+                            tipo: 'Motore',
+                            azienda: 'Somfy',
+                            telaio: modelloDefault,
+                            larghezza: '-',
+                            altezza: '-',
+                            superficie: '-',
+                            perimetro: '-',
+                            prezzoBase: '0.00',
+                            supplementoTelaio: '0.00',
+                            supplementoAnta: '0.00',
+                            supplementoVetro: '0.00',
+                            supplementoManiglia: '0.00',
+                            prezzoUnitario: '0.00',
+                            quantita: quantita,
+                            totale: '0.00',
+                            _tipoMotore: true
+                        });
+                        
+                        console.log(`✅ Motore Pos ${index + 1}: ${modelloDefault} (default)`);
                     }
                 }
                 
@@ -17403,46 +17490,114 @@ if (typeof module !== 'undefined' && module.exports) {
                 // ============================================================================
                 // CASSONETTI - FINSTRAL/MAGÒ/ALPAC
                 // ============================================================================
-                if (pos.cassonetto && (pos.cassonetto.quantita === undefined || pos.cassonetto.quantita === null || pos.cassonetto.quantita > 0)) {
+                if (pos.cassonetto && (pos.cassonetto.qta === undefined || pos.cassonetto.qta === null || parseInt(pos.cassonetto.qta) > 0)) {
                     const cass = pos.cassonetto;
-                    const quantita = parseInt(cass.quantita) || 1;
+                    const quantita = parseInt(cass.qta) || 1;
                     
-                    // 🔧 v7.51 FIX: Fallback COMPLETO come infissi (usa pos.misure.LVT/HVT)
-                    let L_mm = parseInt(cass.brm?.L) || parseInt(cass.larghezza) || 0;
-                    let H_mm = parseInt(cass.brm?.H) || parseInt(cass.altezza) || 0;
+                    // 🆕 v7.996: Usa campi corretti BRM_L, BRM_H, B, C
+                    let L_mm = parseInt(cass.BRM_L) || 0;
+                    let A_mm = parseInt(cass.BRM_H) || parseInt(cass.HCASS) || 0;
+                    let B_mm = parseInt(cass.BRM_B) || parseInt(cass.B) || 0;
+                    let C_mm = parseInt(cass.BRM_C) || parseInt(cass.C) || 0;
                     
-                    // Fallback a pos.misure (come infissi!)
-                    if (!L_mm && pos.misure?.LVT) {
-                        L_mm = parseInt(pos.misure.LVT);
-                        console.log(`🔍 v7.51 Cassonetto fallback LVT: ${L_mm}mm`);
+                    // Fallback
+                    if (!L_mm && cass.LS) {
+                        const ls = parseInt(cass.LS) || 0;
+                        const srsx = parseInt(cass.SRSX) || 0;
+                        const srdx = parseInt(cass.SRDX) || 0;
+                        L_mm = ls + srsx + srdx;
+                        console.log(`🔍 v7.996 Cassonetto fallback L: LS(${ls})+SRSX(${srsx})+SRDX(${srdx}) = ${L_mm}mm`);
                     }
-                    if (!H_mm && pos.misure?.HVT) {
-                        H_mm = parseInt(pos.misure.HVT);
-                        console.log(`🔍 v7.51 Cassonetto fallback HVT: ${H_mm}mm`);
-                    }
                     
-                    // Ultimo fallback
-                    if (!L_mm) L_mm = parseInt(pos.L) || 0;
-                    if (!H_mm) H_mm = parseInt(pos.H) || 0;
+                    console.log(`📦 v7.996 Cassonetto Pos ${index + 1}: L=${L_mm}mm, A=${A_mm}mm, B=${B_mm}mm, C=${C_mm}mm`);
                     
-                    console.log(`🔍 Cassonetto Pos ${index + 1}: L=${L_mm}mm, H=${H_mm}mm`);
+                    const azienda = cass.azienda || 'Finstral';
+                    const materialeCass = cass.materialeCass || 'PVC';
+                    const codiceCass = cass.codiceCass || '';
+                    const gruppoColoreCass = cass.gruppoColoreCass || 'bianco';
+                    const codiceIsolamento = cass.isolamentoPosaclima ? (cass.codiceIsolamento || '') : '';
                     
-                    console.log(`🔍 Cassonetto Pos ${index + 1}: L=${L_mm}mm, H=${H_mm}mm (source: cass.brm=${cass.brm?.L}/${cass.brm?.H}, infisso.BRM=${pos.infisso?.BRM_L}/${pos.infisso?.BRM_H})`);
-                    
-                    if (L_mm > 0 && H_mm > 0) {
-                        // TODO: Implementare calcolo prezzi cassonetti
-                        // Per ora uso prezzo placeholder
-                        const prezzoUnitario = 0; // Da implementare
-                        const totaleRiga = prezzoUnitario * quantita;
+                    if (L_mm > 0 && A_mm > 0 && azienda.toLowerCase() === 'finstral') {
+                        // 🆕 v7.996: Usa calcolaPrezzoCassonettoFinstral
+                        const calcolo = calcolaPrezzoCassonettoFinstral({
+                            L: L_mm,
+                            A: A_mm,
+                            B: B_mm,
+                            materialeCass: materialeCass,
+                            codiceCass: codiceCass,
+                            gruppoColoreCass: gruppoColoreCass,
+                            codiceIsolamento: codiceIsolamento
+                        });
                         
+                        if (calcolo.success) {
+                            const prezzoUnitario = calcolo.prezzo;
+                            const totaleRiga = prezzoUnitario * quantita;
+                            
+                            righe.push({
+                                posizione: index + 1,
+                                ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
+                                tipo: 'Cassonetto',
+                                azienda: azienda,
+                                telaio: `${materialeCass} ${calcolo.parametri.codiceCass || codiceCass}`,
+                                larghezza: L_mm,
+                                altezza: A_mm,
+                                B: B_mm,
+                                superficie: '-',
+                                perimetro: '-',
+                                prezzoBase: calcolo.dettaglio.prezzoBase.toFixed(2),
+                                supplementoTelaio: '0.00',
+                                supplementoAnta: '0.00',
+                                supplementoVetro: calcolo.dettaglio.supplementoIsolamento.toFixed(2),
+                                supplementoManiglia: '0.00',
+                                prezzoUnitario: prezzoUnitario.toFixed(2),
+                                quantita: quantita,
+                                totale: totaleRiga.toFixed(2),
+                                materialeCass: materialeCass,
+                                codiceCass: calcolo.parametri.codiceCass,
+                                gruppoColoreCass: gruppoColoreCass,
+                                codiceIsolamento: codiceIsolamento,
+                                _tipoCassonetto: true
+                            });
+                            
+                            totaleMateriali += totaleRiga;
+                            numeroPezzi += quantita;
+                            
+                            console.log(`✅ Cassonetto Finstral Pos ${index + 1}: ${L_mm}×${A_mm}mm (B=${B_mm}) = €${prezzoUnitario.toFixed(2)} [${materialeCass} ${calcolo.parametri.codiceCass}]`);
+                        } else {
+                            console.warn(`⚠️ Cassonetto Pos ${index + 1}: Calcolo fallito -`, calcolo.errori);
+                            // Riga placeholder senza prezzo
+                            righe.push({
+                                posizione: index + 1,
+                                ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
+                                tipo: 'Cassonetto',
+                                azienda: azienda,
+                                telaio: `${materialeCass} ${codiceCass}`,
+                                larghezza: L_mm,
+                                altezza: A_mm,
+                                superficie: '-',
+                                perimetro: '-',
+                                prezzoBase: '0.00',
+                                supplementoTelaio: '0.00',
+                                supplementoAnta: '0.00',
+                                supplementoVetro: '0.00',
+                                supplementoManiglia: '0.00',
+                                prezzoUnitario: '0.00',
+                                quantita: quantita,
+                                totale: '0.00',
+                                note: calcolo.errori.join(', '),
+                                _tipoCassonetto: true
+                            });
+                        }
+                    } else if (L_mm > 0 && A_mm > 0) {
+                        // Altre aziende (no calcolo automatico)
                         righe.push({
                             posizione: index + 1,
-                            ambiente: pos.ambiente || pos.nome || pos.stanza || `Pos ${index + 1}`,
+                            ambiente: pos.ambiente || pos.nome || `Pos ${index + 1}`,
                             tipo: 'Cassonetto',
-                            azienda: cass.azienda || 'Finstral',
+                            azienda: azienda,
                             telaio: '-',
                             larghezza: L_mm,
-                            altezza: H_mm,
+                            altezza: A_mm,
                             superficie: '-',
                             perimetro: '-',
                             prezzoBase: '0.00',
@@ -17450,16 +17605,13 @@ if (typeof module !== 'undefined' && module.exports) {
                             supplementoAnta: '0.00',
                             supplementoVetro: '0.00',
                             supplementoManiglia: '0.00',
-                            prezzoUnitario: prezzoUnitario.toFixed(2),
+                            prezzoUnitario: '0.00',
                             quantita: quantita,
-                            totale: totaleRiga.toFixed(2),
-                            note: '⚠️ Prezzo da definire'
+                            totale: '0.00',
+                            note: `${azienda}: prezzo manuale`,
+                            _tipoCassonetto: true
                         });
-                        
-                        totaleMateriali += totaleRiga;
-                        numeroPezzi += quantita;
-                        
-                        console.log(`✅ Cassonetto Pos ${index + 1}: ${L_mm}×${H_mm} - Prezzo da implementare`);
+                        console.log(`📦 Cassonetto ${azienda} Pos ${index + 1}: ${L_mm}×${A_mm}mm - Prezzo manuale`);
                     }
                 }
                 
