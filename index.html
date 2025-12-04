@@ -13,8 +13,10 @@
     - 🔌 MOTORI: Oximo 50 io (€137.66-€145.83), LT60 Orion (€174), LT50 Helios (€1198.80)
     - 🔌 COMANDI: Amy 1 io (€234.60), IZYMO Shutter (€665.90)
     - 🔌 ACCESSORI: Supporto (€94.60), Ruota 60mm (€21.00), Corona (€17.67)
-    - 🐛 FIX: Riepilogo Quantità mostra "Motori" separato da "Tapparelle"
-    - 🐛 FIX: "Azienda Non Specificata" → "Somfy" per motori (serveMotore=true, serveTapparella=false)
+    - 🐛 FIX VISTA AZIENDE: Mostra "Motore" invece di "Tapparella" quando serveTapparella=false
+    - 🐛 FIX BADGE: Nuovo badge "Motori" con bordo arancione
+    - 🐛 FIX TOTALI: Conteggio separato Motori vs Tapparelle
+    - 🐛 FIX: "Azienda Non Specificata" → "Somfy" per motori
     - 🔄 SPOSTATO: Configurazione Prodotti Globale da RILIEVO a UFFICIO → Vista Generale
     
     🔧 AGGIORNAMENTI v7.997 (04 DIC 2025):
@@ -3262,6 +3264,7 @@
 
         .azienda-badge.infissi { background: #dbeafe; color: #1e40af; }
         .azienda-badge.tapparelle { background: #fef3c7; color: #92400e; }
+        .azienda-badge.motori { background: #fef3c7; color: #b45309; border: 2px solid #f59e0b; font-weight: 700; }
         .azienda-badge.persiane { background: #f3e8ff; color: #6b21a8; }
         .azienda-badge.cassonetti { background: #fce7f3; color: #9f1239; }
         .azienda-badge.zanzariere { background: #ecfccb; color: #3f6212; }
@@ -3449,6 +3452,7 @@
 
         .product-type-badge.infisso { background: #dbeafe; color: #1e40af; }
         .product-type-badge.tapparella { background: #fef3c7; color: #92400e; }
+        .product-type-badge.motore { background: #fef3c7; color: #b45309; border: 2px solid #f59e0b; }
         .product-type-badge.persiana { background: #f3e8ff; color: #6b21a8; }
         .product-type-badge.accessorio { background: #e0e7ff; color: #4338ca; }
         .product-type-badge.cassonetto { background: #fce7f3; color: #9f1239; }
@@ -19305,6 +19309,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 totali: {
                                     infissi: 0,
                                     tapparelle: 0,
+                                    motori: 0,  // v7.998
                                     persiane: 0,
                                     cassonetti: 0,
                                     zanzariere: 0,
@@ -19425,16 +19430,28 @@ if (typeof module !== 'undefined' && module.exports) {
                         
                         // Aggiungi prodotto
                         // 🔐 v7.98: Per blindata modello = versione
+                        // 🔌 v7.998: Per motori (serveTapparella=false) usa tipo "motore"
+                        let tipoEffettivo = tipoProdotto;
+                        let modelloEffettivo = tipoProdotto === 'blindata' ? (prodotto.versione || 'E3') : (prodotto.tipo || 'N/D');
+                        
+                        if (tipoProdotto === 'tapparella' && prodotto.serveMotore === true && prodotto.serveTapparella !== true) {
+                            tipoEffettivo = 'motore';
+                            // Estrai modello motore
+                            const motoreInfo = prodotto.motori?.[0] || {};
+                            const modelloMotore = motoreInfo.modelloId || prodotto.motoreModelloDefault || prodotto.modelloMotore || 'LT50 Helios';
+                            modelloEffettivo = modelloMotore.replace(/_/g, ' ').toUpperCase();
+                        }
+                        
                         aziendaData.prodotti.push({
-                            tipo: tipoProdotto,
+                            tipo: tipoEffettivo,
                             posizione: pos.ambiente || pos.nome || pos.stanza || pos.id,
                             quantita: quantitaProdotto,
                             brm: { L: misureL, H: misureH },
                             fonteMisure: { L: fonteL, H: fonteH, valL: misureL, valH: misureH },  // ✅ v7.73
-                            modello: tipoProdotto === 'blindata' ? (prodotto.versione || 'E3') : (prodotto.tipo || 'N/D'),
+                            modello: modelloEffettivo,
                             configurazione: tipoProdotto === 'blindata' ? 
                                 `${prodotto.tipoAnta === 'doppia' ? '2 Ante' : '1 Anta'} | ${prodotto.sensoApertura || ''} | ${prodotto.controtelaio === 'si' ? 'Con CT' : 'Senza CT'}` :
-                                getProdottoConfigString(prodotto),
+                                (tipoEffettivo === 'motore' ? getMotoreConfigString(prodotto) : getProdottoConfigString(prodotto)),
                             colore: tipoProdotto === 'blindata' ? (prodotto.coloreTelaio || 'RAL8022') : (prodotto.finitura_int || prodotto.colore || 'N/D'),
                             note: prodotto.note || '',
                             prezzoUnitario: prezzoUnitario,
@@ -19443,8 +19460,9 @@ if (typeof module !== 'undefined' && module.exports) {
                             altezza: misureH
                         });
                         
-                        // Aggiorna totali
+                        // Aggiorna totali - v7.998: usa tipoEffettivo per distinguere tapparelle/motori
                         if (tipoProdotto === 'infisso') aziendaData.totali.infissi += quantitaProdotto;
+                        else if (tipoEffettivo === 'motore') aziendaData.totali.motori += quantitaProdotto;
                         else if (tipoProdotto === 'tapparella') aziendaData.totali.tapparelle += quantitaProdotto;
                         else if (tipoProdotto === 'persiana') aziendaData.totali.persiane += quantitaProdotto;
                         else if (tipoProdotto === 'cassonetto') aziendaData.totali.cassonetti += quantitaProdotto;
@@ -19470,6 +19488,22 @@ if (typeof module !== 'undefined' && module.exports) {
             if (prodotto.materiale) parts.push(prodotto.materiale);
             
             return parts.length > 0 ? parts.join(' | ') : 'Standard';
+        }
+        
+        // 🔌 v7.998: Helper per configurazione motore
+        function getMotoreConfigString(prodotto) {
+            const parts = [];
+            const motoreInfo = prodotto.motori?.[0] || {};
+            
+            // Accessori
+            if (motoreInfo.accessori?.supporto) parts.push('+ Supporto');
+            if (motoreInfo.accessori?.ruota_60) parts.push('+ Ruota 60');
+            if (motoreInfo.accessori?.corona_60) parts.push('+ Corona');
+            
+            // Comando
+            if (motoreInfo.comandoId) parts.push(`Cmd: ${motoreInfo.comandoId}`);
+            
+            return parts.length > 0 ? parts.join(' | ') : 'Solo motore';
         }
 
         // Helper: Format apertura label
@@ -19603,6 +19637,7 @@ if (typeof module !== 'undefined' && module.exports) {
             const badges = [];
             if (aziendaData.totali.infissi > 0) badges.push({ label: 'Infissi', class: 'infissi' });
             if (aziendaData.totali.tapparelle > 0) badges.push({ label: 'Tapparelle', class: 'tapparelle' });
+            if (aziendaData.totali.motori > 0) badges.push({ label: 'Motori', class: 'motori' });  // v7.998
             if (aziendaData.totali.persiane > 0) badges.push({ label: 'Persiane', class: 'persiane' });
             if (aziendaData.totali.cassonetti > 0) badges.push({ label: 'Cassonetti', class: 'cassonetti' });
             if (aziendaData.totali.zanzariere > 0) badges.push({ label: 'Zanzariere', class: 'zanzariere' });
