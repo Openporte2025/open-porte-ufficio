@@ -6,7 +6,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.998 - CHANGELOG
+    DASHBOARD RILIEVI v7.999 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.999 (04 DIC 2025):
+    - 🔌 SEPARAZIONE TAPPARELLA/MOTORE: Prodotti distinti con aziende diverse
+    - 🔌 TAPPARELLA: Azienda da campo "azienda" (es. Plasticino)
+    - 🔌 MOTORE: Azienda da campo "motoreAzienda" (es. Somfy)
+    - 🔌 PREZZI MOTORI: Calcolo automatico motore + comando + accessori
+    - 🔌 SOMFY_PREZZI: Chiavi normalizzate (oximo_20, amy1, supporto)
+    - 🔌 calcolaPrezzoKit(): Calcola totale kit con dettaglio componenti
     
     🔧 AGGIORNAMENTI v7.998 (04 DIC 2025):
     - 🔌 DATABASE SOMFY: Listino prezzi motori, comandi e accessori
@@ -1179,7 +1187,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.998 - Database SOMFY + Fix Motori</title>
+    <title>Dashboard Rilievi v7.999 - Tapparelle + Motori Separati</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10507,7 +10515,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.998</span>
+                <span class="logo-version" id="version-badge">v7.999</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -16450,7 +16458,7 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔌 DATABASE PREZZI SOMFY - v7.998 (04 DIC 2025)
+        // 🔌 DATABASE PREZZI SOMFY - v7.999 (04 DIC 2025)
         // ═══════════════════════════════════════════════════════════════════════════
         const SOMFY_PREZZI = {
             versione: "2025",
@@ -16458,18 +16466,20 @@ if (typeof module !== 'undefined' && module.exports) {
             note: "Prezzi IVA esclusa",
             
             // ═══════════════════════════════════════════════════════════════════════
-            // MOTORI OXIMO io
+            // MOTORI - chiavi normalizzate per match con modelloId
             // ═══════════════════════════════════════════════════════════════════════
             motori: {
-                // Oximo 50 io - coppia 20Nm, velocità 17rpm, cavo 3m
+                // Oximo 50 io - varie coppie
+                "oximo_20": { ref: "1041627", nome: "Oximo 50 io 20/17 VVF 3m UNIT", prezzo: 137.66, coppia: 20, velocita: 17 },
                 "oximo_50_io_20": { ref: "1041627", nome: "Oximo 50 io 20/17 VVF 3m UNIT", prezzo: 137.66, coppia: 20, velocita: 17 },
-                // Oximo 50 io - coppia 30Nm, velocità 17rpm, cavo 3m
+                "oximo_30": { ref: "1045513", nome: "Oximo 50 io 30/17 VVF 3m UNIT", prezzo: 145.83, coppia: 30, velocita: 17 },
                 "oximo_50_io_30": { ref: "1045513", nome: "Oximo 50 io 30/17 VVF 3m UNIT", prezzo: 145.83, coppia: 30, velocita: 17 },
                 
                 // RS100 io hybrid
                 "rs100_io_hybrid": { ref: "1033113", nome: "RS100 io hybrid 20/17 VVF 2,5m - BAR", prezzo: 836.95, coppia: 20, velocita: 17 },
                 
                 // LT60 Orion S
+                "lt60_orion": { ref: "1161011", nome: "LT60 Orion S 55/17 VVF 2,5m UNI", prezzo: 174.00, coppia: 55, velocita: 17 },
                 "lt60_orion_s": { ref: "1161011", nome: "LT60 Orion S 55/17 VVF 2,5m UNI", prezzo: 174.00, coppia: 55, velocita: 17 },
                 
                 // LT50 Helios WT - motore wireless/batteria
@@ -16477,13 +16487,15 @@ if (typeof module !== 'undefined' && module.exports) {
             },
             
             // ═══════════════════════════════════════════════════════════════════════
-            // COMANDI E RICEVITORI
+            // COMANDI E RICEVITORI - chiavi normalizzate per match con comandoId
             // ═══════════════════════════════════════════════════════════════════════
             comandi: {
                 // Amy - comando a muro
+                "amy1": { ref: "1871062", nome: "Amy 1 io + cornice quadrata", prezzo: 234.60 },
                 "amy_1_io": { ref: "1871062", nome: "Amy 1 io + cornice quadrata", prezzo: 234.60 },
                 
                 // IZYMO Shutter Receiver - ricevitore
+                "izymo": { ref: "1822660", nome: "IZYMO SHUTTER RECEIVER io", prezzo: 665.90 },
                 "izymo_shutter": { ref: "1822660", nome: "IZYMO SHUTTER RECEIVER io", prezzo: 665.90 }
             },
             
@@ -16492,6 +16504,7 @@ if (typeof module !== 'undefined' && module.exports) {
             // ═══════════════════════════════════════════════════════════════════════
             accessori: {
                 // Supporto operatore
+                "supporto": { ref: "9019821", nome: "SUPPORTO OPERATORE DA AVVITARE", prezzo: 94.60 },
                 "supporto_operatore": { ref: "9019821", nome: "SUPPORTO OPERATORE DA AVVITARE", prezzo: 94.60 },
                 
                 // Ruota per rullo ottagonale 60mm
@@ -16503,25 +16516,57 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // Helper per trovare prezzo motore per ID
             getPrezzoMotore: function(modelloId) {
-                const id = modelloId?.toLowerCase().replace(/[\s-]/g, '_');
+                if (!modelloId) return null;
+                const id = modelloId.toLowerCase().replace(/[\s-]/g, '_');
                 return this.motori[id] || null;
             },
             
+            // Helper per trovare prezzo comando per ID
+            getPrezzoComando: function(comandoId) {
+                if (!comandoId) return null;
+                const id = comandoId.toLowerCase().replace(/[\s-]/g, '_');
+                return this.comandi[id] || null;
+            },
+            
             // Helper per calcolare prezzo totale kit motore
-            calcolaPrezzoKit: function(modelloId, accessori = {}) {
+            calcolaPrezzoKit: function(motoreInfo) {
                 let totale = 0;
-                const motore = this.getPrezzoMotore(modelloId);
-                if (motore) totale += motore.prezzo;
+                let dettaglio = [];
                 
-                if (accessori.supporto) totale += this.accessori.supporto_operatore?.prezzo || 0;
-                if (accessori.ruota_60) totale += this.accessori.ruota_60?.prezzo || 0;
-                if (accessori.corona_60) totale += this.accessori.corona_60?.prezzo || 0;
+                // Motore
+                const motore = this.getPrezzoMotore(motoreInfo.modelloId);
+                if (motore) {
+                    totale += motore.prezzo;
+                    dettaglio.push({ nome: motore.nome, prezzo: motore.prezzo });
+                }
                 
-                return totale;
+                // Comando
+                const comando = this.getPrezzoComando(motoreInfo.comandoId);
+                if (comando) {
+                    totale += comando.prezzo;
+                    dettaglio.push({ nome: comando.nome, prezzo: comando.prezzo });
+                }
+                
+                // Accessori
+                const acc = motoreInfo.accessori || {};
+                if (acc.supporto && this.accessori.supporto) {
+                    totale += this.accessori.supporto.prezzo;
+                    dettaglio.push({ nome: this.accessori.supporto.nome, prezzo: this.accessori.supporto.prezzo });
+                }
+                if (acc.ruota_60 && this.accessori.ruota_60) {
+                    totale += this.accessori.ruota_60.prezzo;
+                    dettaglio.push({ nome: this.accessori.ruota_60.nome, prezzo: this.accessori.ruota_60.prezzo });
+                }
+                if (acc.corona_60 && this.accessori.corona_60) {
+                    totale += this.accessori.corona_60.prezzo;
+                    dettaglio.push({ nome: this.accessori.corona_60.nome, prezzo: this.accessori.corona_60.prezzo });
+                }
+                
+                return { totale, dettaglio };
             }
         };
         
-        console.log('✅ SOMFY_PREZZI caricato - Listino 2025');
+        console.log('✅ SOMFY_PREZZI caricato - Listino 2025 (oximo_20, amy1, supporto)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
@@ -19232,6 +19277,24 @@ if (typeof module !== 'undefined' && module.exports) {
         function groupProductsByAzienda(posizioni) {
             const aziendeMap = new Map();
             
+            // Helper per creare struttura azienda vuota
+            function createEmptyAzienda(displayName) {
+                return {
+                    displayName: displayName,
+                    prodotti: [],
+                    totali: {
+                        infissi: 0,
+                        tapparelle: 0,
+                        motori: 0,
+                        persiane: 0,
+                        cassonetti: 0,
+                        zanzariere: 0,
+                        blindate: 0
+                    },
+                    posizioniCoinvolte: new Set()
+                };
+            }
+            
             // ✅ v7.73: OTTIENI PREZZI DA PREVENTIVO (fonte unica)
             // Crea mappa prezzi da righe preventivo per consistenza tra viste
             const prezziMap = new Map();
@@ -19281,19 +19344,116 @@ if (typeof module !== 'undefined' && module.exports) {
                         hasProdotto = prodotto && (parseInt(prodotto.LNP_L) > 0 || parseInt(prodotto.LNP_H) > 0 || prodotto.versione);
                         quantitaProdotto = hasProdotto ? 1 : 0;
                     } else {
-                        quantitaProdotto = prodotto ? (parseInt(prodotto.quantita) || 1) : 0;
-                        hasProdotto = prodotto && (prodotto.quantita === undefined || prodotto.quantita === null || prodotto.quantita > 0 || quantitaProdotto > 0);
+                        quantitaProdotto = prodotto ? (parseInt(prodotto.quantita || prodotto.qta) || 1) : 0;
+                        hasProdotto = prodotto && quantitaProdotto > 0;
                     }
                     
                     if (hasProdotto) {
-                        // 🔐 v7.98: Per blindata azienda di default è Oikos
-                        // 🔌 v7.998: Per motori (serveTapparella=false, serveMotore=true) azienda default Somfy
+                        // ═══════════════════════════════════════════════════════════════════════
+                        // 🔌 v7.999: GESTIONE SPECIALE TAPPARELLE + MOTORI
+                        // ═══════════════════════════════════════════════════════════════════════
+                        if (tipoProdotto === 'tapparella') {
+                            const serveTapparella = prodotto.serveTapparella === true;
+                            const serveMotore = prodotto.serveMotore === true;
+                            
+                            // === PRODOTTO 1: TAPPARELLA (se serveTapparella=true) ===
+                            if (serveTapparella) {
+                                const aziendaTap = prodotto.azienda || 'Plasticino';
+                                const { key: aziendaKey, display: aziendaDisplay } = normalizeAziendaName(aziendaTap);
+                                
+                                if (!aziendeMap.has(aziendaKey)) {
+                                    aziendeMap.set(aziendaKey, createEmptyAzienda(aziendaDisplay));
+                                }
+                                const aziendaData = aziendeMap.get(aziendaKey);
+                                
+                                // Misure
+                                let misureL = parseInt(prodotto.BRM_L) || 0;
+                                let misureH = parseInt(prodotto.BRM_H) || 0;
+                                
+                                // Prezzo tapparella
+                                let prezzoTap = null;
+                                const chiavePrezzo = `${posIndex + 1}-tapparella`;
+                                const prezzoFromMap = prezziMap.get(chiavePrezzo);
+                                if (prezzoFromMap) {
+                                    prezzoTap = prezzoFromMap.prezzoUnitario;
+                                }
+                                
+                                aziendaData.prodotti.push({
+                                    tipo: 'tapparella',
+                                    posizione: pos.ambiente || pos.nome || pos.stanza || pos.id,
+                                    quantita: quantitaProdotto,
+                                    brm: { L: misureL, H: misureH },
+                                    fonteMisure: { L: 'BRM_L', H: 'BRM_H', valL: misureL, valH: misureH },
+                                    modello: prodotto.modello || 'N/D',
+                                    configurazione: `${prodotto.guida ? 'Guida: ' + prodotto.guida.split(' - ')[0] : ''} ${prodotto.colore || ''}`.trim() || 'Standard',
+                                    colore: prodotto.colore || 'N/D',
+                                    note: prodotto.note || '',
+                                    prezzoUnitario: prezzoTap,
+                                    prezzoTotale: prezzoTap ? prezzoTap * quantitaProdotto : null,
+                                    larghezza: misureL,
+                                    altezza: misureH
+                                });
+                                
+                                aziendaData.totali.tapparelle += quantitaProdotto;
+                                aziendaData.posizioniCoinvolte.add(pos.id);
+                            }
+                            
+                            // === PRODOTTO 2: MOTORE SOMFY (se serveMotore=true) ===
+                            if (serveMotore && prodotto.motori && prodotto.motori.length > 0) {
+                                const aziendaMotore = prodotto.motoreAzienda || 'Somfy';
+                                const { key: aziendaKeyMot, display: aziendaDisplayMot } = normalizeAziendaName(aziendaMotore);
+                                
+                                if (!aziendeMap.has(aziendaKeyMot)) {
+                                    aziendeMap.set(aziendaKeyMot, createEmptyAzienda(aziendaDisplayMot));
+                                }
+                                const aziendaDataMot = aziendeMap.get(aziendaKeyMot);
+                                
+                                const motoreInfo = prodotto.motori[0];
+                                const modelloMotore = motoreInfo.modelloId || prodotto.motoreModelloDefault || 'oximo_20';
+                                const comandoId = motoreInfo.comandoId || prodotto.comandoDefault || '';
+                                
+                                // Calcola prezzo kit motore
+                                const prezzoKit = SOMFY_PREZZI.calcolaPrezzoKit(motoreInfo);
+                                
+                                // Genera descrizione configurazione
+                                let configParts = [];
+                                const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloMotore);
+                                if (motoreDb) configParts.push(motoreDb.nome.split(' ')[0] + ' ' + motoreDb.nome.split(' ')[1]);
+                                const comandoDb = SOMFY_PREZZI.getPrezzoComando(comandoId);
+                                if (comandoDb) configParts.push('+ ' + comandoDb.nome.split('+')[0].trim());
+                                if (motoreInfo.accessori?.supporto) configParts.push('+ Supporto');
+                                if (motoreInfo.accessori?.ruota_60) configParts.push('+ Ruota 60');
+                                
+                                aziendaDataMot.prodotti.push({
+                                    tipo: 'motore',
+                                    posizione: pos.ambiente || pos.nome || pos.stanza || pos.id,
+                                    quantita: quantitaProdotto,
+                                    brm: { L: 0, H: 0 },
+                                    fonteMisure: { L: '-', H: '-', valL: 0, valH: 0 },
+                                    modello: modelloMotore.replace(/_/g, ' ').toUpperCase(),
+                                    configurazione: configParts.join(' | ') || 'Solo motore',
+                                    colore: '-',
+                                    note: motoreInfo.note || '',
+                                    prezzoUnitario: prezzoKit.totale,
+                                    prezzoTotale: prezzoKit.totale * quantitaProdotto,
+                                    larghezza: 0,
+                                    altezza: 0,
+                                    dettaglioPrezzo: prezzoKit.dettaglio  // Per popup dettaglio
+                                });
+                                
+                                aziendaDataMot.totali.motori += quantitaProdotto;
+                                aziendaDataMot.posizioniCoinvolte.add(pos.id);
+                            }
+                            
+                            // Se né tapparella né motore, skip
+                            return;
+                        }
+                        // ═══════════════════════════════════════════════════════════════════════
+                        
+                        // Per tutti gli altri prodotti (infissi, persiane, etc.)
                         let aziendaRaw;
                         if (tipoProdotto === 'blindata') {
                             aziendaRaw = prodotto.azienda || 'Oikos';
-                        } else if (tipoProdotto === 'tapparella' && prodotto.serveMotore === true && prodotto.serveTapparella !== true) {
-                            // Solo motore → Somfy
-                            aziendaRaw = prodotto.azienda || prodotto.motoreAzienda || 'Somfy';
                         } else {
                             aziendaRaw = prodotto.azienda || 'Azienda Non Specificata';
                         }
@@ -19428,30 +19588,20 @@ if (typeof module !== 'undefined' && module.exports) {
                             }
                         }
                         
-                        // Aggiungi prodotto
+                        // Aggiungi prodotto (NON tapparelle - già gestite sopra)
                         // 🔐 v7.98: Per blindata modello = versione
-                        // 🔌 v7.998: Per motori (serveTapparella=false) usa tipo "motore"
-                        let tipoEffettivo = tipoProdotto;
-                        let modelloEffettivo = tipoProdotto === 'blindata' ? (prodotto.versione || 'E3') : (prodotto.tipo || 'N/D');
-                        
-                        if (tipoProdotto === 'tapparella' && prodotto.serveMotore === true && prodotto.serveTapparella !== true) {
-                            tipoEffettivo = 'motore';
-                            // Estrai modello motore
-                            const motoreInfo = prodotto.motori?.[0] || {};
-                            const modelloMotore = motoreInfo.modelloId || prodotto.motoreModelloDefault || prodotto.modelloMotore || 'LT50 Helios';
-                            modelloEffettivo = modelloMotore.replace(/_/g, ' ').toUpperCase();
-                        }
+                        const modelloEffettivo = tipoProdotto === 'blindata' ? (prodotto.versione || 'E3') : (prodotto.tipo || 'N/D');
                         
                         aziendaData.prodotti.push({
-                            tipo: tipoEffettivo,
+                            tipo: tipoProdotto,
                             posizione: pos.ambiente || pos.nome || pos.stanza || pos.id,
                             quantita: quantitaProdotto,
                             brm: { L: misureL, H: misureH },
-                            fonteMisure: { L: fonteL, H: fonteH, valL: misureL, valH: misureH },  // ✅ v7.73
+                            fonteMisure: { L: fonteL, H: fonteH, valL: misureL, valH: misureH },
                             modello: modelloEffettivo,
                             configurazione: tipoProdotto === 'blindata' ? 
                                 `${prodotto.tipoAnta === 'doppia' ? '2 Ante' : '1 Anta'} | ${prodotto.sensoApertura || ''} | ${prodotto.controtelaio === 'si' ? 'Con CT' : 'Senza CT'}` :
-                                (tipoEffettivo === 'motore' ? getMotoreConfigString(prodotto) : getProdottoConfigString(prodotto)),
+                                getProdottoConfigString(prodotto),
                             colore: tipoProdotto === 'blindata' ? (prodotto.coloreTelaio || 'RAL8022') : (prodotto.finitura_int || prodotto.colore || 'N/D'),
                             note: prodotto.note || '',
                             prezzoUnitario: prezzoUnitario,
@@ -19460,10 +19610,8 @@ if (typeof module !== 'undefined' && module.exports) {
                             altezza: misureH
                         });
                         
-                        // Aggiorna totali - v7.998: usa tipoEffettivo per distinguere tapparelle/motori
+                        // Aggiorna totali
                         if (tipoProdotto === 'infisso') aziendaData.totali.infissi += quantitaProdotto;
-                        else if (tipoEffettivo === 'motore') aziendaData.totali.motori += quantitaProdotto;
-                        else if (tipoProdotto === 'tapparella') aziendaData.totali.tapparelle += quantitaProdotto;
                         else if (tipoProdotto === 'persiana') aziendaData.totali.persiane += quantitaProdotto;
                         else if (tipoProdotto === 'cassonetto') aziendaData.totali.cassonetti += quantitaProdotto;
                         else if (tipoProdotto === 'zanzariera') aziendaData.totali.zanzariere += quantitaProdotto;
