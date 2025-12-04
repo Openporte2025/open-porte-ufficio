@@ -9,22 +9,20 @@
     DASHBOARD RILIEVI v8.00 - CHANGELOG
     
     🔧 AGGIORNAMENTI v8.00 (04 DIC 2025):
+    - 🔌 TAB MOTORE SEPARATO: Nuovo tab "🔌 Motore" in Vista Posizioni (non più sotto Tapparella)
     - 🔌 MOTORI NEL PREVENTIVO: Righe separate per motori Somfy con prezzi calcolati
     - 🔌 CALCOLO AUTOMATICO: Motore + Comando + Accessori da database SOMFY_PREZZI
-    - 🔌 VISTA POSIZIONI: Sezione "🔌 Motore Somfy" nel tab Tapparella
-    - 🔌 DETTAGLIO PREZZI: Breakdown componenti kit motore
+    - 🔌 renderMotoreContent(): Funzione dedicata per tab motore con dettaglio completo
     - ⚙️ VERSIONE CENTRALIZZATA: Costante DASHBOARD_VERSION aggiorna tutto automaticamente
     - 🐛 FIX: Motori aggiunti SEMPRE quando serveMotore=true (non solo se serveTapparella=false)
+    - 🐛 FIX: Tab Tapparella appare solo se serveTapparella=true
     
     🔧 AGGIORNAMENTI v7.999 (04 DIC 2025):
     - 🔌 PREVENTIVO: Motori aggiunti SEMPRE quando serveMotore=true (anche con tapparella)
     - 🔌 PREVENTIVO: Calcolo prezzi automatico motore + comando + accessori da SOMFY_PREZZI
-    - 🔌 VISTA POSIZIONI: Nuova sezione "🔌 Motore Somfy" nel tab Tapparella
-    - 🔌 VISTA POSIZIONI: Dettaglio prezzo kit con breakdown componenti
     - 🔌 SEPARAZIONE TAPPARELLA/MOTORE: Prodotti distinti con aziende diverse
     - 🔌 SOMFY_PREZZI: Chiavi normalizzate (oximo_20, amy1, supporto)
     - 🔌 calcolaPrezzoKit(): Calcola totale kit con dettaglio componenti
-    - 🔌 renderMotoreSection(): Rendering sezione motore in Vista Posizioni
     
     🔧 AGGIORNAMENTI v7.998 (04 DIC 2025):
     - 🔌 DATABASE SOMFY: Listino prezzi motori, comandi e accessori
@@ -20891,9 +20889,11 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // ✅ v7.76 FIX: Determina quale prodotto è il PRIMO disponibile (sarà active)
             // 🔐 v7.98: Aggiunto blindata e portoncino
+            // 🔌 v8.00: Aggiunto motore come tab separato
             const prodotti = [
                 { key: 'infisso', label: '🪟 Infisso', data: pos.infisso },
                 { key: 'tapparella', label: '🔽 Tapparella', data: pos.tapparella },
+                { key: 'motore', label: '🔌 Motore', data: pos.tapparella?.serveMotore ? pos.tapparella : null },  // v8.00
                 { key: 'cassonetto', label: '📦 Cassonetto', data: pos.cassonetto },
                 { key: 'persiana', label: '🪟 Persiana', data: pos.persiana },
                 { key: 'zanzariera', label: '🦟 Zanzariera', data: pos.zanzariera },
@@ -20903,15 +20903,24 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // 🆕 v7.82: Filtra solo quelli con quantita > 0 (supporta sia qta che quantita)
             // 🔐 v7.98: Blindata e Portoncino non usano quantita, controlla se esistono
+            // 🔌 v8.00: Motore esiste se serveMotore=true
             const prodottiDisponibili = prodotti.filter(p => {
                 if (!p.data) return false;
                 if (p.key === 'blindata') {
-                    // Blindata esiste se ha LNP (possono essere stringhe) o versione
                     return parseInt(p.data.LNP_L) > 0 || parseInt(p.data.LNP_H) > 0 || p.data.versione;
                 }
                 if (p.key === 'portoncino') {
-                    // 🚪 v7.98: Portoncino esiste se ha azienda, modelloAnta o tipoApertura
                     return p.data.azienda || p.data.modelloAnta || p.data.tipoApertura || p.data.formaTelaio;
+                }
+                if (p.key === 'motore') {
+                    // 🔌 v8.00: Motore esiste se serveMotore=true
+                    return p.data.serveMotore === true;
+                }
+                if (p.key === 'tapparella') {
+                    // 🔌 v8.00: Tapparella esiste solo se serveTapparella=true (o undefined per retrocompat)
+                    const serveTap = p.data.serveTapparella !== false;
+                    const qty = parseInt(p.data.quantita) || parseInt(p.data.qta) || 0;
+                    return serveTap && qty > 0;
                 }
                 const qty = parseInt(p.data.quantita) || parseInt(p.data.qta) || 0;
                 return qty > 0;
@@ -20955,6 +20964,11 @@ if (typeof module !== 'undefined' && module.exports) {
             // 🚪 v7.98: Portoncino non usa quantita
             if (tipo === 'portoncino') {
                 return renderPortoncinoContent(prodotto, isActive);
+            }
+            
+            // 🔌 v8.00: Motore - tab separato
+            if (tipo === 'motore') {
+                return renderMotoreContent(prodotto, isActive);
             }
             
             // 🆕 v7.82: Supporta sia qta che quantita
@@ -21220,16 +21234,14 @@ if (typeof module !== 'undefined' && module.exports) {
                             </div>
                         ` : ''}
                     </div>
-                    
-                    ${tipo === 'tapparella' && prodotto.serveMotore === true ? renderMotoreSection(prodotto) : ''}
                 </div>
             `;
         }
         
         // ============================================================================
-        // 🔌 v7.999: RENDER SEZIONE MOTORE IN TAB TAPPARELLA
+        // 🔌 v8.00: RENDER MOTORE CONTENT - TAB SEPARATO
         // ============================================================================
-        function renderMotoreSection(tapparella) {
+        function renderMotoreContent(tapparella, isActive) {
             if (!tapparella || !tapparella.serveMotore) return '';
             
             const motori = tapparella.motori || [];
@@ -21237,6 +21249,7 @@ if (typeof module !== 'undefined' && module.exports) {
             const modelloId = motoreInfo.modelloId || tapparella.motoreModelloDefault || 'oximo_20';
             const comandoId = motoreInfo.comandoId || tapparella.comandoDefault || '';
             const accessori = motoreInfo.accessori || {};
+            const quantita = parseInt(tapparella.qta || tapparella.quantita) || 1;
             
             // Ottieni info dai database
             const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloId);
@@ -21246,60 +21259,89 @@ if (typeof module !== 'undefined' && module.exports) {
             const prezzoKit = SOMFY_PREZZI.calcolaPrezzoKit(motoreInfo);
             
             return `
-                <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border: 2px solid #f59e0b;">
-                    <h4 style="font-size: 1.1rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🔌 Motore Somfy
-                    </h4>
+                <div class="product-content ${isActive ? 'active' : ''}" data-product="motore">
                     
+                    <!-- Header Somfy -->
+                    <div style="padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border: 2px solid #f59e0b; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 2rem;">🔌</span>
+                            <div>
+                                <div style="font-size: 1.2rem; font-weight: 700; color: #92400e;">Motore ${tapparella.motoreAzienda || 'Somfy'}</div>
+                                <div style="font-size: 0.9rem; color: #b45309;">Quantità: ${quantita}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Configurazione Motore -->
                     <div class="wall-chars-grid">
-                        <div class="wall-char-item" style="background: white;">
-                            <div class="wall-char-label">Azienda</div>
+                        <div class="wall-char-item">
+                            <div class="wall-char-label">🏭 Azienda</div>
                             <div class="wall-char-value">${tapparella.motoreAzienda || 'Somfy'}</div>
                         </div>
-                        <div class="wall-char-item" style="background: white;">
-                            <div class="wall-char-label">Modello</div>
+                        <div class="wall-char-item">
+                            <div class="wall-char-label">⚙️ Modello</div>
                             <div class="wall-char-value">${motoreDb?.nome || modelloId.replace(/_/g, ' ').toUpperCase()}</div>
                         </div>
+                        ${motoreDb?.coppia ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">💪 Coppia</div>
+                                <div class="wall-char-value">${motoreDb.coppia} Nm</div>
+                            </div>
+                        ` : ''}
+                        ${motoreDb?.velocita ? `
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">🔄 Velocità</div>
+                                <div class="wall-char-value">${motoreDb.velocita} rpm</div>
+                            </div>
+                        ` : ''}
                         ${comandoDb ? `
-                            <div class="wall-char-item" style="background: white;">
-                                <div class="wall-char-label">Comando</div>
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">🎮 Comando</div>
                                 <div class="wall-char-value">${comandoDb.nome}</div>
                             </div>
                         ` : ''}
                         ${accessori.supporto ? `
-                            <div class="wall-char-item" style="background: white;">
-                                <div class="wall-char-label">Supporto</div>
-                                <div class="wall-char-value">✅ Incluso</div>
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">🔧 Supporto</div>
+                                <div class="wall-char-value" style="color: #059669;">✅ Incluso</div>
                             </div>
                         ` : ''}
                         ${accessori.ruota_60 ? `
-                            <div class="wall-char-item" style="background: white;">
-                                <div class="wall-char-label">Ruota 60mm</div>
-                                <div class="wall-char-value">✅ Inclusa</div>
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">⚙️ Ruota 60mm</div>
+                                <div class="wall-char-value" style="color: #059669;">✅ Inclusa</div>
                             </div>
                         ` : ''}
                         ${accessori.corona_60 ? `
-                            <div class="wall-char-item" style="background: white;">
-                                <div class="wall-char-label">Corona 60</div>
-                                <div class="wall-char-value">✅ Inclusa</div>
+                            <div class="wall-char-item">
+                                <div class="wall-char-label">👑 Corona 60</div>
+                                <div class="wall-char-value" style="color: #059669;">✅ Inclusa</div>
+                            </div>
+                        ` : ''}
+                        ${motoreInfo.note ? `
+                            <div class="wall-char-item" style="grid-column: 1 / -1;">
+                                <div class="wall-char-label">📝 Note</div>
+                                <div class="wall-char-value">${motoreInfo.note}</div>
                             </div>
                         ` : ''}
                     </div>
                     
-                    <!-- Dettaglio Prezzi -->
-                    <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 8px;">
-                        <div style="font-weight: 600; color: #92400e; margin-bottom: 0.5rem;">💰 Dettaglio Prezzo Kit</div>
-                        <div style="display: grid; gap: 0.25rem; font-size: 0.9rem;">
+                    <!-- Dettaglio Prezzi Kit -->
+                    <div style="margin-top: 1.5rem; padding: 1.25rem; background: #fffbeb; border-radius: 12px; border: 1px solid #fcd34d;">
+                        <div style="font-weight: 700; color: #92400e; margin-bottom: 1rem; font-size: 1.1rem;">
+                            💰 Dettaglio Prezzo Kit
+                        </div>
+                        <div style="display: grid; gap: 0.5rem;">
                             ${prezzoKit.dettaglio.map(item => `
-                                <div style="display: flex; justify-content: space-between;">
-                                    <span>${item.nome}</span>
-                                    <span style="font-weight: 600;">€ ${item.prezzo.toFixed(2)}</span>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: white; border-radius: 6px;">
+                                    <span style="color: #4b5563;">${item.nome}</span>
+                                    <span style="font-weight: 600; color: #1f2937;">€ ${item.prezzo.toFixed(2)}</span>
                                 </div>
                             `).join('')}
-                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #f59e0b; font-weight: 700; font-size: 1.1rem;">
-                                <span>TOTALE KIT</span>
-                                <span style="color: #b45309;">€ ${prezzoKit.totale.toFixed(2)}</span>
-                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 8px; color: white;">
+                            <span style="font-weight: 700; font-size: 1.1rem;">TOTALE KIT (x${quantita})</span>
+                            <span style="font-weight: 700; font-size: 1.3rem;">€ ${(prezzoKit.totale * quantita).toFixed(2)}</span>
                         </div>
                     </div>
                 </div>
