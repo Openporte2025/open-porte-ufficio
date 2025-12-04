@@ -6,7 +6,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.995 - CHANGELOG
+    DASHBOARD RILIEVI v7.996 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.996 (04 DIC 2025):
+    - 📦 CASSONETTI FINSTRAL: Database prezzi completo da listino EUR 2025/3 (pag. 141-146)
+    - 📦 FINSTRAL_CASSONETTI_PREZZI: PVC 148/148B/300/300B + Legno 9-48/9-48B
+    - 📦 calcolaPrezzoCassonettoFinstral(): Calcolo con arrotondamento superiore
+    - 🔍 mostraDettaglioCostiCassonetto(): Popup dettaglio con breakdown costi
+    - 🔍 Click su riga cassonetto per vedere dettaglio (hover arancione #ffedd5)
+    - 🧊 Supporto isolamento termico cod. 40830/40831
     
     🔧 AGGIORNAMENTI v7.995 (04 DIC 2025):
     - 🔌 FIX IMPORTAZIONE MOTORI: Aggiunto supporto per nuova struttura tapparelle
@@ -1157,7 +1165,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.995 - Fix Importazione Motori</title>
+    <title>Dashboard Rilievi v7.996 - Cassonetti Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -16205,6 +16213,314 @@ if (typeof module !== 'undefined' && module.exports) {
 
         console.log('✅ FINSTRAL_PREZZI caricato - Listino EUR 2025/3 + Colori + Ferramenta/Cerniere');
 
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 📦 FINSTRAL CASSONETTI PREZZI - Listino EUR 2025/3 (pag. 141-146)
+        // ═══════════════════════════════════════════════════════════════════════════
+        const FINSTRAL_CASSONETTI_PREZZI = {
+            versione: "EUR 2025/3",
+            dataAggiornamento: "2025-12-04",
+            note: "Per misure intermedie vale la casella più alta. Usb = 1,3 W/m²K",
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PVC CODICE 148 - B fino a 148mm (pag. 141)
+            // ═══════════════════════════════════════════════════════════════════════
+            pvc_148: {
+                codice: "148",
+                descrizione: "Corpo cassonetto PVC - B fino a 148mm",
+                maxL: 3860,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240, 2365, 2490, 2615, 2740, 2865, 2990, 3115, 3240, 3365, 3490, 3615, 3740, 3860],
+                righeA: [250, 350, 450, 550, 650],
+                bianco: [
+                    [172, 177, 186, 192, 202, 209, 217, 224, 231, 238, 247, 256, 262, 269, 277, 363, 369, 376, 383, 390, 396, 403, 408, 416, 421, 430, 435],
+                    [179, 187, 197, 207, 214, 221, 231, 240, 248, 258, 266, 275, 282, 292, 300, 385, 395, 403, 409, 418, 428, 434, 442, 450, 462, 470, 477],
+                    [186, 198, 208, 217, 225, 235, 245, 256, 264, 276, 284, 294, 303, 313, 324, 408, 419, 429, 436, 446, 460, 469, 477, 488, 497, 504, 515],
+                    [192, 207, 217, 228, 238, 248, 261, 271, 281, 293, 303, 313, 326, 338, 348, 433, 444, 458, 470, 483, 495, 504, 519, 529, 540, 553, 567],
+                    [202, 215, 225, 237, 250, 263, 275, 285, 297, 311, 324, 335, 348, 359, 372, 461, 473, 485, 497, 507, 522, 532, 543, 556, 569, 583, 595]
+                ],
+                scuri: [
+                    [176, 186, 192, 202, 211, 219, 228, 235, 245, 254, 262, 269, 279, 285, 294, 380, 389, 396, 405, 412, 423, 433, 442, 452, 464, 474, 484],
+                    [186, 197, 207, 215, 224, 233, 244, 254, 262, 271, 280, 289, 300, 310, 316, 405, 412, 423, 432, 440, 447, 460, 467, 475, 484, 491, 499],
+                    [192, 207, 215, 225, 237, 247, 260, 269, 279, 289, 301, 311, 323, 333, 342, 429, 437, 450, 463, 473, 483, 491, 500, 509, 520, 528, 537],
+                    [202, 215, 225, 238, 250, 262, 275, 284, 295, 310, 319, 332, 343, 356, 369, 456, 470, 482, 491, 501, 511, 524, 533, 543, 554, 567, 577],
+                    [213, 224, 237, 250, 263, 276, 286, 301, 313, 327, 340, 355, 367, 380, 393, 483, 496, 504, 520, 532, 545, 560, 573, 590, 601, 617, 628]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PVC CODICE 148B - B da 335 a 600mm (pag. 142)
+            // ═══════════════════════════════════════════════════════════════════════
+            pvc_148B: {
+                codice: "148B",
+                descrizione: "Corpo cassonetto PVC - B 335-600mm (due profili accoppiati)",
+                maxL: 3860,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240, 2365, 2490, 2615, 2740, 2865, 2990, 3115, 3240, 3365, 3490, 3615, 3740, 3860],
+                righeA: [250, 350, 450, 550, 650],
+                bianco: [
+                    [179, 186, 197, 205, 214, 224, 231, 240, 248, 259, 266, 276, 284, 293, 301, 389, 395, 405, 411, 420, 430, 436, 445, 456, 464, 473, 482],
+                    [186, 197, 206, 215, 226, 235, 245, 256, 266, 276, 284, 295, 306, 316, 326, 409, 420, 432, 440, 447, 460, 467, 475, 484, 491, 499, 506],
+                    [192, 206, 217, 226, 237, 248, 261, 272, 281, 293, 302, 315, 327, 340, 354, 434, 446, 460, 472, 484, 496, 506, 520, 530, 542, 554, 568],
+                    [200, 214, 226, 237, 250, 263, 275, 285, 299, 312, 324, 338, 350, 363, 376, 458, 469, 487, 499, 511, 526, 538, 552, 567, 579, 595, 609],
+                    [208, 224, 235, 248, 263, 276, 289, 309, 323, 338, 354, 368, 382, 396, 409, 485, 500, 513, 526, 537, 550, 564, 577, 590, 600, 614, 625]
+                ],
+                scuri: [
+                    [186, 197, 207, 217, 226, 237, 247, 259, 269, 277, 286, 297, 309, 317, 329, 416, 423, 434, 442, 450, 462, 470, 477, 487, 495, 501, 509],
+                    [192, 206, 217, 228, 240, 251, 263, 275, 284, 295, 309, 317, 330, 341, 354, 437, 450, 465, 475, 485, 495, 502, 511, 523, 530, 539, 550],
+                    [205, 215, 228, 240, 253, 264, 277, 289, 301, 315, 327, 342, 358, 372, 387, 467, 480, 502, 517, 529, 542, 556, 570, 586, 599, 614, 627],
+                    [213, 225, 238, 251, 266, 279, 293, 315, 332, 346, 363, 379, 394, 408, 425, 490, 503, 519, 530, 543, 558, 572, 588, 600, 615, 627, 639],
+                    [220, 233, 250, 264, 279, 293, 309, 324, 339, 354, 368, 383, 402, 417, 433, 509, 529, 545, 562, 575, 593, 608, 622, 635, 652, 667, 682]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PVC CODICE 300 - B fino a 300mm (pag. 143)
+            // ═══════════════════════════════════════════════════════════════════════
+            pvc_300: {
+                codice: "300",
+                descrizione: "Corpo cassonetto PVC - B fino a 300mm",
+                maxL: 3860,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240, 2365, 2490, 2615, 2740, 2865, 2990, 3115, 3240, 3365, 3490, 3615, 3740, 3860],
+                righeA: [250, 350, 450, 550, 650],
+                bianco: [
+                    [189, 202, 213, 224, 233, 244, 254, 264, 276, 284, 295, 306, 316, 329, 339, 423, 434, 442, 458, 470, 483, 495, 504, 519, 529, 540, 553],
+                    [202, 214, 225, 235, 248, 261, 272, 282, 294, 306, 316, 330, 341, 354, 366, 450, 465, 475, 488, 499, 510, 524, 535, 546, 560, 572, 586],
+                    [213, 225, 237, 250, 263, 276, 286, 300, 313, 327, 340, 354, 367, 379, 391, 482, 491, 503, 519, 530, 543, 558, 572, 588, 600, 615, 627],
+                    [221, 235, 250, 263, 277, 292, 302, 317, 333, 345, 363, 376, 389, 403, 417, 504, 520, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668],
+                    [232, 247, 263, 277, 292, 309, 323, 338, 354, 368, 382, 396, 409, 428, 440, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668, 683, 698]
+                ],
+                scuri: [
+                    [205, 215, 228, 240, 251, 264, 277, 286, 300, 313, 326, 339, 349, 364, 376, 465, 475, 488, 500, 513, 527, 539, 553, 568, 583, 596, 612],
+                    [215, 228, 241, 254, 269, 281, 294, 309, 323, 335, 348, 364, 376, 390, 403, 491, 503, 519, 530, 543, 558, 572, 588, 600, 615, 627, 639],
+                    [226, 240, 254, 271, 282, 299, 313, 329, 342, 358, 372, 387, 402, 416, 429, 520, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668, 683],
+                    [238, 253, 271, 284, 300, 315, 332, 346, 366, 379, 394, 408, 425, 437, 458, 546, 565, 578, 595, 612, 625, 638, 654, 669, 685, 699, 714],
+                    [250, 266, 282, 299, 316, 333, 348, 368, 383, 402, 417, 433, 448, 470, 485, 575, 594, 613, 626, 639, 655, 672, 686, 700, 716, 731, 747]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // PVC CODICE 300B - B da 335 a 600mm (pag. 144)
+            // ═══════════════════════════════════════════════════════════════════════
+            pvc_300B: {
+                codice: "300B",
+                descrizione: "Corpo cassonetto PVC - B 335-600mm (due profili accoppiati)",
+                maxL: 3860,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240, 2365, 2490, 2615, 2740, 2865, 2990, 3115, 3240, 3365, 3490, 3615, 3740, 3860],
+                righeA: [250, 350, 450, 550, 650],
+                bianco: [
+                    [189, 202, 213, 224, 233, 244, 254, 264, 276, 284, 295, 306, 316, 329, 339, 423, 434, 442, 458, 470, 483, 495, 504, 519, 529, 540, 553],
+                    [202, 214, 225, 235, 248, 261, 272, 282, 294, 306, 316, 330, 341, 354, 366, 450, 465, 475, 488, 499, 510, 524, 535, 546, 560, 572, 586],
+                    [213, 225, 237, 250, 263, 276, 286, 300, 313, 327, 340, 354, 367, 379, 391, 482, 491, 503, 519, 530, 543, 558, 572, 588, 600, 615, 627],
+                    [221, 235, 250, 263, 277, 292, 302, 317, 333, 345, 363, 376, 389, 403, 417, 504, 520, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668],
+                    [232, 247, 263, 277, 292, 309, 323, 338, 354, 368, 382, 396, 409, 428, 440, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668, 683, 698]
+                ],
+                scuri: [
+                    [205, 215, 228, 240, 251, 264, 277, 286, 300, 313, 326, 339, 349, 364, 376, 465, 475, 488, 500, 513, 527, 539, 553, 568, 583, 596, 612],
+                    [215, 228, 241, 254, 269, 281, 294, 309, 323, 335, 348, 364, 376, 390, 403, 491, 503, 519, 530, 543, 558, 572, 588, 600, 615, 627, 639],
+                    [226, 240, 254, 271, 282, 299, 313, 329, 342, 358, 372, 387, 402, 416, 429, 520, 532, 546, 564, 577, 594, 609, 624, 637, 653, 668, 683],
+                    [238, 253, 271, 284, 300, 315, 332, 346, 366, 379, 394, 408, 425, 437, 458, 546, 565, 578, 595, 612, 625, 638, 654, 669, 685, 699, 714],
+                    [250, 266, 282, 299, 316, 333, 348, 368, 383, 402, 417, 433, 448, 470, 485, 575, 594, 613, 626, 639, 655, 672, 686, 700, 716, 731, 747]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // LEGNO CODICE 9-48 - B fino a 150mm (pag. 145)
+            // ═══════════════════════════════════════════════════════════════════════
+            legno_948: {
+                codice: "9-48",
+                descrizione: "Corpo cassonetto Legno - B fino a 150mm",
+                maxL: 2240,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240],
+                righeA: [250, 350, 450, 550, 650],
+                gruppo1: [
+                    [244, 261, 279, 297, 312, 330, 345, 361, 376, 392, 407, 421, 436, 449],
+                    [279, 297, 318, 336, 354, 375, 393, 411, 427, 445, 462, 479, 496, 511],
+                    [318, 339, 363, 384, 405, 427, 449, 469, 489, 511, 531, 551, 572, 591],
+                    [354, 378, 405, 430, 454, 479, 502, 527, 550, 575, 599, 622, 646, 668],
+                    [390, 418, 448, 477, 504, 533, 560, 588, 615, 642, 670, 696, 723, 749]
+                ],
+                gruppo23: [
+                    [368, 394, 421, 449, 471, 497, 520, 544, 566, 590, 613, 634, 656, 677],
+                    [421, 449, 479, 506, 533, 565, 592, 619, 644, 672, 697, 722, 749, 771],
+                    [479, 511, 547, 579, 610, 644, 677, 707, 737, 770, 800, 830, 861, 889],
+                    [533, 569, 610, 648, 684, 722, 756, 794, 829, 866, 901, 936, 973, 1006],
+                    [588, 629, 675, 718, 759, 803, 844, 886, 927, 967, 1008, 1048, 1089, 1127]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // LEGNO CODICE 9-48B - B da 335 a 600mm (pag. 146)
+            // ═══════════════════════════════════════════════════════════════════════
+            legno_948B: {
+                codice: "9-48B",
+                descrizione: "Corpo cassonetto Legno - B 335-600mm (due profili accoppiati)",
+                maxL: 2240,
+                colonneL: [615, 740, 865, 990, 1115, 1240, 1365, 1490, 1615, 1740, 1865, 1990, 2115, 2240],
+                righeA: [250, 350, 450, 550, 650],
+                gruppo1: [
+                    [283, 305, 328, 352, 372, 394, 415, 435, 457, 477, 498, 517, 538, 556],
+                    [328, 352, 378, 403, 425, 451, 474, 497, 520, 543, 566, 588, 611, 632],
+                    [378, 405, 435, 463, 491, 520, 548, 575, 602, 631, 659, 685, 713, 739],
+                    [425, 457, 491, 524, 555, 588, 619, 652, 683, 716, 748, 778, 810, 840],
+                    [474, 510, 550, 588, 623, 660, 695, 732, 767, 804, 840, 874, 910, 944]
+                ],
+                gruppo23: [
+                    [427, 460, 495, 531, 561, 594, 625, 656, 688, 719, 750, 778, 809, 837],
+                    [495, 531, 570, 607, 641, 680, 714, 748, 783, 818, 852, 885, 920, 951],
+                    [570, 610, 655, 697, 739, 783, 825, 866, 907, 950, 991, 1031, 1073, 1111],
+                    [641, 688, 739, 789, 836, 886, 933, 981, 1029, 1078, 1126, 1172, 1220, 1265],
+                    [714, 768, 827, 885, 939, 995, 1048, 1103, 1156, 1211, 1264, 1316, 1370, 1421]
+                ]
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // SUPPLEMENTO ISOLAMENTO TERMICO (pag. 140)
+            // ═══════════════════════════════════════════════════════════════════════
+            isolamento: {
+                "40830": { spessore: "25mm", prezzo: 63.1, dimensioni: "1000x790mm", usbRisultante: 0.87 },
+                "40831": { spessore: "13mm", prezzo: 47.4, dimensioni: "1000x790mm", usbRisultante: 0.87 }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // COLORI PVC E LEGNO
+            // ═══════════════════════════════════════════════════════════════════════
+            coloriPVC: {
+                bianco: ["01 extraliscio", "42 bianco goffrato", "45 bianco satinato", "07 bianco perla goffrato", "27 bianco perla satinato"],
+                scuri: ["06 grigio", "46 grigio seta", "13 decoro legno castagno", "19 decoro legno rovere", "55 decoro legno noce chiaro"]
+            },
+            coloriLegno: {
+                gruppo1: ["1X01 abete naturale", "1X03 abete sbiancato bianco", "1X05 abete sbiancato", "1X06 abete grigio beige", "1X07 abete marrone", "1X08 abete bianco perla"],
+                gruppo2: ["2X01 rovere naturale", "2X02 rovere oleato naturale"],
+                gruppo3: ["3X02 rovere grigio luce", "3X03 rovere grigio sabbia", "3X04 rovere grigio quarzo", "3X05 rovere grigio carbone", "3X06 rovere marrone scuro", "3X07 rovere bianco a poro aperto", "3X08 rovere bianco perla a poro aperto"]
+            }
+        };
+        
+        console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
+        // ═══════════════════════════════════════════════════════════════════════════
+        function calcolaPrezzoCassonettoFinstral(config) {
+            const risultato = {
+                success: false,
+                prezzo: 0,
+                dettaglio: {
+                    prezzoBase: 0,
+                    supplementoIsolamento: 0,
+                    numeroIsolamenti: 0
+                },
+                parametri: {},
+                errori: []
+            };
+            
+            try {
+                // Estrai parametri
+                const L = parseInt(config.L) || parseInt(config.BRM_L) || 0;  // Larghezza mm
+                const A = parseInt(config.A) || parseInt(config.BRM_H) || parseInt(config.HCASS) || 0;  // Altezza mm
+                const B = parseInt(config.B) || parseInt(config.BRM_B) || 0;  // Profondità mm
+                const materiale = (config.materialeCass || config.materiale || 'PVC').toUpperCase();
+                const gruppoColore = config.gruppoColoreCass || config.gruppoColore || 'bianco';
+                const codiceIsolamento = config.codiceIsolamento || null;
+                
+                risultato.parametri = { L, A, B, materiale, gruppoColore, codiceIsolamento };
+                
+                // Validazione
+                if (L <= 0) { risultato.errori.push('Larghezza L non valida'); return risultato; }
+                if (A <= 0) { risultato.errori.push('Altezza A non valida'); return risultato; }
+                
+                // Determina codice cassonetto in base a B e materiale
+                let codiceCass = config.codiceCass || '';
+                if (!codiceCass) {
+                    if (materiale === 'LEGNO') {
+                        codiceCass = (B > 335) ? '9-48B' : '9-48';
+                    } else {
+                        // PVC: scegli tra 148 e 300 in base a B
+                        if (B <= 148) {
+                            codiceCass = '148';
+                        } else if (B <= 300) {
+                            codiceCass = '300';
+                        } else {
+                            // B > 300 → versione B
+                            codiceCass = (B <= 148 + 200) ? '148B' : '300B';
+                        }
+                    }
+                }
+                risultato.parametri.codiceCass = codiceCass;
+                
+                // Seleziona tabella prezzi
+                let tabella = null;
+                let colonnaColore = '';
+                
+                if (materiale === 'LEGNO') {
+                    tabella = codiceCass.includes('B') ? FINSTRAL_CASSONETTI_PREZZI.legno_948B : FINSTRAL_CASSONETTI_PREZZI.legno_948;
+                    colonnaColore = (gruppoColore === 'legno2+3' || gruppoColore === 'gruppo23' || gruppoColore === 'gruppo2+3') ? 'gruppo23' : 'gruppo1';
+                } else {
+                    // PVC
+                    if (codiceCass === '148B') tabella = FINSTRAL_CASSONETTI_PREZZI.pvc_148B;
+                    else if (codiceCass === '300') tabella = FINSTRAL_CASSONETTI_PREZZI.pvc_300;
+                    else if (codiceCass === '300B') tabella = FINSTRAL_CASSONETTI_PREZZI.pvc_300B;
+                    else tabella = FINSTRAL_CASSONETTI_PREZZI.pvc_148;
+                    colonnaColore = (gruppoColore === 'scuri' || gruppoColore.includes('scur')) ? 'scuri' : 'bianco';
+                }
+                
+                risultato.parametri.tabella = tabella.codice;
+                risultato.parametri.colonnaColore = colonnaColore;
+                
+                // Verifica limite larghezza
+                if (L > tabella.maxL) {
+                    risultato.errori.push(`Larghezza ${L}mm supera max ${tabella.maxL}mm per ${tabella.codice}`);
+                    return risultato;
+                }
+                
+                // Trova indice colonna L (arrotondamento alla casella superiore)
+                let idxL = tabella.colonneL.findIndex(col => L <= col);
+                if (idxL === -1) idxL = tabella.colonneL.length - 1;
+                
+                // Trova indice riga A (arrotondamento alla casella superiore)
+                let idxA = tabella.righeA.findIndex(row => A <= row);
+                if (idxA === -1) idxA = tabella.righeA.length - 1;
+                
+                risultato.parametri.idxL = idxL;
+                risultato.parametri.idxA = idxA;
+                risultato.parametri.LArrotondato = tabella.colonneL[idxL];
+                risultato.parametri.AArrotondato = tabella.righeA[idxA];
+                
+                // Ottieni prezzo dalla matrice
+                const matricePrezzi = tabella[colonnaColore];
+                if (!matricePrezzi || !matricePrezzi[idxA] || matricePrezzi[idxA][idxL] === undefined) {
+                    risultato.errori.push('Prezzo non trovato nella griglia');
+                    return risultato;
+                }
+                
+                const prezzoBase = matricePrezzi[idxA][idxL];
+                risultato.dettaglio.prezzoBase = prezzoBase;
+                
+                // Supplemento isolamento
+                let supplementoIsolamento = 0;
+                let numeroIsolamenti = 0;
+                if (codiceIsolamento && FINSTRAL_CASSONETTI_PREZZI.isolamento[codiceIsolamento]) {
+                    const iso = FINSTRAL_CASSONETTI_PREZZI.isolamento[codiceIsolamento];
+                    // Se L > 1000mm servono più pezzi
+                    numeroIsolamenti = Math.ceil(L / 1000);
+                    supplementoIsolamento = iso.prezzo * numeroIsolamenti;
+                    risultato.dettaglio.supplementoIsolamento = supplementoIsolamento;
+                    risultato.dettaglio.numeroIsolamenti = numeroIsolamenti;
+                    risultato.dettaglio.codiceIsolamento = codiceIsolamento;
+                    risultato.dettaglio.spessoreIsolamento = iso.spessore;
+                }
+                
+                // Totale
+                risultato.prezzo = Math.round((prezzoBase + supplementoIsolamento) * 100) / 100;
+                risultato.success = true;
+                
+                console.log('📦 Calcolo cassonetto Finstral:', risultato);
+                return risultato;
+                
+            } catch (e) {
+                risultato.errori.push('Errore calcolo: ' + e.message);
+                console.error('❌ Errore calcolaPrezzoCassonettoFinstral:', e);
+                return risultato;
+            }
+        }
+
         // ✅ v7.73: FUNZIONE MAPPING COLORE TESTO → CODICE FINSTRAL
         function mappaColoreACodiceFinstral(coloreInput, tipo = 'pvc') {
             if (!coloreInput) return tipo === 'pvc' ? '01' : 'M01'; // Default bianco
@@ -17333,21 +17649,22 @@ if (typeof module !== 'undefined' && module.exports) {
             preventivo.righe.forEach((riga, index) => {
                 const tr = document.createElement('tr');
                 
-                // 🆕 v7.99: TUTTI i tipi sono cliccabili per dettaglio (incluso portoncino)
+                // 🆕 v7.996: TUTTI i tipi sono cliccabili per dettaglio (incluso cassonetto)
                 const isTapparella = riga.tipo.toLowerCase().includes('tapparella');
                 const isPersiana = riga.tipo.toLowerCase().includes('persiana');
+                const isCassonetto = riga.tipo.toLowerCase().includes('cassonetto');
                 const isInfisso = riga.tipo.toLowerCase().includes('infisso') || 
                                   riga.tipo.toLowerCase().includes('finestra') ||
                                   riga.tipo.toLowerCase().includes('porta');
                 const isBlindato = riga.tipo.toLowerCase().includes('blindata') || riga._tipoBlindato;
                 const isPortoncino = riga.tipo.toLowerCase().includes('portoncino') || riga._tipoPortoncino;
-                const isClickable = isTapparella || isPersiana || isInfisso || isBlindato || isPortoncino;
+                const isClickable = isTapparella || isPersiana || isCassonetto || isInfisso || isBlindato || isPortoncino;
                 
                 if (isClickable) {
                     tr.style.cursor = 'pointer';
                     tr.title = '🔍 Clicca per vedere il dettaglio costi';
                     // Colori hover diversi per tipo
-                    const hoverColor = isTapparella ? '#fef3c7' : isPersiana ? '#f3e8ff' : isBlindato ? '#fee2e2' : isPortoncino ? '#fce7f3' : '#dbeafe';
+                    const hoverColor = isTapparella ? '#fef3c7' : isPersiana ? '#f3e8ff' : isCassonetto ? '#ffedd5' : isBlindato ? '#fee2e2' : isPortoncino ? '#fce7f3' : '#dbeafe';
                     tr.onmouseover = function() { this.style.background = hoverColor; };
                     tr.onmouseout = function() { this.style.background = ''; };
                     
@@ -17361,6 +17678,9 @@ if (typeof module !== 'undefined' && module.exports) {
                         } else if (isBlindato) {
                             console.log('🖱️ Click su blindata pos', posIdx);
                             window.mostraDettaglioCostiBlindato(posIdx, rigaCopia);
+                        } else if (isCassonetto) {
+                            console.log('🖱️ Click su cassonetto pos', posIdx);
+                            window.mostraDettaglioCostiCassonetto(posIdx, rigaCopia);
                         } else if (isTapparella) {
                             console.log('🖱️ Click su tapparella pos', posIdx);
                             window.mostraDettaglioCostiTapparella(posIdx, rigaCopia);
@@ -18328,6 +18648,161 @@ if (typeof module !== 'undefined' && module.exports) {
         window.mostraDettaglioCostiInfisso = mostraDettaglioCostiInfisso;
         window.mostraDettaglioCostiBlindato = mostraDettaglioCostiBlindato;
         window.mostraDettaglioCostiPortoncino = mostraDettaglioCostiPortoncino;
+        
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 📦 v7.996: DETTAGLIO COSTI CASSONETTO FINSTRAL
+        // ═══════════════════════════════════════════════════════════════════════════
+        function mostraDettaglioCostiCassonetto(posIndex, rigaPreventivo = {}) {
+            try {
+                console.log(`📦 Dettaglio Cassonetto Pos ${posIndex}:`, rigaPreventivo);
+                
+                const L_mm = rigaPreventivo.larghezza || 0;
+                const A_mm = rigaPreventivo.altezza || 0;
+                const B_mm = rigaPreventivo.B || 0;
+                const azienda = rigaPreventivo.azienda || 'Finstral';
+                const ambiente = rigaPreventivo.ambiente || `Pos ${posIndex}`;
+                const materiale = rigaPreventivo.materialeCass || rigaPreventivo.materiale || 'PVC';
+                const codiceCass = rigaPreventivo.codiceCass || '148';
+                const gruppoColore = rigaPreventivo.gruppoColoreCass || 'bianco';
+                const isolamento = rigaPreventivo.codiceIsolamento || null;
+                const quantita = parseInt(rigaPreventivo.quantita) || 1;
+                
+                // Ricalcola per dettaglio
+                const calcolo = calcolaPrezzoCassonettoFinstral({
+                    L: L_mm,
+                    A: A_mm,
+                    B: B_mm,
+                    materialeCass: materiale,
+                    codiceCass: codiceCass,
+                    gruppoColoreCass: gruppoColore,
+                    codiceIsolamento: isolamento
+                });
+                
+                const prezzoBase = calcolo.dettaglio?.prezzoBase || 0;
+                const suppIsolamento = calcolo.dettaglio?.supplementoIsolamento || 0;
+                const numIsolamenti = calcolo.dettaglio?.numeroIsolamenti || 0;
+                const prezzoUnitario = calcolo.prezzo || 0;
+                const totale = prezzoUnitario * quantita;
+                const LArr = calcolo.parametri?.LArrotondato || L_mm;
+                const AArr = calcolo.parametri?.AArrotondato || A_mm;
+                
+                let dettaglioHTML = `
+                <div style="padding: 1.5rem;">
+                    <!-- HEADER -->
+                    <div style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.25rem;">📦 Cassonetto - Posizione ${posIndex}</h3>
+                                <p style="margin: 0.25rem 0 0 0; opacity: 0.9;">${ambiente} - ${azienda}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: 700;">€ ${totale.toFixed(2)}</div>
+                                <div style="font-size: 0.875rem; opacity: 0.9;">Totale${quantita > 1 ? ` (${quantita} pz)` : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CONFIGURAZIONE -->
+                    <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="margin: 0 0 0.75rem 0; color: #c2410c;">⚙️ Configurazione</h4>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; font-size: 0.9rem;">
+                            <div><strong>Materiale:</strong> ${materiale}</div>
+                            <div><strong>Codice:</strong> ${codiceCass}</div>
+                            <div><strong>Colore:</strong> ${gruppoColore}</div>
+                            <div><strong>Isolamento:</strong> ${isolamento || 'No'}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- MISURE -->
+                    <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="margin: 0 0 0.75rem 0; color: #0369a1;">📐 Misure (Reali → Listino)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Larghezza L</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${L_mm} → ${LArr} mm</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Altezza A</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${A_mm} → ${AArr} mm</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Profondità B</div>
+                                <div style="font-size: 1.1rem; font-weight: 600;">${B_mm} mm</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- BREAKDOWN COSTI -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; margin-bottom: 1rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Componente</th>
+                                    <th style="padding: 0.75rem; text-align: center; border-bottom: 2px solid #e5e7eb;">Dettaglio</th>
+                                    <th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">Importo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- CORPO CASSONETTO -->
+                                <tr style="background: #fef3c7;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>📦 Corpo Cassonetto</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">${materiale} cod. ${codiceCass} - ${gruppoColore}</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb; font-family: monospace;">
+                                        L${LArr} × A${AArr}
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #ca8a04;">
+                                        € ${prezzoBase.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ${suppIsolamento > 0 ? `
+                                <!-- ISOLAMENTO -->
+                                <tr>
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🧊 Isolamento Termico</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Cod. ${isolamento} (Usb 0,87 W/m²K)</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb; font-family: monospace;">
+                                        ${numIsolamenti} pz × €${(suppIsolamento/numIsolamenti).toFixed(2)}
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #0891b2;">
+                                        € ${suppIsolamento.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #f0fdf4;">
+                                    <td colspan="2" style="padding: 0.75rem; font-weight: 700; color: #166534;">
+                                        TOTALE CASSONETTO ${quantita > 1 ? `(× ${quantita} pz)` : ''}
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; font-size: 1.25rem; font-weight: 700; color: #166534;">
+                                        € ${totale.toFixed(2)}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- NOTE -->
+                    <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; color: #854d0e;">
+                        <strong>📋 Note:</strong> Listino Finstral EUR 2025/3. Per misure intermedie vale la casella superiore.
+                        ${L_mm > 2750 ? '<br>⚠️ L > 2750mm: coperchio consegnato in due parti.' : ''}
+                        ${materiale === 'LEGNO' && L_mm > 2240 ? '<br>⚠️ Legno: larghezza max 2240mm!' : ''}
+                    </div>
+                </div>
+                `;
+                
+                mostraModalDettaglioCosti('📦 Dettaglio Costi Cassonetto', dettaglioHTML);
+                
+            } catch (e) {
+                console.error('❌ Errore mostraDettaglioCostiCassonetto:', e);
+                alert('Errore dettaglio cassonetto: ' + e.message);
+            }
+        }
+        
+        window.mostraDettaglioCostiCassonetto = mostraDettaglioCostiCassonetto;
         
         /**
          * 🆕 v7.90: Mostra modal generico per dettaglio costi
