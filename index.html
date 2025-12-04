@@ -6,7 +6,13 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.996 - CHANGELOG
+    DASHBOARD RILIEVI v7.997 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.997 (04 DIC 2025):
+    - 🐛 FIX: Riepilogo Quantità - Tapparelle conta solo se serveTapparella=true (non solo motori)
+    - 🔄 SPOSTATO: Configurazione Prodotti Globale da RILIEVO a UFFICIO → Vista Generale
+    - ⚙️ NUOVO: Sezione Config Prodotti in fondo a Vista Generale Ufficio
+    - 🧹 RIMOSSO: configMenuContainer dalla vista RILIEVO
     
     🔧 AGGIORNAMENTI v7.996 (04 DIC 2025):
     - 📦 CASSONETTI FINSTRAL: Database prezzi completo da listino EUR 2025/3 (pag. 141-146)
@@ -1168,7 +1174,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.996 - Cassonetti Finstral</title>
+    <title>Dashboard Rilievi v7.997 - Config Globale in Ufficio</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10494,7 +10500,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.995</span>
+                <span class="logo-version" id="version-badge">v7.997</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -10708,6 +10714,43 @@ if (typeof module !== 'undefined' && module.exports) {
                     <!-- SEZIONE C: Totali Commessa - Creata dinamicamente v7.21 -->
                     <div id="totaliCommessaContainer"></div>
 
+                    <!-- SEZIONE D: Configurazione Prodotti Globale - v7.997 -->
+                    <div id="configGlobaleUfficioContainer" class="card-ufficio" style="display: none;">
+                        <h2 class="card-ufficio-title">
+                            <span class="card-ufficio-icon">⚙️</span>
+                            Configurazione Prodotti Globale
+                        </h2>
+                        <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">
+                            Imposta i valori predefiniti. Simboli: ○ PVC base, ● PVC pellicola, ◇ Alu standard, ◆ Alu legno
+                        </p>
+                        
+                        <!-- Tabs Categorie -->
+                        <div class="config-tabs">
+                            <button class="config-tab active" onclick="switchConfigTabUfficio('infissi')">🪟 Infissi</button>
+                            <button class="config-tab" onclick="switchConfigTabUfficio('persiane')">🚪 Persiane</button>
+                            <button class="config-tab" onclick="switchConfigTabUfficio('tapparelle')">🎚️ Tapparelle</button>
+                            <button class="config-tab" onclick="switchConfigTabUfficio('cassonetti')">📦 Cassonetti</button>
+                            <button class="config-tab" onclick="switchConfigTabUfficio('zanzariere')">🦟 Zanzariere</button>
+                        </div>
+                        
+                        <!-- Pannelli Config -->
+                        <div id="configPanelInfissiUfficio" class="config-panel active"></div>
+                        <div id="configPanelPersianeUfficio" class="config-panel"></div>
+                        <div id="configPanelTapparelleUfficio" class="config-panel"></div>
+                        <div id="configPanelCassonettiUfficio" class="config-panel"></div>
+                        <div id="configPanelZanzariereUfficio" class="config-panel"></div>
+                        
+                        <!-- Azioni -->
+                        <div class="config-actions">
+                            <button class="config-btn config-btn-reset" onclick="resetConfigGlobaleMenuUfficio()">
+                                🔄 Reset
+                            </button>
+                            <button class="config-btn config-btn-save" onclick="salvaConfigGlobaleMenuUfficio()">
+                                💾 Salva Config
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -10774,41 +10817,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
                         <!-- Card Dettaglio Posizione -->
                         <div class="position-detail">
-                            <!-- ✅ v7.73: MENU CONFIGURAZIONE PRODOTTI GLOBALE -->
-                            <div class="config-menu-container" id="configMenuContainer" style="display: none;">
-                                <h3 style="color: #60a5fa; margin-bottom: 1rem; font-size: 1.2rem;">
-                                    ⚙️ Configurazione Prodotti Globale
-                                </h3>
-                                <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">
-                                    Imposta i valori predefiniti. Simboli: ○ PVC base, ● PVC pellicola, ◇ Alu standard, ◆ Alu legno
-                                </p>
-                                
-                                <!-- Tabs Categorie -->
-                                <div class="config-tabs">
-                                    <button class="config-tab active" onclick="switchConfigTab('infissi')">🪟 Infissi</button>
-                                    <button class="config-tab" onclick="switchConfigTab('persiane')">🚪 Persiane</button>
-                                    <button class="config-tab" onclick="switchConfigTab('tapparelle')">🎚️ Tapparelle</button>
-                                    <button class="config-tab" onclick="switchConfigTab('cassonetti')">📦 Cassonetti</button>
-                                    <button class="config-tab" onclick="switchConfigTab('zanzariere')">🦟 Zanzariere</button>
-                                </div>
-                                
-                                <!-- Pannelli Config -->
-                                <div id="configPanelInfissi" class="config-panel active"></div>
-                                <div id="configPanelPersiane" class="config-panel"></div>
-                                <div id="configPanelTapparelle" class="config-panel"></div>
-                                <div id="configPanelCassonetti" class="config-panel"></div>
-                                <div id="configPanelZanzariere" class="config-panel"></div>
-                                
-                                <!-- Azioni -->
-                                <div class="config-actions">
-                                    <button class="config-btn config-btn-reset" onclick="resetConfigGlobaleMenu()">
-                                        🔄 Reset
-                                    </button>
-                                    <button class="config-btn config-btn-save" onclick="salvaConfigGlobaleMenu()">
-                                        💾 Salva Config
-                                    </button>
-                                </div>
-                            </div>
+                            <!-- ❌ v7.997: Config Globale SPOSTATA in Ufficio → Vista Generale -->
+                            <!-- (Container rimosso - ora in configGlobaleUfficioContainer) -->
                             
                             <!-- 🆕 v7.94: Config Globale ora è DENTRO ogni tab prodotto -->
                             
@@ -12753,6 +12763,9 @@ if (typeof module !== 'undefined' && module.exports) {
             renderTotaliCommessa(data);
             renderRiepilogoEconomico(data); // ✅ NUOVO: Riepilogo economico con totale
             
+            // ✅ v7.997: Inizializza Config Prodotti Globale in Ufficio
+            initConfigMenuUfficio();
+            
             console.log('✅ Vista Generale Ufficio rendered');
         }
 
@@ -12974,8 +12987,8 @@ if (typeof module !== 'undefined' && module.exports) {
                     n_infissi += parseInt(pos.infisso.quantita) || 0;
                 }
                 
-                // Tapparelle
-                if (pos.tapparella && pos.tapparella.quantita > 0) {
+                // Tapparelle - conta solo se serveTapparella è true (non solo motori)
+                if (pos.tapparella && pos.tapparella.quantita > 0 && pos.tapparella.serveTapparella === true) {
                     n_tapparelle += parseInt(pos.tapparella.quantita) || 0;
                 }
                 
@@ -20158,6 +20171,216 @@ if (typeof module !== 'undefined' && module.exports) {
             renderConfigPanel('infissi');
             
             console.log('⚙️ Menu configurazione inizializzato v7.80');
+        }
+
+        // ============================================================================
+        // v7.997: CONFIGURAZIONE PRODOTTI GLOBALE - VERSIONE UFFICIO
+        // ============================================================================
+        
+        /**
+         * Switch tab configurazione - versione Ufficio
+         */
+        function switchConfigTabUfficio(categoria) {
+            // Rimuovi active da tutti i tab e pannelli UFFICIO
+            document.querySelectorAll('#configGlobaleUfficioContainer .config-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#configGlobaleUfficioContainer .config-panel').forEach(panel => panel.classList.remove('active'));
+            
+            // Attiva tab cliccato
+            const tabs = document.querySelectorAll('#configGlobaleUfficioContainer .config-tab');
+            tabs.forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(categoria.substring(0, 4))) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Attiva pannello
+            const panelId = `configPanel${categoria.charAt(0).toUpperCase() + categoria.slice(1)}Ufficio`;
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.add('active');
+                renderConfigPanelUfficio(categoria);
+            }
+        }
+        
+        /**
+         * Render pannello configurazione - versione Ufficio
+         */
+        function renderConfigPanelUfficio(categoria) {
+            const panelId = `configPanel${categoria.charAt(0).toUpperCase() + categoria.slice(1)}Ufficio`;
+            const panel = document.getElementById(panelId);
+            
+            if (!panel || !DATABASE_CONFIGURAZIONI[categoria]) return;
+            
+            const config = DATABASE_CONFIGURAZIONI[categoria];
+            const valoriSalvati = configCorrente[categoria] || {};
+            
+            console.log(`📋 v7.997 renderConfigPanelUfficio(${categoria}):`, JSON.stringify(valoriSalvati));
+            
+            // Helper per escape HTML
+            const escapeHtml = (str) => {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            };
+            
+            let html = '<div class="config-fields-grid">';
+            
+            for (const [campo, configCampo] of Object.entries(config)) {
+                const valoreSalvato = valoriSalvati[campo] || '';
+                
+                // Opzioni dal config
+                let opzioni = configCampo.options || [];
+                
+                // Matching migliorato
+                const valoreLower = (valoreSalvato || '').toString().toLowerCase().trim();
+                let matchedOption = null;
+                
+                if (valoreLower) {
+                    matchedOption = opzioni.find(opt => opt.toLowerCase() === valoreLower);
+                    if (!matchedOption) {
+                        matchedOption = opzioni.find(opt => 
+                            opt.toLowerCase().includes(valoreLower) || 
+                            valoreLower.includes(opt.toLowerCase())
+                        );
+                    }
+                }
+                
+                const isInOptions = !!matchedOption;
+                const displayValue = matchedOption || valoreSalvato;
+                const hasValue = displayValue && displayValue.trim() !== '';
+                const checkmark = hasValue ? '✓' : '';
+                const labelClass = hasValue ? 'config-label filled' : 'config-label';
+                
+                html += `
+                    <div class="config-field">
+                        <label class="${labelClass}">
+                            ${configCampo.icon || ''} ${configCampo.label} ${checkmark}
+                        </label>
+                        <select class="config-select" 
+                                data-categoria="${categoria}" 
+                                data-campo="${campo}"
+                                onchange="updateConfigFieldUfficio(this)">
+                            <option value="">-- Seleziona --</option>
+                            ${opzioni.map(opt => `
+                                <option value="${escapeHtml(opt)}" ${opt.toLowerCase() === (matchedOption || '').toLowerCase() ? 'selected' : ''}>
+                                    ${escapeHtml(opt)}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            panel.innerHTML = html;
+        }
+        
+        /**
+         * Update campo configurazione - versione Ufficio
+         */
+        function updateConfigFieldUfficio(select) {
+            const categoria = select.dataset.categoria;
+            const campo = select.dataset.campo;
+            const valore = select.value;
+            
+            if (!configCorrente[categoria]) {
+                configCorrente[categoria] = {};
+            }
+            
+            configCorrente[categoria][campo] = valore;
+            
+            // Aggiorna label con checkmark
+            const label = select.previousElementSibling;
+            if (valore) {
+                label.classList.add('filled');
+                if (!label.textContent.includes('✓')) {
+                    label.textContent = label.textContent + ' ✓';
+                }
+            } else {
+                label.classList.remove('filled');
+                label.textContent = label.textContent.replace(' ✓', '');
+            }
+            
+            console.log(`📝 Config Ufficio: ${categoria}.${campo} = ${valore}`);
+        }
+        
+        /**
+         * Salva configurazione - versione Ufficio
+         */
+        function salvaConfigGlobaleMenuUfficio() {
+            if (!projectData) {
+                showAlert('error', '❌ Nessun progetto caricato');
+                return;
+            }
+            
+            projectData.configInfissi = configCorrente.infissi;
+            projectData.configPersiane = configCorrente.persiane;
+            projectData.configTapparelle = configCorrente.tapparelle;
+            projectData.configCassonetti = configCorrente.cassonetti;
+            projectData.configZanzariere = configCorrente.zanzariere;
+            
+            showAlert('success', '✅ Configurazione globale salvata!');
+            console.log('💾 Configurazione salvata da Ufficio:', configCorrente);
+        }
+        
+        /**
+         * Reset configurazione - versione Ufficio
+         */
+        function resetConfigGlobaleMenuUfficio() {
+            if (!confirm('Resettare tutti i valori di configurazione?')) return;
+            
+            configCorrente = {
+                infissi: {},
+                persiane: {},
+                tapparelle: {},
+                cassonetti: {},
+                zanzariere: {}
+            };
+            
+            // Re-render pannello attivo
+            const activePanel = document.querySelector('#configGlobaleUfficioContainer .config-panel.active');
+            if (activePanel) {
+                const categoria = activePanel.id.replace('configPanel', '').replace('Ufficio', '').toLowerCase();
+                renderConfigPanelUfficio(categoria);
+            }
+            
+            showAlert('success', '🔄 Configurazione resettata');
+        }
+        
+        /**
+         * Inizializza menu configurazione Ufficio
+         */
+        function initConfigMenuUfficio() {
+            console.log('🔄 v7.997 initConfigMenuUfficio() chiamato');
+            
+            const container = document.getElementById('configGlobaleUfficioContainer');
+            if (!container) {
+                console.error('❌ configGlobaleUfficioContainer non trovato!');
+                return;
+            }
+            
+            // Mostra container
+            container.style.display = 'block';
+            
+            // Carica config da progetto
+            if (projectData && projectData.configInfissi) {
+                configCorrente = {
+                    infissi: { ...projectData.configInfissi },
+                    persiane: { ...(projectData.configPersiane || {}) },
+                    tapparelle: { ...(projectData.configTapparelle || {}) },
+                    cassonetti: { ...(projectData.configCassonetti || {}) },
+                    zanzariere: { ...(projectData.configZanzariere || {}) }
+                };
+            }
+            
+            // Render pannello iniziale
+            renderConfigPanelUfficio('infissi');
+            
+            console.log('⚙️ Menu configurazione Ufficio inizializzato v7.997');
         }
 
         // ============================================================================
