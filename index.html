@@ -6,7 +6,14 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.994 - CHANGELOG
+    DASHBOARD RILIEVI v7.995 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.995 (04 DIC 2025):
+    - 🔌 FIX IMPORTAZIONE MOTORI: Aggiunto supporto per nuova struttura tapparelle
+    - ✅ serveTapparella, serveMotore, serveAccessori ora importati
+    - ✅ accessoriDaSostituire importato  
+    - ✅ Array motori[] importato (modelloId, comandoId, accessori, note)
+    - ✅ motoreModelloDefault importato
     
     🔧 AGGIORNAMENTI v7.994 (03 DIC 2025):
     - 🔐 FIX FILTRO PRODOTTI: Blindata cerca anche in pos.ingresso.blindata
@@ -1150,7 +1157,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.994 - Fix Filtro Prodotti</title>
+    <title>Dashboard Rilievi v7.995 - Fix Importazione Motori</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10476,7 +10483,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.994</span>
+                <span class="logo-version" id="version-badge">v7.995</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -11250,7 +11257,13 @@ if (typeof module !== 'undefined' && module.exports) {
                                 // 🆕 v7.82: Mantieni riferimenti originali per compatibilità
                                 BRM_L: parseInt(pos.tapparella.BRM_L) || parseInt(pos.tapparella.brm?.L) || null,
                                 BRM_H: parseInt(pos.tapparella.BRM_H) || parseInt(pos.tapparella.brm?.H) || null,
-                                qta: pos.tapparella.qta || pos.tapparella.quantita || '1'
+                                qta: pos.tapparella.qta || pos.tapparella.quantita || '1',
+                                // 🆕 v7.995: Nuovi campi struttura motori
+                                serveTapparella: pos.tapparella.serveTapparella !== false,
+                                serveMotore: pos.tapparella.serveMotore || false,
+                                serveAccessori: pos.tapparella.serveAccessori || false,
+                                motoreModelloDefault: pos.tapparella.motoreModelloDefault || '',
+                                motori: pos.tapparella.motori || []
                             } : null,
                             
                             cassonetto: pos.cassonetto ? {
