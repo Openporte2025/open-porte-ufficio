@@ -6,15 +6,18 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v7.997 - CHANGELOG
+    DASHBOARD RILIEVI v7.998 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v7.998 (04 DIC 2025):
+    - 🔌 DATABASE SOMFY: Listino prezzi motori, comandi e accessori
+    - 🔌 MOTORI: Oximo 50 io (€137.66-€145.83), LT60 Orion (€174), LT50 Helios (€1198.80)
+    - 🔌 COMANDI: Amy 1 io (€234.60), IZYMO Shutter (€665.90)
+    - 🔌 ACCESSORI: Supporto (€94.60), Ruota 60mm (€21.00), Corona (€17.67)
+    - 🐛 FIX: Riepilogo Quantità mostra "Motori" separato da "Tapparelle"
+    - 🐛 FIX: "Azienda Non Specificata" → "Somfy" per motori (serveMotore=true, serveTapparella=false)
+    - 🔄 SPOSTATO: Configurazione Prodotti Globale da RILIEVO a UFFICIO → Vista Generale
     
     🔧 AGGIORNAMENTI v7.997 (04 DIC 2025):
-    - 🐛 FIX: Riepilogo Quantità - Tapparelle conta solo se serveTapparella=true (non solo motori)
-    - 🔄 SPOSTATO: Configurazione Prodotti Globale da RILIEVO a UFFICIO → Vista Generale
-    - ⚙️ NUOVO: Sezione Config Prodotti in fondo a Vista Generale Ufficio
-    - 🧹 RIMOSSO: configMenuContainer dalla vista RILIEVO
-    
-    🔧 AGGIORNAMENTI v7.996 (04 DIC 2025):
     - 📦 CASSONETTI FINSTRAL: Database prezzi completo da listino EUR 2025/3 (pag. 141-146)
     - 📦 FINSTRAL_CASSONETTI_PREZZI: PVC 148/148B/300/300B + Legno 9-48/9-48B
     - 📦 calcolaPrezzoCassonettoFinstral(): Calcolo con arrotondamento superiore
@@ -1174,7 +1177,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v7.997 - Config Globale in Ufficio</title>
+    <title>Dashboard Rilievi v7.998 - Database SOMFY + Fix Motori</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -10500,7 +10503,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v7.997</span>
+                <span class="logo-version" id="version-badge">v7.998</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -12941,7 +12944,8 @@ if (typeof module !== 'undefined' && module.exports) {
         function renderTotaliCommessa(data) {
             const stats = calculateTotaliCommessa(data);
             
-            const html = `
+            // v7.998: Genera HTML dinamico, nascondendo voci con 0
+            let html = `
                 <div class="totale-item">
                     <div class="totale-numero">${stats.n_posizioni}</div>
                     <div class="totale-label">Posizioni</div>
@@ -12950,10 +12954,29 @@ if (typeof module !== 'undefined' && module.exports) {
                     <div class="totale-numero">${stats.n_infissi}</div>
                     <div class="totale-label">Infissi</div>
                 </div>
+            `;
+            
+            // Tapparelle (solo se > 0)
+            if (stats.n_tapparelle > 0) {
+                html += `
                 <div class="totale-item">
                     <div class="totale-numero">${stats.n_tapparelle}</div>
                     <div class="totale-label">Tapparelle</div>
                 </div>
+                `;
+            }
+            
+            // Motori (solo se > 0) - v7.998
+            if (stats.n_motori > 0) {
+                html += `
+                <div class="totale-item" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-color: #f59e0b;">
+                    <div class="totale-numero" style="color: #b45309;">${stats.n_motori}</div>
+                    <div class="totale-label" style="color: #92400e;">Motori</div>
+                </div>
+                `;
+            }
+            
+            html += `
                 <div class="totale-item">
                     <div class="totale-numero">${stats.n_persiane}</div>
                     <div class="totale-label">Persiane</div>
@@ -12977,6 +13000,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             let n_infissi = 0;
             let n_tapparelle = 0;
+            let n_motori = 0;  // v7.998: Conteggio motori separato
             let n_persiane = 0;
             let n_zanzariere = 0;
             let n_cassonetti = 0;
@@ -12987,9 +13011,18 @@ if (typeof module !== 'undefined' && module.exports) {
                     n_infissi += parseInt(pos.infisso.quantita) || 0;
                 }
                 
-                // Tapparelle - conta solo se serveTapparella è true (non solo motori)
-                if (pos.tapparella && pos.tapparella.quantita > 0 && pos.tapparella.serveTapparella === true) {
-                    n_tapparelle += parseInt(pos.tapparella.quantita) || 0;
+                // Tapparelle vs Motori - v7.998
+                if (pos.tapparella) {
+                    const qta = parseInt(pos.tapparella.quantita || pos.tapparella.qta) || 0;
+                    if (qta > 0) {
+                        if (pos.tapparella.serveTapparella === true) {
+                            // Tapparella vera (con telo)
+                            n_tapparelle += qta;
+                        } else if (pos.tapparella.serveMotore === true) {
+                            // Solo motore
+                            n_motori += qta;
+                        }
+                    }
                 }
                 
                 // Persiane
@@ -13012,6 +13045,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 n_posizioni: posizioni.length,
                 n_infissi,
                 n_tapparelle,
+                n_motori,  // v7.998
                 n_persiane,
                 n_zanzariere,
                 n_cassonetti
@@ -16412,6 +16446,80 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
+        // 🔌 DATABASE PREZZI SOMFY - v7.998 (04 DIC 2025)
+        // ═══════════════════════════════════════════════════════════════════════════
+        const SOMFY_PREZZI = {
+            versione: "2025",
+            dataAggiornamento: "2025-12-04",
+            note: "Prezzi IVA esclusa",
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // MOTORI OXIMO io
+            // ═══════════════════════════════════════════════════════════════════════
+            motori: {
+                // Oximo 50 io - coppia 20Nm, velocità 17rpm, cavo 3m
+                "oximo_50_io_20": { ref: "1041627", nome: "Oximo 50 io 20/17 VVF 3m UNIT", prezzo: 137.66, coppia: 20, velocita: 17 },
+                // Oximo 50 io - coppia 30Nm, velocità 17rpm, cavo 3m
+                "oximo_50_io_30": { ref: "1045513", nome: "Oximo 50 io 30/17 VVF 3m UNIT", prezzo: 145.83, coppia: 30, velocita: 17 },
+                
+                // RS100 io hybrid
+                "rs100_io_hybrid": { ref: "1033113", nome: "RS100 io hybrid 20/17 VVF 2,5m - BAR", prezzo: 836.95, coppia: 20, velocita: 17 },
+                
+                // LT60 Orion S
+                "lt60_orion_s": { ref: "1161011", nome: "LT60 Orion S 55/17 VVF 2,5m UNI", prezzo: 174.00, coppia: 55, velocita: 17 },
+                
+                // LT50 Helios WT - motore wireless/batteria
+                "lt50_helios": { ref: "1045041", nome: "LT 50 Helios WT 30/17 VVF 2,5m UNI", prezzo: 1198.80, coppia: 30, velocita: 17, wireless: true }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // COMANDI E RICEVITORI
+            // ═══════════════════════════════════════════════════════════════════════
+            comandi: {
+                // Amy - comando a muro
+                "amy_1_io": { ref: "1871062", nome: "Amy 1 io + cornice quadrata", prezzo: 234.60 },
+                
+                // IZYMO Shutter Receiver - ricevitore
+                "izymo_shutter": { ref: "1822660", nome: "IZYMO SHUTTER RECEIVER io", prezzo: 665.90 }
+            },
+            
+            // ═══════════════════════════════════════════════════════════════════════
+            // ACCESSORI
+            // ═══════════════════════════════════════════════════════════════════════
+            accessori: {
+                // Supporto operatore
+                "supporto_operatore": { ref: "9019821", nome: "SUPPORTO OPERATORE DA AVVITARE", prezzo: 94.60 },
+                
+                // Ruota per rullo ottagonale 60mm
+                "ruota_60": { ref: "9751001", nome: "RUOTA PER RULLO OTTAGONALE DIAMETRO 60mm", prezzo: 21.00 },
+                
+                // Corona ottagonale 60
+                "corona_60": { ref: "9707025", nome: "CORONA OTT.60 I", prezzo: 17.67 }
+            },
+            
+            // Helper per trovare prezzo motore per ID
+            getPrezzoMotore: function(modelloId) {
+                const id = modelloId?.toLowerCase().replace(/[\s-]/g, '_');
+                return this.motori[id] || null;
+            },
+            
+            // Helper per calcolare prezzo totale kit motore
+            calcolaPrezzoKit: function(modelloId, accessori = {}) {
+                let totale = 0;
+                const motore = this.getPrezzoMotore(modelloId);
+                if (motore) totale += motore.prezzo;
+                
+                if (accessori.supporto) totale += this.accessori.supporto_operatore?.prezzo || 0;
+                if (accessori.ruota_60) totale += this.accessori.ruota_60?.prezzo || 0;
+                if (accessori.corona_60) totale += this.accessori.corona_60?.prezzo || 0;
+                
+                return totale;
+            }
+        };
+        
+        console.log('✅ SOMFY_PREZZI caricato - Listino 2025');
+
+        // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
         // ═══════════════════════════════════════════════════════════════════════════
         function calcolaPrezzoCassonettoFinstral(config) {
@@ -19175,9 +19283,16 @@ if (typeof module !== 'undefined' && module.exports) {
                     
                     if (hasProdotto) {
                         // 🔐 v7.98: Per blindata azienda di default è Oikos
-                        const aziendaRaw = tipoProdotto === 'blindata' ? 
-                            (prodotto.azienda || 'Oikos') : 
-                            (prodotto.azienda || 'Azienda Non Specificata');
+                        // 🔌 v7.998: Per motori (serveTapparella=false, serveMotore=true) azienda default Somfy
+                        let aziendaRaw;
+                        if (tipoProdotto === 'blindata') {
+                            aziendaRaw = prodotto.azienda || 'Oikos';
+                        } else if (tipoProdotto === 'tapparella' && prodotto.serveMotore === true && prodotto.serveTapparella !== true) {
+                            // Solo motore → Somfy
+                            aziendaRaw = prodotto.azienda || prodotto.motoreAzienda || 'Somfy';
+                        } else {
+                            aziendaRaw = prodotto.azienda || 'Azienda Non Specificata';
+                        }
                         
                         // ✅ FIX CASE-INSENSITIVE: Normalizza nome azienda
                         const { key: aziendaKey, display: aziendaDisplay } = normalizeAziendaName(aziendaRaw);
