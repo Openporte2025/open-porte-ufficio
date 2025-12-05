@@ -6,15 +6,17 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.05 - CHANGELOG
+    DASHBOARD RILIEVI v8.06 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.05 (05 DIC 2025):
+    🔧 AGGIORNAMENTI v8.06 (05 DIC 2025):
     - 📐 CODICI FINSTRAL: Database completo codiceModello + ferramenta1
     - 📐 DECODIFICA AUTOMATICA: "401" → "2 ante con montante mobile"
     - 📐 FERRAMENTA DECODIFICATA: "411" → "Anta/ribalta" + cerniere a-vista
     - 📐 VISTA POSIZIONI: Sezione "🔩 APERTURA E FERRAMENTA" nel tab Infisso
     - 📐 CERNIERE AUTOMATICHE: Derivate da ferramenta se non specificate
     - 📐 FINSTRAL_CODICI: Nuovo database con helper getModello/getFerramenta
+    - 🔧 FIX BRM: Normalizzato supporto sia brm.L/H che BRM_L/BRM_H
+    - 🔧 FIX QUANTITA: Supporto sia "quantita" che "qta" nel tab Infisso
     
     🔧 AGGIORNAMENTI v8.04 (05 DIC 2025):
     - 📊 PREVENTIVO FULL-WIDTH: La tabella preventivo usa tutta la larghezza schermo
@@ -1236,12 +1238,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.05 - Codici Finstral</title>
+    <title>Dashboard Rilievi v8.06 - Codici Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.05";
+        const DASHBOARD_VERSION = "8.06";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11096,7 +11098,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.05</span>
+                <span class="logo-version" id="version-badge">v8.06</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -17050,7 +17052,7 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 v8.05: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
+        // 🔧 v8.06: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
         // Fonte: OpenPorte v5.52 - FINSTRAL-CODICI-OPENPORTE.md
         // ═══════════════════════════════════════════════════════════════════════════
         const FINSTRAL_CODICI = {
@@ -21807,7 +21809,11 @@ if (typeof module !== 'undefined' && module.exports) {
             const qty = parseInt(prodotto?.quantita) || parseInt(prodotto?.qta) || 0;
             if (!prodotto || qty === 0) return '';
             
-            const brm = prodotto.brm || {};
+            // 🔧 v8.06: Normalizza BRM (supporta sia brm.L che BRM_L)
+            const brm = {
+                L: prodotto.brm?.L || prodotto.BRM_L || 0,
+                H: prodotto.brm?.H || prodotto.BRM_H || 0
+            };
             
             // Per INFISSI: usa nuovo design con override detection
             if (tipo === 'infisso') {
@@ -22579,10 +22585,10 @@ if (typeof module !== 'undefined' && module.exports) {
                     
                     <!-- Info Essenziali (Qtà + Tipo) -->
                     <div style="display: flex; gap: 1.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                        ${prodotto.quantita ? `
+                        ${(prodotto.quantita || prodotto.qta) ? `
                             <div style="background: #e0f2fe; padding: 1rem 1.5rem; border-radius: 8px; flex: 1; min-width: 150px;">
                                 <div style="font-size: 0.85rem; font-weight: 600; color: #0369a1; margin-bottom: 0.25rem;">QUANTITÀ</div>
-                                <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">${prodotto.quantita}</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #0c4a6e;">${prodotto.quantita || prodotto.qta}</div>
                             </div>
                         ` : ''}
                         ${(prodotto.tipo || prodotto.apertura) ? `
@@ -22593,7 +22599,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         ` : ''}
                     </div>
                     
-                    <!-- 🔩 v8.05: APERTURA E FERRAMENTA con codici Finstral -->
+                    <!-- 🔩 v8.06: APERTURA E FERRAMENTA con codici Finstral -->
                     ${(prodotto.codiceModello || prodotto.ferramenta1 || prodotto.cerniere || prodotto.ferramenta) ? `
                         <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #d97706;">
                             <div style="font-size: 0.9rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
