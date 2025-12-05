@@ -6,7 +6,16 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.02 - CHANGELOG
+    DASHBOARD RILIEVI v8.03 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.03 (05 DIC 2025):
+    - 🏭 VISTA AZIENDE RIDISEGNATA: Nuovo layout con configurazione specifica per azienda
+    - 🏭 HEADER AZIENDA: Nome + badge prodotti + BOX TOTALE ORDINE in verde
+    - 🏭 CONFIGURAZIONE PER TIPO: Box separati per Infissi, Tapparelle, Motori, etc.
+    - 🏭 COLORI DISTINTI: Ogni tipo prodotto ha il suo colore (blu infissi, verde tapparelle, giallo motori)
+    - 🏭 TABELLA SEMPLIFICATA: Rimosse colonne ridondanti (Misure BRM + L×H → solo Misure mm)
+    - 🏭 TOTALE EVIDENZIATO: Riga totale verde con sfondo gradient
+    - 🏭 BADGES CON CONTEGGIO: "3 Infissi" invece di solo "Infissi"
     
     🔧 AGGIORNAMENTI v8.02 (05 DIC 2025):
     - 📦 PRODOTTI IN ALTO: "Prodotti e Configurazioni" ora è la PRIMA sezione
@@ -1211,12 +1220,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.02 - Prodotti Prima + Sezioni Collassabili</title>
+    <title>Dashboard Rilievi v8.03 - Vista Aziende Ridisegnata</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.02";
+        const DASHBOARD_VERSION = "8.03";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -6615,6 +6624,109 @@
             padding: 0 1.25rem 1.25rem;
             background: white;
         }
+        
+        /* ═══════════════════════════════════════════════════════════════════════════
+           🔄 v8.03 - CONFIGURAZIONE PRODOTTI AZIENDA
+           ═══════════════════════════════════════════════════════════════════════════ */
+        
+        .azienda-configurazioni {
+            margin-bottom: 1.5rem;
+        }
+        
+        .azienda-config-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .azienda-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        
+        .azienda-config-box {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .azienda-config-header {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .azienda-config-fields {
+            display: grid;
+            gap: 0.4rem;
+        }
+        
+        .azienda-config-field {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .azienda-config-field:last-child {
+            border-bottom: none;
+        }
+        
+        .azienda-config-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .azienda-config-value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        
+        /* Tabella prodotti semplificata */
+        .azienda-prodotti-table-v2 {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .azienda-prodotti-table-v2 th {
+            background: #f8fafc;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .azienda-prodotti-table-v2 td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        .azienda-prodotti-table-v2 tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .azienda-totale-row {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+        }
+        
+        .azienda-totale-row td {
+            padding: 1rem 0.75rem !important;
+            border-top: 2px solid #10b981 !important;
+        }
     </style>
     
     <!-- ================================================================================
@@ -10933,7 +11045,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.02</span>
+                <span class="logo-version" id="version-badge">v8.03</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -20105,103 +20217,163 @@ if (typeof module !== 'undefined' && module.exports) {
         }
 
         // 🆕 Render configurazioni prodotti per specifica azienda
+        // ============================================================================
+        // 🔄 v8.03: CONFIGURAZIONE SPECIFICA PER AZIENDA
+        // Mostra SOLO la configurazione relativa ai prodotti di questa azienda
+        // ============================================================================
         function renderConfigurazioniProdottiAzienda(aziendaData, projectData) {
             if (!projectData) return '';
             
+            const aziendaNameLower = (aziendaData.displayName || '').toLowerCase();
             const configurazioni = [];
             
-            // INFISSI
+            // INFISSI - Solo se questa azienda ha infissi
             if (aziendaData.totali.infissi > 0 && projectData.configInfissi) {
                 const cfg = projectData.configInfissi;
                 configurazioni.push({
                     tipo: 'Infissi',
                     icon: '🪟',
+                    color: '#0ea5e9',
+                    bgColor: '#f0f9ff',
                     fields: [
-                        { label: 'Tipo Anta', value: cfg.tipoAnta },
+                        { label: 'Azienda', value: cfg.azienda },
                         { label: 'Telaio', value: cfg.telaio },
+                        { label: 'Tipo Anta', value: cfg.tipoAnta },
+                        { label: 'Finitura INT', value: cfg.finIntMateriale && cfg.finIntCodice ? 
+                            `${cfg.finIntMateriale} + ${cfg.finIntCodice}${cfg.finIntDescrizione ? ' - ' + cfg.finIntDescrizione : ''}` : cfg.coloreInterno },
+                        { label: 'Finitura EST', value: cfg.finEstMateriale && cfg.finEstCodice ? 
+                            `${cfg.finEstMateriale} + ${cfg.finEstCodice}${cfg.finEstDescrizione ? ' - ' + cfg.finEstDescrizione : ''}` : cfg.coloreEsterno },
                         { label: 'Vetro', value: cfg.vetro },
-                        { label: 'Colore Interno', value: cfg.coloreInterno },
-                        { label: 'Colore Esterno', value: cfg.coloreEsterno }
-                    ].filter(f => f.value)
+                        { label: 'Maniglia', value: cfg.maniglia },
+                        { label: 'Tagli Telaio', value: cfg.tagliTelaio },
+                        { label: 'Allarme', value: cfg.allarme }
+                    ].filter(f => f.value && f.value !== 'N/D')
                 });
             }
             
-            // PERSIANE
-            if (aziendaData.totali.persiane > 0 && projectData.configPersiane) {
-                const cfg = projectData.configPersiane;
-                configurazioni.push({
-                    tipo: 'Persiane',
-                    icon: '🚪',
-                    fields: [
-                        { label: 'Modello', value: cfg.modello },
-                        { label: 'Colore', value: cfg.colore }
-                    ].filter(f => f.value)
-                });
-            }
-            
-            // TAPPARELLE
+            // TAPPARELLE - Solo se questa azienda ha tapparelle
             if (aziendaData.totali.tapparelle > 0 && projectData.configTapparelle) {
                 const cfg = projectData.configTapparelle;
                 configurazioni.push({
                     tipo: 'Tapparelle',
-                    icon: '🎯',
+                    icon: '🔽',
+                    color: '#10b981',
+                    bgColor: '#ecfdf5',
                     fields: [
+                        { label: 'Azienda', value: cfg.azienda },
                         { label: 'Modello', value: cfg.modello },
-                        { label: 'Colore', value: cfg.colore }
-                    ].filter(f => f.value)
+                        { label: 'Colore', value: cfg.colore },
+                        { label: 'Tipo Guida', value: cfg.guidaTipo },
+                        { label: 'Colore Guida', value: cfg.guidaColore }
+                    ].filter(f => f.value && f.value !== 'N/D')
                 });
             }
             
-            // CASSONETTI
+            // MOTORI - Solo se questa azienda ha motori (Somfy)
+            if (aziendaData.totali.motori > 0) {
+                configurazioni.push({
+                    tipo: 'Motori',
+                    icon: '🔌',
+                    color: '#f59e0b',
+                    bgColor: '#fffbeb',
+                    fields: [
+                        { label: 'Azienda', value: 'Somfy' },
+                        { label: 'Linea', value: 'Oximo io' },
+                        { label: 'Tecnologia', value: 'Radio io-homecontrol®' }
+                    ]
+                });
+            }
+            
+            // CASSONETTI - Solo se questa azienda ha cassonetti
             if (aziendaData.totali.cassonetti > 0 && projectData.configCassonetti) {
                 const cfg = projectData.configCassonetti;
                 configurazioni.push({
                     tipo: 'Cassonetti',
                     icon: '📦',
+                    color: '#8b5cf6',
+                    bgColor: '#f5f3ff',
                     fields: [
+                        { label: 'Azienda', value: cfg.azienda },
                         { label: 'Tipo', value: cfg.tipo },
                         { label: 'Materiale', value: cfg.materiale },
                         { label: 'Finitura', value: cfg.finitura },
-                        { label: 'Coibentazione', value: cfg.coibentazione },
-                        { label: 'A Soffitto', value: cfg.aSoffitto }
-                    ].filter(f => f.value)
+                        { label: 'Coibentazione', value: cfg.coibentazione }
+                    ].filter(f => f.value && f.value !== 'N/D')
                 });
             }
             
-            // ZANZARIERE
+            // PERSIANE - Solo se questa azienda ha persiane
+            if (aziendaData.totali.persiane > 0 && projectData.configPersiane) {
+                const cfg = projectData.configPersiane;
+                configurazioni.push({
+                    tipo: 'Persiane',
+                    icon: '🪟',
+                    color: '#ec4899',
+                    bgColor: '#fdf2f8',
+                    fields: [
+                        { label: 'Azienda', value: cfg.azienda },
+                        { label: 'Modello', value: cfg.modello },
+                        { label: 'Colore', value: cfg.colore },
+                        { label: 'Materiale', value: cfg.materiale }
+                    ].filter(f => f.value && f.value !== 'N/D')
+                });
+            }
+            
+            // ZANZARIERE - Solo se questa azienda ha zanzariere
             if (aziendaData.totali.zanzariere > 0 && projectData.configZanzariere) {
                 const cfg = projectData.configZanzariere;
                 configurazioni.push({
                     tipo: 'Zanzariere',
                     icon: '🦟',
+                    color: '#06b6d4',
+                    bgColor: '#ecfeff',
                     fields: [
+                        { label: 'Azienda', value: cfg.azienda },
                         { label: 'Modello PF', value: cfg.modelloPF },
                         { label: 'Modello F', value: cfg.modelloF },
                         { label: 'Colore', value: cfg.colore }
-                    ].filter(f => f.value)
+                    ].filter(f => f.value && f.value !== 'N/D')
+                });
+            }
+            
+            // BLINDATE - Solo se questa azienda ha blindate
+            if (aziendaData.totali.blindate > 0 && projectData.configBlindate) {
+                const cfg = projectData.configBlindate;
+                configurazioni.push({
+                    tipo: 'Blindate',
+                    icon: '🔐',
+                    color: '#dc2626',
+                    bgColor: '#fef2f2',
+                    fields: [
+                        { label: 'Azienda', value: cfg.azienda || 'Oikos' },
+                        { label: 'Versione', value: cfg.versione },
+                        { label: 'Classe', value: cfg.classe },
+                        { label: 'Pannello EST', value: cfg.pannelloEst },
+                        { label: 'Pannello INT', value: cfg.pannelloInt }
+                    ].filter(f => f.value && f.value !== 'N/D')
                 });
             }
             
             // Se non ci sono configurazioni, non mostrare nulla
             if (configurazioni.length === 0) return '';
             
-            // Genera HTML
+            // 🔄 v8.03: Genera HTML con box separati per ogni tipo prodotto
             return `
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #0ea5e9; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.1rem; font-weight: 700; color: #0c4a6e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        ⚙️ Configurazione Prodotti Globale
+                <div class="azienda-configurazioni">
+                    <h3 class="azienda-config-title">
+                        ⚙️ Configurazione Prodotti ${aziendaData.displayName}
                     </h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                    <div class="azienda-config-grid">
                         ${configurazioni.map(config => `
-                            <div style="background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <div style="font-weight: 600; color: #1e40af; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="azienda-config-box" style="background: ${config.bgColor}; border-left: 4px solid ${config.color};">
+                                <div class="azienda-config-header" style="color: ${config.color};">
                                     <span>${config.icon}</span> ${config.tipo}
                                 </div>
-                                <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <div class="azienda-config-fields">
                                     ${config.fields.map(field => `
-                                        <div style="display: grid; grid-template-columns: 120px 1fr; gap: 0.5rem;">
-                                            <span style="color: #6b7280; font-weight: 500;">${field.label}:</span>
-                                            <span style="color: #1f2937; font-weight: 600;">${field.value}</span>
+                                        <div class="azienda-config-field">
+                                            <span class="azienda-config-label">${field.label}:</span>
+                                            <span class="azienda-config-value">${field.value}</span>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -20217,131 +20389,116 @@ if (typeof module !== 'undefined' && module.exports) {
             const totaleProdotti = aziendaData.prodotti.length;
             const totaleQuantita = aziendaData.prodotti.reduce((sum, p) => sum + p.quantita, 0);
             const posizioniCount = aziendaData.posizioniCoinvolte.size;
+            const totaleEuro = aziendaData.prodotti.reduce((sum, p) => sum + (p.prezzoTotale || 0), 0);
             
             // Determina quali badge mostrare
             const badges = [];
-            if (aziendaData.totali.infissi > 0) badges.push({ label: 'Infissi', class: 'infissi' });
-            if (aziendaData.totali.tapparelle > 0) badges.push({ label: 'Tapparelle', class: 'tapparelle' });
-            if (aziendaData.totali.motori > 0) badges.push({ label: 'Motori', class: 'motori' });  // v7.998
-            if (aziendaData.totali.persiane > 0) badges.push({ label: 'Persiane', class: 'persiane' });
-            if (aziendaData.totali.cassonetti > 0) badges.push({ label: 'Cassonetti', class: 'cassonetti' });
-            if (aziendaData.totali.zanzariere > 0) badges.push({ label: 'Zanzariere', class: 'zanzariere' });
+            if (aziendaData.totali.infissi > 0) badges.push({ label: `${aziendaData.totali.infissi} Infissi`, class: 'infissi' });
+            if (aziendaData.totali.tapparelle > 0) badges.push({ label: `${aziendaData.totali.tapparelle} Tapparelle`, class: 'tapparelle' });
+            if (aziendaData.totali.motori > 0) badges.push({ label: `${aziendaData.totali.motori} Motori`, class: 'motori' });
+            if (aziendaData.totali.persiane > 0) badges.push({ label: `${aziendaData.totali.persiane} Persiane`, class: 'persiane' });
+            if (aziendaData.totali.cassonetti > 0) badges.push({ label: `${aziendaData.totali.cassonetti} Cassonetti`, class: 'cassonetti' });
+            if (aziendaData.totali.zanzariere > 0) badges.push({ label: `${aziendaData.totali.zanzariere} Zanzariere`, class: 'zanzariere' });
+            if (aziendaData.totali.blindate > 0) badges.push({ label: `${aziendaData.totali.blindate} Blindate`, class: 'blindate' });
             
-            // 🆕 Estrai configurazioni prodotti per questa azienda
+            // 🆕 v8.03: Estrai configurazioni prodotti per questa azienda
             const configHTML = renderConfigurazioniProdottiAzienda(aziendaData, projectData);
             
             return `
                 <div class="azienda-card">
-                    <!-- Header -->
-                    <div class="azienda-header">
+                    <!-- Header con totale in evidenza -->
+                    <div class="azienda-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
                         <div class="azienda-header-left">
-                            <div class="azienda-name">
-                                <span class="azienda-name-icon">🏢</span>
+                            <div class="azienda-name" style="font-size: 1.4rem;">
+                                <span class="azienda-name-icon">🏭</span>
                                 ${aziendaName}
                             </div>
-                            <div class="azienda-stats">
-                                <div class="azienda-stat">
-                                    📦 <span class="azienda-stat-value">${totaleProdotti}</span> prodotti
-                                </div>
-                                <div class="azienda-stat">
-                                    🔢 <span class="azienda-stat-value">${totaleQuantita}</span> quantità totale
-                                </div>
-                                <div class="azienda-stat">
-                                    📍 <span class="azienda-stat-value">${posizioniCount}</span> posizioni
-                                </div>
+                            <div class="azienda-badges" style="margin-top: 0.5rem;">
+                                ${badges.map(badge => `
+                                    <span class="azienda-badge ${badge.class}">${badge.label}</span>
+                                `).join('')}
                             </div>
                         </div>
-                        <div class="azienda-badges">
-                            ${badges.map(badge => `
-                                <span class="azienda-badge ${badge.class}">${badge.label}</span>
-                            `).join('')}
+                        <div class="azienda-totale-box" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; text-align: right; min-width: 180px;">
+                            <div style="font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Totale Ordine</div>
+                            <div style="font-size: 1.8rem; font-weight: 700; margin-top: 0.25rem;">
+                                ${totaleEuro > 0 ? `€ ${totaleEuro.toFixed(2)}` : '-'}
+                            </div>
+                            <div style="font-size: 0.75rem; opacity: 0.85; margin-top: 0.25rem;">${totaleQuantita} pz • ${posizioniCount} posizioni</div>
                         </div>
                     </div>
 
-                    <!-- 🆕 Configurazione Prodotti Azienda -->
+                    <!-- 🆕 v8.03: Configurazione Prodotti Azienda -->
                     ${configHTML}
 
-                    <!-- Tabella Prodotti -->
-                    <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 1rem;">
+                    <!-- 🔄 v8.03: Tabella Prodotti Semplificata -->
+                    <h3 style="font-size: 1rem; font-weight: 600; color: #1f2937; margin: 1.5rem 0 1rem; display: flex; align-items: center; gap: 0.5rem;">
                         📋 Lista Prodotti
                     </h3>
-                    <table class="azienda-prodotti-table">
-                        <thead>
-                            <tr>
-                                <th>Tipo</th>
-                                <th>Modello/Config</th>
-                                <th>Misure BRM</th>
-                                <th>L×H (cm)</th>
-                                <th>Qtà</th>
-                                <th>Prezzo Unit.</th>
-                                <th>Totale</th>
-                                <th>Colore</th>
-                                <th>Posizioni</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${aziendaData.prodotti.map(prod => `
+                    <div style="overflow-x: auto;">
+                        <table class="azienda-prodotti-table-v2">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <span class="product-type-badge ${prod.tipo}">
-                                            ${prod.tipo.charAt(0).toUpperCase() + prod.tipo.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style="font-weight: 600;">${prod.modello}</div>
-                                        <div style="font-size: 0.85rem; color: #6b7280;">${prod.configurazione}</div>
-                                    </td>
-                                    <td style="font-family: monospace; font-size: 0.9rem;">
-                                        ${prod.brm.L && prod.brm.H ? 
-                                            `<div>L:${prod.brm.L} × H:${prod.brm.H}</div>
-                                             <div style="font-size: 0.7rem; color: #9ca3af; margin-top: 2px;">
-                                                (${prod.fonteMisure?.L || '?'}:${prod.fonteMisure?.valL || 0}, ${prod.fonteMisure?.H || '?'}:${prod.fonteMisure?.valH || 0})
-                                             </div>` : 
-                                            'N/D'}
-                                    </td>
-                                    <td style="font-family: monospace; font-size: 0.9rem;">
-                                        ${prod.larghezza && prod.altezza ? 
-                                            `${prod.larghezza}×${prod.altezza}` : 
-                                            '-'}
-                                    </td>
-                                    <td style="font-weight: 600; color: #10b981;">${prod.quantita}</td>
-                                    <td style="font-weight: 600; color: #2563eb;">
-                                        ${prod.prezzoUnitario !== null ? 
-                                            `€${prod.prezzoUnitario.toFixed(2)}` : 
-                                            '-'}
-                                    </td>
-                                    <td style="font-weight: 700; color: #059669;">
-                                        ${prod.prezzoTotale !== null ? 
-                                            `€${prod.prezzoTotale.toFixed(2)}` : 
-                                            '-'}
-                                    </td>
-                                    <td>${prod.colore}</td>
-                                    <td>
-                                        <span class="position-tag">${prod.posizione}</span>
-                                    </td>
+                                    <th style="width: 100px;">Tipo</th>
+                                    <th>Modello</th>
+                                    <th style="width: 120px;">Misure (mm)</th>
+                                    <th style="width: 50px; text-align: center;">Qty</th>
+                                    <th style="width: 100px; text-align: right;">Prezzo</th>
+                                    <th style="width: 100px; text-align: right;">Totale</th>
+                                    <th style="width: 100px;">Posizione</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                        <tfoot>
-                            <tr style="background: #f3f4f6; border-top: 2px solid #d1d5db;">
-                                <td colspan="6" style="text-align: right; font-weight: 700; padding: 12px;">
-                                    TOTALE ${aziendaName.toUpperCase()}:
-                                </td>
-                                <td style="font-weight: 700; font-size: 1.1rem; color: #059669;">
-                                    ${(() => {
-                                        const totale = aziendaData.prodotti.reduce((sum, p) => sum + (p.prezzoTotale || 0), 0);
-                                        return totale > 0 ? `€${totale.toFixed(2)}` : '-';
-                                    })()}
-                                </td>
-                                <td colspan="2"></td>
-                            </tr>
-                        </tfoot>
-                    </table>
-
-                    <!-- ❌ RIMOSSO v7.20: Totali Azienda (visibili solo in Vista Generale) -->
+                            </thead>
+                            <tbody>
+                                ${aziendaData.prodotti.map(prod => `
+                                    <tr>
+                                        <td>
+                                            <span class="product-type-badge ${prod.tipo}">
+                                                ${prod.tipo.charAt(0).toUpperCase() + prod.tipo.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style="font-weight: 600; color: #1f2937;">${prod.modello}</div>
+                                            ${prod.configurazione && prod.configurazione !== 'Standard' ? 
+                                                `<div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">${prod.configurazione}</div>` : ''}
+                                        </td>
+                                        <td style="font-family: monospace; font-weight: 500;">
+                                            ${prod.larghezza && prod.altezza && prod.larghezza > 0 ? 
+                                                `${prod.larghezza} × ${prod.altezza}` : 
+                                                '-'}
+                                        </td>
+                                        <td style="text-align: center; font-weight: 600; color: #10b981;">${prod.quantita}</td>
+                                        <td style="text-align: right; font-weight: 500; color: #2563eb;">
+                                            ${prod.prezzoUnitario !== null && prod.prezzoUnitario > 0 ? 
+                                                `€ ${prod.prezzoUnitario.toFixed(2)}` : '-'}
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; color: #059669;">
+                                            ${prod.prezzoTotale !== null && prod.prezzoTotale > 0 ? 
+                                                `€ ${prod.prezzoTotale.toFixed(2)}` : '-'}
+                                        </td>
+                                        <td>
+                                            <span class="position-tag">${prod.posizione}</span>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="azienda-totale-row">
+                                    <td colspan="3" style="font-weight: 700; color: #065f46;">
+                                        TOTALE ${aziendaName.toUpperCase()}
+                                    </td>
+                                    <td style="text-align: center; font-weight: 700; color: #065f46;">${totaleQuantita}</td>
+                                    <td></td>
+                                    <td style="text-align: right; font-weight: 700; font-size: 1.1rem; color: #059669;">
+                                        € ${totaleEuro.toFixed(2)}
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
 
                     <!-- Azioni Export -->
-                    <div class="azienda-actions">
+                    <div class="azienda-actions" style="margin-top: 1.5rem;">
                         <button class="azienda-action-btn primary" onclick="exportAziendaExcel('${aziendaName}')">
                             📊 Export Excel
                         </button>
@@ -20354,7 +20511,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     </div>
 
                     <!-- Note Fornitore -->
-                    <div class="azienda-note">
+                    <div class="azienda-note" style="margin-top: 1.5rem;">
                         <div class="azienda-note-title">
                             📝 Note Fornitore
                         </div>
