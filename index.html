@@ -6,7 +6,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.01 - CHANGELOG
+    DASHBOARD RILIEVI v8.02 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.02 (05 DIC 2025):
+    - 📦 PRODOTTI IN ALTO: "Prodotti e Configurazioni" ora è la PRIMA sezione
+    - 🔄 SEZIONI COLLASSABILI: "Misure Complete" e "Caratteristiche Muro" chiuse di default
+    - 🔄 CLICK PER APRIRE: Freccia ▼ per espandere le sezioni tecniche
+    - 🔄 BADGE CONTEGGIO: Mostra quante misure/dati ci sono
+    - 🚫 NASCONDI VUOTI: Se Caratteristiche Muro ha tutti N/D, non viene mostrato
+    - 🚫 NASCONDI VUOTI: Se Misure Complete non ha dati, non viene mostrato
     
     🔧 AGGIORNAMENTI v8.01 (04 DIC 2025):
     - 📱 CSS RESPONSIVE COMPLETO: Ottimizzato per iPad, tablet e smartphone
@@ -1203,13 +1211,13 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.01 - Responsive iPad/Smartphone</title>
+    <title>Dashboard Rilievi v8.02 - Prodotti Prima + Sezioni Collassabili</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.01";
-        const DASHBOARD_DATE = "04 DIC 2025";
+        const DASHBOARD_VERSION = "8.02";
+        const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
         // 🔄 FUNZIONE AGGIORNAMENTO VERSIONE AUTOMATICO
@@ -6562,6 +6570,51 @@
                 opacity: 0.9;
             }
         }
+        
+        /* ═══════════════════════════════════════════════════════════════════════════
+           🔄 v8.02 - SEZIONI COLLASSABILI
+           ═══════════════════════════════════════════════════════════════════════════ */
+        
+        .collapsible-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .collapsible-section .position-section-title {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            margin: 0;
+            padding: 1rem 1.25rem;
+            border-bottom: none;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .collapsible-section .position-section-title:hover {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        }
+        
+        .collapsible-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .collapsible-arrow {
+            font-size: 0.8rem;
+            color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+        
+        .collapsible-count {
+            font-weight: 500;
+        }
+        
+        .collapsible-content {
+            padding: 0 1.25rem 1.25rem;
+            background: white;
+        }
     </style>
     
     <!-- ================================================================================
@@ -10880,7 +10933,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.01</span>
+                <span class="logo-version" id="version-badge">v8.02</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -21074,11 +21127,12 @@ if (typeof module !== 'undefined' && module.exports) {
             const pos = filteredPositions[index];
             const container = document.getElementById('positionDetailCard');
             
+            // 🔄 v8.02: Nuovo ordine - Prodotti PRIMA, poi sezioni tecniche collassabili
             container.innerHTML = `
                 ${renderPositionHeader(pos)}
-                ${renderPositionMeasures(pos)}
-                ${renderPositionWallChars(pos)}
                 ${renderPositionProducts(pos)}
+                ${renderPositionMeasuresCollapsible(pos)}
+                ${renderPositionWallCharsCollapsible(pos)}
                 ${renderPositionPreexisting(pos)}
                 ${renderPositionNotes(pos)}
                 ${renderPositionNavigation(index)}
@@ -21106,15 +21160,15 @@ if (typeof module !== 'undefined' && module.exports) {
         }
 
         // ============================================================================
-        // SEZIONE B: MISURE COMPLETE
+        // SEZIONE B: MISURE COMPLETE - COLLASSABILE v8.02
         // ============================================================================
-        function renderPositionMeasures(pos) {
+        function renderPositionMeasuresCollapsible(pos) {
             const m = pos.misure || {};
             
             // 🔧 Helper per convertire valore (evita [object Object])
             const getVal = (val) => {
                 if (val === null || val === undefined) return null;
-                if (typeof val === 'object') return null; // Salta oggetti
+                if (typeof val === 'object') return null;
                 return val;
             };
             
@@ -21137,52 +21191,71 @@ if (typeof module !== 'undefined' && module.exports) {
                 { label: 'Dislivello Piana Sotto', value: getVal(m.profPianaSotto) }
             ];
             
+            // Conta misure disponibili
+            const mainCount = mainMeasures.filter(m => m.value != null).length;
+            const addCount = additionalMeasures.filter(m => m.value != null).length;
+            const totalCount = mainCount + addCount;
+            
+            // Se non ci sono misure, non mostrare nulla
+            if (totalCount === 0) return '';
+            
+            const uniqueId = 'measures_' + Math.random().toString(36).substr(2, 9);
+            
             return `
-                <div class="position-section">
-                    <h3 class="position-section-title">
+                <div class="position-section collapsible-section">
+                    <h3 class="position-section-title collapsible-header" onclick="toggleCollapsible('${uniqueId}')" style="cursor: pointer; user-select: none;">
                         <span class="position-section-icon">📏</span>
                         Misure Complete
+                        <span style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="collapsible-count" style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">${totalCount} misure</span>
+                            <span class="collapsible-arrow" id="arrow_${uniqueId}" style="transition: transform 0.3s;">▼</span>
+                        </span>
                     </h3>
-                    
-                    <h4 style="font-size: 0.95rem; font-weight: 600; color: #6b7280; margin-bottom: 1rem;">
-                        Misure Principali
-                    </h4>
-                    <table class="measures-table">
-                        <tbody>
-                            ${mainMeasures.filter(m => m.value != null).map(m => `
-                                <tr>
-                                    <td class="measure-label">${m.label}</td>
-                                    <td class="measure-value">
-                                        <span class="measure-highlight">${m.value} mm</span>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    
-                    <h4 style="font-size: 0.95rem; font-weight: 600; color: #6b7280; margin: 1.5rem 0 1rem;">
-                        Misure Aggiuntive
-                    </h4>
-                    <table class="measures-table">
-                        <tbody>
-                            ${additionalMeasures.filter(m => m.value != null).map(m => `
-                                <tr>
-                                    <td class="measure-label">${m.label}</td>
-                                    <td class="measure-value">${m.value} mm</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                    <div class="collapsible-content" id="${uniqueId}" style="display: none; padding-top: 1rem;">
+                        ${mainCount > 0 ? `
+                            <h4 style="font-size: 0.95rem; font-weight: 600; color: #6b7280; margin-bottom: 1rem;">
+                                Misure Principali
+                            </h4>
+                            <table class="measures-table">
+                                <tbody>
+                                    ${mainMeasures.filter(m => m.value != null).map(m => `
+                                        <tr>
+                                            <td class="measure-label">${m.label}</td>
+                                            <td class="measure-value">
+                                                <span class="measure-highlight">${m.value} mm</span>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : ''}
+                        
+                        ${addCount > 0 ? `
+                            <h4 style="font-size: 0.95rem; font-weight: 600; color: #6b7280; margin: 1.5rem 0 1rem;">
+                                Misure Aggiuntive
+                            </h4>
+                            <table class="measures-table">
+                                <tbody>
+                                    ${additionalMeasures.filter(m => m.value != null).map(m => `
+                                        <tr>
+                                            <td class="measure-label">${m.label}</td>
+                                            <td class="measure-value">${m.value} mm</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        ` : ''}
+                    </div>
                 </div>
             `;
         }
 
         // ============================================================================
-        // SEZIONE C: CARATTERISTICHE MURO
+        // SEZIONE C: CARATTERISTICHE MURO - COLLASSABILE v8.02
         // ============================================================================
-        function renderPositionWallChars(pos) {
+        function renderPositionWallCharsCollapsible(pos) {
             const override = pos.caratteristiche_muro_override || {};
-            const global = currentData.caratteristiche_muro_globali || {};
+            const global = currentData?.caratteristiche_muro_globali || {};
             const hasOverride = Object.keys(override).length > 0;
             
             // Usa override se presente, altrimenti globale
@@ -21190,34 +21263,76 @@ if (typeof module !== 'undefined' && module.exports) {
             
             const items = [
                 { label: 'Telaio', value: chars.telaio_larghezza && chars.telaio_altezza ? 
-                    `${chars.telaio_larghezza} × ${chars.telaio_altezza} mm` : 'N/D' },
-                { label: 'Falso Esistente', value: chars.falso_esistente || 'N/D' },
-                { label: 'Spessore Falso', value: chars.spessore_falso ? `${chars.spessore_falso} mm` : 'N/D' },
-                { label: 'Profondità Muro INT', value: chars.prof_muro_int ? `${chars.prof_muro_int} mm` : 'N/D' },
-                { label: 'Profondità Muro EST', value: chars.prof_muro_est ? `${chars.prof_muro_est} mm` : 'N/D' },
-                { label: 'Guida Tipo', value: chars.guida_tipo || 'N/D' },
-                { label: 'Coprifilo', value: chars.coprifilo_larghezza ? `${chars.coprifilo_larghezza} mm` : 'N/D' },
+                    `${chars.telaio_larghezza} × ${chars.telaio_altezza} mm` : null },
+                { label: 'Falso Esistente', value: chars.falso_esistente || null },
+                { label: 'Spessore Falso', value: chars.spessore_falso ? `${chars.spessore_falso} mm` : null },
+                { label: 'Profondità Muro INT', value: chars.prof_muro_int ? `${chars.prof_muro_int} mm` : null },
+                { label: 'Profondità Muro EST', value: chars.prof_muro_est ? `${chars.prof_muro_est} mm` : null },
+                { label: 'Guida Tipo', value: chars.guida_tipo || null },
+                { label: 'Coprifilo', value: chars.coprifilo_larghezza ? `${chars.coprifilo_larghezza} mm` : null },
                 { label: 'Battuta Sup. Tapparella', value: chars.battuta_superiore_tapparella ? 
-                    `${chars.battuta_superiore_tapparella} mm` : 'N/D' }
+                    `${chars.battuta_superiore_tapparella} mm` : null }
             ];
             
+            // Conta solo valori reali (non N/D)
+            const validItems = items.filter(item => item.value !== null);
+            
+            // 🔄 v8.02: Se TUTTI sono null/N/D, NON mostrare la sezione
+            if (validItems.length === 0) return '';
+            
+            const uniqueId = 'wallchars_' + Math.random().toString(36).substr(2, 9);
+            
             return `
-                <div class="position-section">
-                    <h3 class="position-section-title">
+                <div class="position-section collapsible-section">
+                    <h3 class="position-section-title collapsible-header" onclick="toggleCollapsible('${uniqueId}')" style="cursor: pointer; user-select: none;">
                         <span class="position-section-icon">🧱</span>
                         Caratteristiche Muro
                         ${hasOverride ? '<span class="override-badge">OVERRIDE</span>' : ''}
+                        <span style="margin-left: auto; display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="collapsible-count" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">${validItems.length} dati</span>
+                            <span class="collapsible-arrow" id="arrow_${uniqueId}" style="transition: transform 0.3s;">▼</span>
+                        </span>
                     </h3>
-                    <div class="wall-chars-grid">
-                        ${items.map(item => `
-                            <div class="wall-char-item">
-                                <div class="wall-char-label">${item.label}</div>
-                                <div class="wall-char-value">${item.value}</div>
-                            </div>
-                        `).join('')}
+                    <div class="collapsible-content" id="${uniqueId}" style="display: none; padding-top: 1rem;">
+                        <div class="wall-chars-grid">
+                            ${validItems.map(item => `
+                                <div class="wall-char-item">
+                                    <div class="wall-char-label">${item.label}</div>
+                                    <div class="wall-char-value">${item.value}</div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             `;
+        }
+        
+        // 🔄 v8.02: Funzione toggle per sezioni collassabili
+        function toggleCollapsible(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById('arrow_' + id);
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                if (arrow) arrow.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.display = 'none';
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // ============================================================================
+        // SEZIONE B LEGACY: MISURE COMPLETE (mantenuta per compatibilità)
+        // ============================================================================
+        function renderPositionMeasures(pos) {
+            return renderPositionMeasuresCollapsible(pos);
+        }
+
+        // ============================================================================
+        // SEZIONE C LEGACY: CARATTERISTICHE MURO (mantenuta per compatibilità)
+        // ============================================================================
+        function renderPositionWallChars(pos) {
+            return renderPositionWallCharsCollapsible(pos);
         }
 
         // ============================================================================
