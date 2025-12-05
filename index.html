@@ -10,12 +10,16 @@
     
     🔧 AGGIORNAMENTI v8.11 (05 DIC 2025):
     - ✅ FIX CRITICO: MOTORI ora sommati al totale materiali (erano esclusi!)
+    - ✅ FIX CRITICO: CASSONETTI gruppo colore determinato da codice colore (ignora gruppoColoreCass)
+    - ✅ FIX: Cassonetti Modello ora mostra "PVC 300" invece di "N/D"
+    - ✅ FIX: Cassonetti Colore ora mostra coloreCass invece di "N/D"
     - ✅ FIX: Soglia ribassata PF prezzo corretto (53.40 → 54.50 €/ml)
     - ✅ NUOVO: Maniglietta esterna per porte-finestre (codice 454 = €39.10)
     - ✅ FIX: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
     - ✅ FIX: Supplemento maniglia (712 → 7120 = €11.60)
     - ✅ Separato TELAIO (961) da TIPO ANTA (Nova-line) nel preventivo
-    - ✅ Dettaglio costi mostra: telaio, anta, soglia, maniglietta separati
+    - ✅ determinaGruppoColoreCassonetto(): 01,07,27,42,45=bianco | 06,13,19,46,55=scuri
+    - ✅ Aggiunto alias "posaclima" per isolamento cassonetto (codice 40830)
     
     🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
     
@@ -1249,7 +1253,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.11 - Fix Motori Totale</title>
+    <title>Dashboard Rilievi v8.11 - Fix Motori + Cassonetti</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -17152,7 +17156,11 @@ if (typeof module !== 'undefined' && module.exports) {
             // ═══════════════════════════════════════════════════════════════════════
             isolamento: {
                 "40830": { spessore: "25mm", prezzo: 63.1, dimensioni: "1000x790mm", usbRisultante: 0.87 },
-                "40831": { spessore: "13mm", prezzo: 47.4, dimensioni: "1000x790mm", usbRisultante: 0.87 }
+                "40831": { spessore: "13mm", prezzo: 47.4, dimensioni: "1000x790mm", usbRisultante: 0.87 },
+                // ✅ v8.11: Alias per codici OpenPorte
+                "posaclima": { spessore: "25mm", prezzo: 63.1, dimensioni: "1000x790mm", usbRisultante: 0.87 },  // Alias per 40830
+                "posaclima25": { spessore: "25mm", prezzo: 63.1, dimensioni: "1000x790mm", usbRisultante: 0.87 },
+                "posaclima13": { spessore: "13mm", prezzo: 47.4, dimensioni: "1000x790mm", usbRisultante: 0.87 }
             },
             
             // ═══════════════════════════════════════════════════════════════════════
@@ -17170,6 +17178,40 @@ if (typeof module !== 'undefined' && module.exports) {
         };
         
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
+
+        // ✅ v8.11: Funzione per determinare gruppo colore cassonetto da codice
+        // Ignora gruppoColoreCass e usa il codice colore effettivo
+        function determinaGruppoColoreCassonetto(coloreCass) {
+            if (!coloreCass) return 'bianco'; // Default
+            
+            // Estrai codice numerico dal colore (es. "27" da "27 - Bianco perla")
+            const match = coloreCass.match(/^(\d{2})/);
+            if (!match) return 'bianco';
+            
+            const codice = match[1];
+            
+            // Codici bianco (dal listino Finstral pag. 141)
+            const codiciBianco = ['01', '07', '27', '42', '45'];
+            // Codici scuri (dal listino Finstral pag. 141)  
+            const codiciScuri = ['06', '13', '19', '46', '55'];
+            
+            if (codiciBianco.includes(codice)) {
+                console.log(`📦 Colore cassonetto "${coloreCass}" → BIANCO (codice ${codice})`);
+                return 'bianco';
+            } else if (codiciScuri.includes(codice)) {
+                console.log(`📦 Colore cassonetto "${coloreCass}" → SCURI (codice ${codice})`);
+                return 'scuri';
+            } else {
+                // Fallback: cerca parole chiave nel nome
+                const lower = coloreCass.toLowerCase();
+                if (lower.includes('bianco') || lower.includes('perla') || lower.includes('satinato')) {
+                    return 'bianco';
+                } else if (lower.includes('grigio') || lower.includes('decoro') || lower.includes('legno') || lower.includes('castagno') || lower.includes('rovere')) {
+                    return 'scuri';
+                }
+                return 'bianco'; // Default conservativo
+            }
+        }
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 v8.09: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
@@ -18672,7 +18714,9 @@ if (typeof module !== 'undefined' && module.exports) {
                     const azienda = cass.azienda || 'Finstral';
                     const materialeCass = cass.materialeCass || 'PVC';
                     const codiceCass = cass.codiceCass || '';
-                    const gruppoColoreCass = cass.gruppoColoreCass || 'bianco';
+                    // ✅ v8.11: Determina gruppo colore dal codice colore effettivo, non da gruppoColoreCass
+                    const coloreCass = cass.coloreCass || '';
+                    const gruppoColoreCass = determinaGruppoColoreCassonetto(coloreCass);
                     const codiceIsolamento = cass.isolamentoPosaclima ? (cass.codiceIsolamento || '') : '';
                     
                     if (L_mm > 0 && A_mm > 0 && azienda.toLowerCase() === 'finstral') {
@@ -20818,7 +20862,17 @@ if (typeof module !== 'undefined' && module.exports) {
                         
                         // Aggiungi prodotto (NON tapparelle - già gestite sopra)
                         // 🔐 v7.98: Per blindata modello = versione
-                        const modelloEffettivo = tipoProdotto === 'blindata' ? (prodotto.versione || 'E3') : (prodotto.tipo || 'N/D');
+                        // ✅ v8.11: Per cassonetto modello = materialeCass + codiceCass (es. "PVC 300")
+                        let modelloEffettivo = 'N/D';
+                        if (tipoProdotto === 'blindata') {
+                            modelloEffettivo = prodotto.versione || 'E3';
+                        } else if (tipoProdotto === 'cassonetto') {
+                            const mat = prodotto.materialeCass || 'PVC';
+                            const cod = prodotto.codiceCass || '';
+                            modelloEffettivo = cod ? `${mat} ${cod}` : mat;
+                        } else {
+                            modelloEffettivo = prodotto.tipo || 'N/D';
+                        }
                         
                         aziendaData.prodotti.push({
                             tipo: tipoProdotto,
@@ -20829,8 +20883,13 @@ if (typeof module !== 'undefined' && module.exports) {
                             modello: modelloEffettivo,
                             configurazione: tipoProdotto === 'blindata' ? 
                                 `${prodotto.tipoAnta === 'doppia' ? '2 Ante' : '1 Anta'} | ${prodotto.sensoApertura || ''} | ${prodotto.controtelaio === 'si' ? 'Con CT' : 'Senza CT'}` :
-                                getProdottoConfigString(prodotto),
-                            colore: tipoProdotto === 'blindata' ? (prodotto.coloreTelaio || 'RAL8022') : (prodotto.finitura_int || prodotto.colore || 'N/D'),
+                                (tipoProdotto === 'cassonetto' ? 
+                                    (prodotto.isolamentoPosaclima ? 'Con Posaclima' : 'Standard') :
+                                    getProdottoConfigString(prodotto)),
+                            // ✅ v8.11: Per cassonetto usa coloreCass
+                            colore: tipoProdotto === 'blindata' ? (prodotto.coloreTelaio || 'RAL8022') : 
+                                    (tipoProdotto === 'cassonetto' ? (prodotto.coloreCass || 'Bianco') :
+                                    (prodotto.finitura_int || prodotto.colore || 'N/D')),
                             note: prodotto.note || '',
                             prezzoUnitario: prezzoUnitario,
                             prezzoTotale: prezzoTotale,
