@@ -6,17 +6,18 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.10 - CHANGELOG
+    DASHBOARD RILIEVI v8.11 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
-    - ✅ FIX CRITICO: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
-    - ✅ FIX CRITICO: Supplemento maniglia (712 → 7120 = €11.60)
+    🔧 AGGIORNAMENTI v8.11 (05 DIC 2025):
+    - ✅ FIX CRITICO: MOTORI ora sommati al totale materiali (erano esclusi!)
     - ✅ FIX: Soglia ribassata PF prezzo corretto (53.40 → 54.50 €/ml)
     - ✅ NUOVO: Maniglietta esterna per porte-finestre (codice 454 = €39.10)
+    - ✅ FIX: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
+    - ✅ FIX: Supplemento maniglia (712 → 7120 = €11.60)
     - ✅ Separato TELAIO (961) da TIPO ANTA (Nova-line) nel preventivo
-    - ✅ Aggiunta tabella rivestimentiTelaiAlluminio con gruppi colore A/B
     - ✅ Dettaglio costi mostra: telaio, anta, soglia, maniglietta separati
-    - ✅ getManigliaByCode: padding automatico codici 3→4 cifre
+    
+    🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
     
     🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
     - 📊 TABELLA FULL-WIDTH: Preventivo visibile senza scroll orizzontale
@@ -1248,7 +1249,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.10 - Supplementi Telaio Alluminio</title>
+    <title>Dashboard Rilievi v8.11 - Fix Motori Totale</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -11158,7 +11159,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.10</span>
+                <span class="logo-version" id="version-badge">v8.11</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -18417,7 +18418,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                 _dettaglioKit: prezzoKit.dettaglio
                             });
                             
-                            console.log(`✅ Motore Pos ${index + 1}: ${modelloId} = €${prezzoMotore.toFixed(2)}`);
+                            // ✅ v8.11 FIX CRITICO: Somma motori al totale materiali
+                            totaleMateriali += prezzoMotore * quantita;
+                            numeroPezzi += quantita;
+                            
+                            console.log(`✅ Motore Pos ${index + 1}: ${modelloId} = €${prezzoMotore.toFixed(2)} (aggiunto a totale)`);
                             console.log(`   Dettaglio:`, prezzoKit.dettaglio);
                         });
                     } else {
@@ -18452,7 +18457,11 @@ if (typeof module !== 'undefined' && module.exports) {
                             _tipoMotore: true
                         });
                         
-                        console.log(`✅ Motore Pos ${index + 1}: ${modelloDefault} (default) = €${prezzoMotore.toFixed(2)}`);
+                        // ✅ v8.11 FIX CRITICO: Somma motori al totale materiali
+                        totaleMateriali += prezzoMotore * quantita;
+                        numeroPezzi += quantita;
+                        
+                        console.log(`✅ Motore Pos ${index + 1}: ${modelloDefault} (default) = €${prezzoMotore.toFixed(2)} (aggiunto a totale)`);
                     }
                 }
                 
