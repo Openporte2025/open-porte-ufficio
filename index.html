@@ -11,10 +11,11 @@
     🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
     - ✅ FIX CRITICO: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
     - ✅ FIX CRITICO: Supplemento maniglia (712 → 7120 = €11.60)
+    - ✅ FIX: Soglia ribassata PF prezzo corretto (53.40 → 54.50 €/ml)
+    - ✅ NUOVO: Maniglietta esterna per porte-finestre (codice 454 = €39.10)
     - ✅ Separato TELAIO (961) da TIPO ANTA (Nova-line) nel preventivo
     - ✅ Aggiunta tabella rivestimentiTelaiAlluminio con gruppi colore A/B
-    - ✅ Dettaglio costi mostra telaio e anta separatamente
-    - ✅ Calcolo rivestimento considera colore alluminio (Lxx = gruppo B)
+    - ✅ Dettaglio costi mostra: telaio, anta, soglia, maniglietta separati
     - ✅ getManigliaByCode: padding automatico codici 3→4 cifre
     
     🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
@@ -16404,9 +16405,10 @@ if (typeof module !== 'undefined' && module.exports) {
             },
 
             // ✅ v7.73: SOGLIA PORTA-FINESTRA (EUR/ml)
+            // ✅ v8.10: Corretto prezzo da 53.40 a 54.50 (listino Finstral)
             supplementiSoglia: {
-                "codice3": 53.40,        // Soglia standard
-                "codice3_scorrevole": 53.40,
+                "codice3": 54.50,         // Soglia ribassata a taglio termico
+                "codice3_scorrevole": 54.50,
                 allargamento30: 24.10,   // +30mm PVC
                 allargamento30K: 25.90   // +30mm alluminio
             },
@@ -18111,14 +18113,21 @@ if (typeof module !== 'undefined' && module.exports) {
                         
                         // ✅ v7.74: Supplemento SOGLIA se porta-finestra (PF1, PF2, o H>=1800)
                         let supplementoSoglia = 0;
+                        let supplementoManigliettaPF = 0;  // ✅ v8.10: Maniglietta esterna PF
                         // FIX: 'pf2'.includes('p2') = FALSE! Usiamo startsWith + controllo altezza
                         const isPortaFinestra = tipoInfisso.startsWith('pf') || tipoInfisso.startsWith('p1') || tipoInfisso.startsWith('p2') ||
                                                tipoInfisso.includes('porta') || apertura.includes('porta') ||
                                                H_mm >= 1800;  // Logica Finstral: altezza >= 1800mm = porta-finestra
                         if (isPortaFinestra) {
                             const larghezza_ml = L_mm / 1000;
-                            supplementoSoglia = larghezza_ml * (FINSTRAL_PREZZI.supplementiSoglia?.["codice3"] || 53.40);
-                            console.log(`🚪 Soglia porta-finestra: ${larghezza_ml.toFixed(2)}ml × €53.40 = €${supplementoSoglia.toFixed(2)}`);
+                            // ✅ v8.10: Soglia ribassata codice 3 = 54.50 €/ml
+                            supplementoSoglia = larghezza_ml * (FINSTRAL_PREZZI.supplementiSoglia?.["codice3"] || 54.50);
+                            console.log(`🚪 Soglia porta-finestra: ${larghezza_ml.toFixed(2)}ml × €54.50 = €${supplementoSoglia.toFixed(2)}`);
+                            
+                            // ✅ v8.10: Maniglietta esterna per porte-finestre (codice 454)
+                            // Obbligatoria per Nova-line e altre ante
+                            supplementoManigliettaPF = 39.10;  // €/pezzo
+                            console.log(`🚪 Maniglietta esterna PF: €${supplementoManigliettaPF.toFixed(2)}`);
                         }
                         
                         // ✅ v7.75: Supplemento TAGLI TELAIO (codici dal JSON)
@@ -18143,8 +18152,8 @@ if (typeof module !== 'undefined' && module.exports) {
                         }
                         
                         // Prezzo unitario (con tutti i supplementi)
-                        // ✅ v7.75: Aggiunto supplementoTagli
-                        const supplementoTotale = supplementoTelaio + supplementoProfiloAnta + supplementoVetro + supplementoManiglia + supplementoColore + supplementoMontante + supplementoSoglia + supplementoTagli;
+                        // ✅ v8.10: Aggiunto supplementoManigliettaPF
+                        const supplementoTotale = supplementoTelaio + supplementoProfiloAnta + supplementoVetro + supplementoManiglia + supplementoColore + supplementoMontante + supplementoSoglia + supplementoTagli + supplementoManigliettaPF;
                         const prezzoUnitario = prezzoBase + supplementoTotale;
                         
                         // Quantità (priorità: pos.quantita > infisso.qta > 1)
@@ -18173,6 +18182,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             supplementoManiglia: supplementoManiglia.toFixed(2),
                             supplementoMontante: supplementoMontante.toFixed(2),  // ✅ v7.73: NUOVO
                             supplementoSoglia: supplementoSoglia.toFixed(2),  // ✅ v7.74: NUOVO
+                            supplementoManigliettaPF: supplementoManigliettaPF.toFixed(2),  // ✅ v8.10: NUOVO
                             supplementoTagli: supplementoTagli.toFixed(2),  // ✅ v7.75: NUOVO
                             tagli: taglioDescrizione || '',  // ✅ v7.75: Codici taglio applicati
                             isPortaFinestra: isPortaFinestra,  // ✅ v7.74: Flag per debug
@@ -19280,6 +19290,8 @@ if (typeof module !== 'undefined' && module.exports) {
                 const suppColore = parseFloat(rigaPreventivo.supplementoColore) || 0;
                 const suppManiglia = parseFloat(rigaPreventivo.supplementoManiglia) || 0;
                 const suppMontante = parseFloat(rigaPreventivo.supplementoMontante) || 0;
+                const suppSoglia = parseFloat(rigaPreventivo.supplementoSoglia) || 0;  // ✅ v8.10
+                const suppManigliettaPF = parseFloat(rigaPreventivo.supplementoManigliettaPF) || 0;  // ✅ v8.10
                 const prezzoUnitario = parseFloat(rigaPreventivo.prezzoUnitario) || 0;
                 const quantita = parseInt(rigaPreventivo.quantita) || 1;
                 const totale = parseFloat(rigaPreventivo.totale) || 0;
@@ -19414,6 +19426,32 @@ if (typeof module !== 'undefined' && module.exports) {
                                     </td>
                                     <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #9333ea;">
                                         € ${suppMontante.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${suppSoglia > 0 ? `
+                                <!-- ✅ v8.10: SUPPLEMENTO SOGLIA -->
+                                <tr>
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🚪 Soglia Ribassata</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Codice 3 - Taglio termico</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #ea580c;">
+                                        € ${suppSoglia.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${suppManigliettaPF > 0 ? `
+                                <!-- ✅ v8.10: MANIGLIETTA ESTERNA PF -->
+                                <tr style="background: #f9fafb;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🔑 Maniglietta Esterna</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Per porta-finestra</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #be185d;">
+                                        € ${suppManigliettaPF.toFixed(2)}
                                     </td>
                                 </tr>
                                 ` : ''}
