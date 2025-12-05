@@ -6,7 +6,14 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.09 - CHANGELOG
+    DASHBOARD RILIEVI v8.10 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
+    - ✅ FIX CRITICO: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
+    - ✅ Separato TELAIO (961) da TIPO ANTA (Nova-line) nel preventivo
+    - ✅ Aggiunta tabella rivestimentiTelaiAlluminio con gruppi colore A/B
+    - ✅ Dettaglio costi mostra telaio e anta separatamente
+    - ✅ Calcolo rivestimento considera colore alluminio (Lxx = gruppo B)
     
     🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
     - 📊 TABELLA FULL-WIDTH: Preventivo visibile senza scroll orizzontale
@@ -1238,7 +1245,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.09 - Codici Finstral</title>
+    <title>Dashboard Rilievi v8.10 - Supplementi Telaio Alluminio</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -11134,7 +11141,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.09</span>
+                <span class="logo-version" id="version-badge">v8.10</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -16341,6 +16348,31 @@ if (typeof module !== 'undefined' && module.exports) {
                 "Z91": { pvc: 16.10, alluminio: 21.70 }
             },
 
+            // ✅ v8.10: RIVESTIMENTO TELAIO ALLUMINIO (€/ml) - Listino EUR 2025/3 pag.10-11
+            // Questo è il supplemento per il RIVESTIMENTO esterno in alluminio
+            // Si applica INVECE di supplementiTelaio quando finituraEst = alluminio
+            rivestimentiTelaiAlluminio: {
+                // Codice telaio + tipo rivestimento: { gruppoA (bianco), gruppoB (scuri/legno) }
+                "961N":  { gruppoA: 17.2, gruppoB: 20.4 },   // Standard
+                "961N5": { gruppoA: 18.0, gruppoB: 19.3 },   // Sottile
+                "961X":  { gruppoA: 23.6, gruppoB: 25.4 },   // Speciale (solo laterali/superiore)
+                "962N":  { gruppoA: 17.2, gruppoB: 22.4 },
+                "962N5": { gruppoA: 18.0, gruppoB: 19.3 },
+                "963N":  { gruppoA: 18.0, gruppoB: 24.9 },
+                "963N5": { gruppoA: 18.0, gruppoB: 19.3 },
+                "967N":  { gruppoA: 20.4, gruppoB: 24.0 },   // Forma Z
+                "Z62N":  { gruppoA: 18.0, gruppoB: 22.0 },
+                "Z91N":  { gruppoA: 22.0, gruppoB: 26.0 }
+            },
+
+            // ✅ v8.10: Colori alluminio gruppo B (scuri/legno verniciato)
+            // Iniziano con L (Lxx) o sono colori scuri
+            coloriAlluminioGruppoB: [
+                "L01", "L02", "L03", "L04", "L05", "L06", "L07", "L08", "L09", "L10",
+                "L11", "L12", "L13", "L14", "L15", "L16", "L17", "L18", "L19", "L20",
+                "L21", "L22", "L23", "L24", "L25", "L26", "L27", "L28", "L29", "L30"
+            ],
+
             // SUPPLEMENTI VETRO (EUR/m²) - Listino 2025/3
             supplementiVetro: {
                 "2F48": 0,           // Doppio base (incluso)
@@ -16763,15 +16795,48 @@ if (typeof module !== 'undefined' && module.exports) {
             // ✅ v7.73: Normalizza tipo anta PRIMA di usarlo
             const antaNorm = tipoAnta.toLowerCase().replace(/\s+/g, '-');
             
-            // Supplemento telaio
-            const supplTelaio = FINSTRAL_PREZZI.supplementiTelaio[telaio];
-            if (supplTelaio) {
-                const valoreSuppl = supplTelaio[materiale];
-                console.log(`🔬 Telaio ${telaio}: supplTelaio[${materiale}] = €${valoreSuppl}/ml × ${perimetro.toFixed(2)}ml`);
-                risultato.dettaglio.supplementoTelaio = Math.round(valoreSuppl * perimetro * 100) / 100;
-                console.log(`🔬 → supplementoTelaio = €${risultato.dettaglio.supplementoTelaio}`);
+            // ✅ v8.10: Supplemento telaio CON RIVESTIMENTO ALLUMINIO
+            // Se finitura esterna = alluminio, usa tabella rivestimenti (961N, etc.)
+            // altrimenti usa supplemento base telaio
+            if (materiale === 'alluminio' && coloreAlluminio) {
+                // Determina codice rivestimento (es. 961 → 961N)
+                const codiceRiv = telaio + "N";
+                const rivData = FINSTRAL_PREZZI.rivestimentiTelaiAlluminio?.[codiceRiv];
+                
+                if (rivData) {
+                    // Determina gruppo colore: A (chiari) o B (scuri/legno)
+                    const colUpper = String(coloreAlluminio).toUpperCase();
+                    const isGruppoB = colUpper.startsWith('L') || 
+                                      FINSTRAL_PREZZI.coloriAlluminioGruppoB?.some(c => colUpper.includes(c));
+                    const valoreRiv = isGruppoB ? rivData.gruppoB : rivData.gruppoA;
+                    
+                    console.log(`🔬 Rivestimento ${codiceRiv}: colore ${coloreAlluminio} → gruppo ${isGruppoB ? 'B' : 'A'} = €${valoreRiv}/ml × ${perimetro.toFixed(2)}ml`);
+                    risultato.dettaglio.supplementoTelaio = Math.round(valoreRiv * perimetro * 100) / 100;
+                    risultato.dettaglio.codiceRivestimento = codiceRiv;
+                    risultato.dettaglio.gruppoColoreTelaio = isGruppoB ? 'B' : 'A';
+                    console.log(`🔬 → supplementoTelaio (rivestimento) = €${risultato.dettaglio.supplementoTelaio}`);
+                } else {
+                    // Fallback a supplemento base se rivestimento non trovato
+                    const supplTelaio = FINSTRAL_PREZZI.supplementiTelaio[telaio];
+                    if (supplTelaio) {
+                        const valoreSuppl = supplTelaio[materiale];
+                        console.log(`🔬 Telaio ${telaio}: supplTelaio[${materiale}] = €${valoreSuppl}/ml × ${perimetro.toFixed(2)}ml (rivestimento ${telaio}N non trovato)`);
+                        risultato.dettaglio.supplementoTelaio = Math.round(valoreSuppl * perimetro * 100) / 100;
+                    } else {
+                        risultato.dettaglio.supplementoTelaio = 0;
+                    }
+                }
             } else {
-                risultato.dettaglio.supplementoTelaio = 0;
+                // PVC-PVC: usa supplemento base telaio
+                const supplTelaio = FINSTRAL_PREZZI.supplementiTelaio[telaio];
+                if (supplTelaio) {
+                    const valoreSuppl = supplTelaio[materiale] || supplTelaio['pvc'] || 0;
+                    console.log(`🔬 Telaio ${telaio}: supplTelaio[${materiale}] = €${valoreSuppl}/ml × ${perimetro.toFixed(2)}ml`);
+                    risultato.dettaglio.supplementoTelaio = Math.round(valoreSuppl * perimetro * 100) / 100;
+                    console.log(`🔬 → supplementoTelaio = €${risultato.dettaglio.supplementoTelaio}`);
+                } else {
+                    risultato.dettaglio.supplementoTelaio = 0;
+                }
             }
             
             // ✅ v7.79 FIX: Supplemento PROFILO ANTA su PERIMETRO BATTENTI (non finestra!)
@@ -18077,7 +18142,8 @@ if (typeof module !== 'undefined' && module.exports) {
                             ambiente: pos.ambiente || pos.nome || pos.stanza || `Pos ${index + 1}`,
                             tipo: `Infisso ${infisso.tipo || 'F2'}`,
                             azienda: infisso.azienda || data.configInfissi?.azienda || 'Finstral',
-                            telaio: `${telaio} - ${tipoAnta}`,
+                            telaio: telaio,  // ✅ v8.10: Solo codice telaio (es. "961")
+                            tipoAnta: tipoAnta,  // ✅ v8.10: Tipo anta separato (es. "Nova-line")
                             larghezza: L_mm,
                             altezza: H_mm,
                             superficie: superficie_mq.toFixed(2),
@@ -19185,6 +19251,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 const superficie = rigaPreventivo.superficie || '0.00';
                 const perimetro = rigaPreventivo.perimetro || '-';
                 const telaio = rigaPreventivo.telaio || 'N/D';
+                const tipoAnta = rigaPreventivo.tipoAnta || '';  // ✅ v8.10: Tipo anta separato
                 const azienda = rigaPreventivo.azienda || 'N/D';
                 const ambiente = rigaPreventivo.ambiente || `Pos ${posIndex}`;
                 const tipo = rigaPreventivo.tipo || 'Infisso';
@@ -19266,7 +19333,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <tr>
                                     <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
                                         <strong>🔲 Supplemento Telaio</strong><br>
-                                        <span style="font-size: 0.8rem; color: #6b7280;">${telaio}</span>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">${telaio}${telaio && azienda?.toLowerCase() === 'finstral' ? 'N' : ''} - Forma ad L</span>
                                     </td>
                                     <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #2563eb;">
                                         € ${suppTelaio.toFixed(2)}
@@ -19278,7 +19345,8 @@ if (typeof module !== 'undefined' && module.exports) {
                                 <!-- SUPPLEMENTO ANTA -->
                                 <tr style="background: #f9fafb;">
                                     <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
-                                        <strong>🚪 Supplemento Anta</strong>
+                                        <strong>🚪 Supplemento Anta</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">${tipoAnta || 'Profilo battente'}</span>
                                     </td>
                                     <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #7c3aed;">
                                         € ${suppAnta.toFixed(2)}
@@ -19378,6 +19446,13 @@ if (typeof module !== 'undefined' && module.exports) {
                             <strong>🔲 Telaio:</strong> ${telaio}
                         </div>
                     </div>
+                    ${tipoAnta ? `
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+                        <div style="background: #f0fdf4; padding: 0.75rem; border-radius: 0.375rem;">
+                            <strong>🚪 Anta:</strong> ${tipoAnta}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             `;
             
