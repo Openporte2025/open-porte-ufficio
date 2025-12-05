@@ -6,7 +6,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.04 - CHANGELOG
+    DASHBOARD RILIEVI v8.05 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.05 (05 DIC 2025):
+    - 📐 CODICI FINSTRAL: Database completo codiceModello + ferramenta1
+    - 📐 DECODIFICA AUTOMATICA: "401" → "2 ante con montante mobile"
+    - 📐 FERRAMENTA DECODIFICATA: "411" → "Anta/ribalta" + cerniere a-vista
+    - 📐 VISTA POSIZIONI: Sezione "🔩 APERTURA E FERRAMENTA" nel tab Infisso
+    - 📐 CERNIERE AUTOMATICHE: Derivate da ferramenta se non specificate
+    - 📐 FINSTRAL_CODICI: Nuovo database con helper getModello/getFerramenta
     
     🔧 AGGIORNAMENTI v8.04 (05 DIC 2025):
     - 📊 PREVENTIVO FULL-WIDTH: La tabella preventivo usa tutta la larghezza schermo
@@ -1228,12 +1236,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.04 - Preventivo Full-Width</title>
+    <title>Dashboard Rilievi v8.05 - Codici Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.04";
+        const DASHBOARD_VERSION = "8.05";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11088,7 +11096,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.04</span>
+                <span class="logo-version" id="version-badge">v8.05</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -17042,6 +17050,147 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
+        // 🔧 v8.05: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
+        // Fonte: OpenPorte v5.52 - FINSTRAL-CODICI-OPENPORTE.md
+        // ═══════════════════════════════════════════════════════════════════════════
+        const FINSTRAL_CODICI = {
+            // CODICI MODELLO (struttura finestra)
+            modelli: {
+                // 1 Campo
+                "101": { descrizione: "1 campo - anta", campi: 1, ante: 1 },
+                "102": { descrizione: "1 campo - fisso", campi: 1, ante: 0 },
+                // 2 Campi Orizzontali
+                "201": { descrizione: "2 ante (SX + DX)", campi: 2, ante: 2 },
+                "202": { descrizione: "Anta SX + fisso DX", campi: 2, ante: 1 },
+                "203": { descrizione: "Fisso SX + anta DX", campi: 2, ante: 1 },
+                "204": { descrizione: "2 fissi", campi: 2, ante: 0 },
+                // 2 Campi Verticali
+                "205": { descrizione: "2 ante verticali", campi: 2, ante: 2 },
+                "206": { descrizione: "Anta basso + fisso alto", campi: 2, ante: 1 },
+                "207": { descrizione: "Fisso basso + anta alto", campi: 2, ante: 1 },
+                "208": { descrizione: "2 fissi verticali", campi: 2, ante: 0 },
+                // 3 Campi
+                "301": { descrizione: "3 ante (SX + centro + DX)", campi: 3, ante: 3 },
+                "302": { descrizione: "Anta + fisso + anta", campi: 3, ante: 2 },
+                "303": { descrizione: "Fisso + anta + fisso", campi: 3, ante: 1 },
+                "304": { descrizione: "3 fissi", campi: 3, ante: 0 },
+                "321": { descrizione: "Fisso SX + anta centro + anta DX", campi: 3, ante: 2 },
+                "322": { descrizione: "Anta SX + anta centro + fisso DX", campi: 3, ante: 2 },
+                // 4 Campi
+                "316": { descrizione: "4 ante", campi: 4, ante: 4 },
+                "317": { descrizione: "4 fissi", campi: 4, ante: 0 },
+                // Con Montante Mobile
+                "401": { descrizione: "2 ante con montante mobile", campi: 2, ante: 2, montante: true },
+                "402": { descrizione: "Fisso basso + 2 ante montante alto", campi: 3, ante: 2, montante: true },
+                "403": { descrizione: "2 ante montante basso + fisso alto", campi: 3, ante: 2, montante: true },
+                "414": { descrizione: "Fisso SX + anta montante DX", campi: 2, ante: 1, montante: true },
+                "415": { descrizione: "Anta montante SX + fisso DX", campi: 2, ante: 1, montante: true },
+                "420": { descrizione: "Anta SX + anta montante DX", campi: 2, ante: 2, montante: true },
+                "421": { descrizione: "Anta montante SX + anta DX", campi: 2, ante: 2, montante: true },
+                "424": { descrizione: "3 ante con montante", campi: 3, ante: 3, montante: true },
+                // Bilico
+                "450": { descrizione: "Anta a bilico singola", campi: 1, ante: 1, bilico: true },
+                "451": { descrizione: "Bilico + fisso DX", campi: 2, ante: 1, bilico: true },
+                "452": { descrizione: "Fisso SX + bilico", campi: 2, ante: 1, bilico: true },
+                // Scorrevole
+                "500": { descrizione: "Scorrevole parallela", campi: 1, ante: 1, scorrevole: true },
+                "501": { descrizione: "Scorrevole parallela SX", campi: 1, ante: 1, scorrevole: true },
+                "510": { descrizione: "2 scorrevoli parallele", campi: 2, ante: 2, scorrevole: true },
+                "511": { descrizione: "Scorrevole parallela DX", campi: 1, ante: 1, scorrevole: true }
+            },
+            
+            // CODICI FERRAMENTA
+            ferramenta: {
+                // Anta/Ribalta
+                "411": { descrizione: "Anta/ribalta", cerniere: "a-vista" },
+                "211": { descrizione: "Anta/ribalta", cerniere: "a-scomparsa" },
+                "409": { descrizione: "Ribalta primaria", cerniere: "a-vista" },
+                "209": { descrizione: "Ribalta primaria", cerniere: "a-scomparsa" },
+                // Solo Anta
+                "430": { descrizione: "Anta interno", cerniere: "a-vista" },
+                "230": { descrizione: "Anta interno", cerniere: "a-scomparsa" },
+                "453": { descrizione: "Anta esterno", cerniere: "a-vista" },
+                // Solo Ribalta
+                "432": { descrizione: "Ribalta maniglia laterale", cerniere: null },
+                "232": { descrizione: "Ribalta", cerniere: "a-scomparsa" },
+                "431": { descrizione: "Sopraluce maniglia superiore", cerniere: null },
+                "433": { descrizione: "Sopraluce comando leva", cerniere: null },
+                "434": { descrizione: "Sopraluce arganello", cerniere: null },
+                "436": { descrizione: "Sopraluce motorizzato", cerniere: null },
+                // Con Montante
+                "425": { descrizione: "Anta + comando leva", cerniere: "a-vista" },
+                "225": { descrizione: "Anta + comando leva", cerniere: "a-scomparsa" },
+                "B411": { descrizione: "Anta/ribalta + montante alto", cerniere: "a-vista" },
+                "B211": { descrizione: "Anta/ribalta + montante", cerniere: "a-scomparsa" },
+                // Porta con Serratura
+                "475": { descrizione: "Anta/ribalta + serratura", cerniere: "a-vista" },
+                "275": { descrizione: "Anta/ribalta + serratura", cerniere: "a-scomparsa" },
+                "473": { descrizione: "Anta + serratura interno", cerniere: "a-vista" },
+                "471": { descrizione: "Anta + serratura esterno", cerniere: "a-vista" },
+                // Scorrevoli
+                "710": { descrizione: "Scorrevole parallela a ribalta", cerniere: null },
+                "711": { descrizione: "Scorrevole + serratura", cerniere: null },
+                "720": { descrizione: "Scorrevole parallela", cerniere: null },
+                "721": { descrizione: "Scorrevole + serratura", cerniere: null }
+            },
+            
+            // LATI APERTURA
+            lati: {
+                "-1": "Sinistra (SX)",
+                "-2": "Destra (DX)"
+            },
+            
+            // ESECUZIONI SICUREZZA
+            esecuzioni: {
+                "0": "Standard",
+                "3": "Perimetrale + angolare",
+                "4": "Perimetrale"
+            },
+            
+            // Funzioni helper
+            getModello: function(codice) {
+                return this.modelli[codice] || { descrizione: `Codice ${codice}`, campi: 1, ante: 1 };
+            },
+            
+            getFerramenta: function(codice) {
+                return this.ferramenta[codice] || { descrizione: `Ferramenta ${codice}`, cerniere: null };
+            },
+            
+            getLato: function(codice) {
+                return this.lati[codice] || codice;
+            },
+            
+            getEsecuzione: function(codice) {
+                return this.esecuzioni[codice] || 'Standard';
+            },
+            
+            // Decodifica completa infisso
+            decodificaInfisso: function(infisso) {
+                const modello = this.getModello(infisso.codiceModello);
+                const ferramenta = this.getFerramenta(infisso.ferramenta1);
+                const lato = this.getLato(infisso.lato1);
+                const esecuzione = this.getEsecuzione(infisso.esecuzione1);
+                
+                return {
+                    codiceModello: infisso.codiceModello,
+                    descrizioneModello: modello.descrizione,
+                    campi: modello.campi,
+                    ante: modello.ante,
+                    montante: modello.montante || false,
+                    bilico: modello.bilico || false,
+                    scorrevole: modello.scorrevole || false,
+                    ferramenta: infisso.ferramenta1,
+                    descrizioneFerramenti: ferramenta.descrizione,
+                    cerniere: ferramenta.cerniere,
+                    lato: lato,
+                    esecuzione: esecuzione
+                };
+            }
+        };
+        
+        console.log('✅ FINSTRAL_CODICI caricato - OpenPorte v5.52');
+
+        // ═══════════════════════════════════════════════════════════════════════════
         // 🔌 DATABASE PREZZI SOMFY - v7.999 (04 DIC 2025)
         // ═══════════════════════════════════════════════════════════════════════════
         const SOMFY_PREZZI = {
@@ -22444,29 +22593,59 @@ if (typeof module !== 'undefined' && module.exports) {
                         ` : ''}
                     </div>
                     
-                    <!-- 🔩 Ferramenta/Cerniere - v7.78 -->
-                    ${(prodotto.cerniere || prodotto.ferramenta) ? `
-                        <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: #fef3c7; border-radius: 8px; border-left: 4px solid #d97706;">
-                            <div style="font-size: 0.85rem; font-weight: 600; color: #92400e; margin-bottom: 0.75rem;">🔩 FERRAMENTA</div>
-                            <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                                ${prodotto.ferramenta?.tipoApertura ? `
-                                    <div>
-                                        <span style="color: #78716c; font-size: 0.85rem;">Apertura:</span>
-                                        <span style="font-weight: 600; color: #1f2937; margin-left: 0.5rem;">${formatTipoApertura(prodotto.ferramenta.tipoApertura)}</span>
+                    <!-- 🔩 v8.05: APERTURA E FERRAMENTA con codici Finstral -->
+                    ${(prodotto.codiceModello || prodotto.ferramenta1 || prodotto.cerniere || prodotto.ferramenta) ? `
+                        <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #d97706;">
+                            <div style="font-size: 0.9rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                🔩 APERTURA E FERRAMENTA
+                            </div>
+                            <div class="wall-chars-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                ${prodotto.codiceModello ? `
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">📐 Codice Modello</div>
+                                        <div class="wall-char-value" style="font-weight: 700; color: #0c4a6e;">
+                                            ${prodotto.codiceModello}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">
+                                            ${FINSTRAL_CODICI.getModello(prodotto.codiceModello).descrizione}
+                                        </div>
                                     </div>
                                 ` : ''}
-                                ${prodotto.cerniere ? `
-                                    <div>
-                                        <span style="color: #78716c; font-size: 0.85rem;">Cerniere:</span>
-                                        <span style="font-weight: 600; color: ${prodotto.cerniere === 'a-scomparsa' ? '#059669' : '#1f2937'}; margin-left: 0.5rem;">
-                                            ${prodotto.cerniere === 'a-scomparsa' ? '🔒 A scomparsa' : '👁️ A vista'}
-                                        </span>
+                                ${prodotto.ferramenta1 ? `
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">🔧 Ferramenta</div>
+                                        <div class="wall-char-value" style="font-weight: 700; color: #0c4a6e;">
+                                            ${prodotto.ferramenta1}${prodotto.lato1 || ''}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: #6b7280; margin-top: 2px;">
+                                            ${FINSTRAL_CODICI.getFerramenta(prodotto.ferramenta1).descrizione}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${(prodotto.cerniere || FINSTRAL_CODICI.getFerramenta(prodotto.ferramenta1)?.cerniere) ? `
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">🔗 Cerniere</div>
+                                        <div class="wall-char-value" style="font-weight: 600; color: ${(prodotto.cerniere || FINSTRAL_CODICI.getFerramenta(prodotto.ferramenta1)?.cerniere) === 'a-scomparsa' ? '#059669' : '#1f2937'};">
+                                            ${(prodotto.cerniere || FINSTRAL_CODICI.getFerramenta(prodotto.ferramenta1)?.cerniere) === 'a-scomparsa' ? '🔒 A scomparsa' : '👁️ A vista'}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${prodotto.esecuzione1 ? `
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">🛡️ Sicurezza</div>
+                                        <div class="wall-char-value">${FINSTRAL_CODICI.getEsecuzione(prodotto.esecuzione1)}</div>
+                                    </div>
+                                ` : ''}
+                                ${prodotto.ferramenta?.tipoApertura ? `
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">🚪 Tipo Apertura</div>
+                                        <div class="wall-char-value">${formatTipoApertura(prodotto.ferramenta.tipoApertura)}</div>
                                     </div>
                                 ` : ''}
                                 ${prodotto.ferramenta?.supplemento > 0 ? `
-                                    <div>
-                                        <span style="color: #78716c; font-size: 0.85rem;">Suppl.:</span>
-                                        <span style="font-weight: 700; color: #dc2626; margin-left: 0.5rem;">€${prodotto.ferramenta.supplemento.toFixed(2)}</span>
+                                    <div class="wall-char-item" style="background: white;">
+                                        <div class="wall-char-label">💰 Supplemento</div>
+                                        <div class="wall-char-value" style="color: #dc2626; font-weight: 700;">€ ${prodotto.ferramenta.supplemento.toFixed(2)}</div>
                                     </div>
                                 ` : ''}
                             </div>
