@@ -6,9 +6,11 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.07 - CHANGELOG
+    DASHBOARD RILIEVI v8.08 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.07 (05 DIC 2025):
+    🔧 AGGIORNAMENTI v8.08 (05 DIC 2025):
+    - 📦 LT50 HELIOS: Aggiunto motore (ref 1045041) €255.06
+    - 📦 FIX PREZZI ACCESSORI: Usano database SOMFY invece di valori hardcoded
     - 📦 SOMFY LISTINO 2025: Database completo da Excel ufficiale
     - 📦 MOTORI OXIMO: IO (6-50Nm), RTS (6-50Nm), WT wireless (6-40Nm), AUTO
     - 📦 COMANDI: Amy, Situo, Smoove, Telis/Chronis, Nina, Inis
@@ -18,7 +20,6 @@
     - 📐 DECODIFICA AUTOMATICA: "401" → "2 ante con montante mobile"
     - 📐 FERRAMENTA DECODIFICATA: "411" → "Anta/ribalta" + cerniere a-vista
     - 📐 VISTA POSIZIONI: Sezione "🔩 APERTURA E FERRAMENTA" nel tab Infisso
-    - 📐 CERNIERE AUTOMATICHE: Derivate da ferramenta se non specificate
     - 🔧 FIX BRM: Normalizzato supporto sia brm.L/H che BRM_L/BRM_H
     - 🔧 FIX QUANTITA: Supporto sia "quantita" che "qta" nel tab Infisso
     
@@ -1242,12 +1243,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.07 - Codici Finstral</title>
+    <title>Dashboard Rilievi v8.08 - Codici Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.07";
+        const DASHBOARD_VERSION = "8.08";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11102,7 +11103,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.07</span>
+                <span class="logo-version" id="version-badge">v8.08</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -17056,7 +17057,7 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 v8.07: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
+        // 🔧 v8.08: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
         // Fonte: OpenPorte v5.52 - FINSTRAL-CODICI-OPENPORTE.md
         // ═══════════════════════════════════════════════════════════════════════════
         const FINSTRAL_CODICI = {
@@ -17200,7 +17201,7 @@ if (typeof module !== 'undefined' && module.exports) {
         // 🔌 DATABASE PREZZI SOMFY - v7.999 (04 DIC 2025)
         // ═══════════════════════════════════════════════════════════════════════════
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 v8.07: DATABASE SOMFY LISTINO 2025 (Completo da Excel ufficiale)
+        // 🔧 v8.08: DATABASE SOMFY LISTINO 2025 (Completo da Excel ufficiale)
         // Fonte: Listino_2025_CUSTOMERS_IND_B2B_-_IND_B2C_-_INST_B2C.xlsx
         // ═══════════════════════════════════════════════════════════════════════════
         const SOMFY_PREZZI = {
@@ -17255,7 +17256,13 @@ if (typeof module !== 'undefined' && module.exports) {
                 
                 // OXIMO AUTO - Finecorsa automatico
                 "oximo_auto_rts_6": { ref: "1130128", nome: "OXIMO 50 S AUTO RTS 6/17 VVF 3M", listino: 295.80, coppia: 6, velocita: 17, auto: true },
-                "oximo_auto_io_6":  { ref: "1130334", nome: "OXIMO 50 S AUTO IO 6/17 VVF 3M", listino: 321.79, coppia: 6, velocita: 17, auto: true }
+                "oximo_auto_io_6":  { ref: "1130334", nome: "OXIMO 50 S AUTO IO 6/17 VVF 3M", listino: 321.79, coppia: 6, velocita: 17, auto: true },
+                
+                // LT50 HELIOS - Motori cablati
+                "lt50_helios":      { ref: "1045041", nome: "LT HELIOS 30/17 VVF 2,5M UNIT", listino: 255.06, coppia: 30, velocita: 17 },
+                "lt50_helios_30":   { ref: "1045041", nome: "LT HELIOS 30/17 VVF 2,5M UNIT", listino: 255.06, coppia: 30, velocita: 17 },
+                "lt_helios_30_17":  { ref: "1045041", nome: "LT HELIOS 30/17 VVF 2,5M UNIT", listino: 255.06, coppia: 30, velocita: 17 },
+                "lt50_helios_30_12": { ref: "1045034", nome: "LT HELIOS 30/12 VVF 2,5M UNIT", listino: 156.07, coppia: 30, velocita: 12 }
             },
             
             // ═══════════════════════════════════════════════════════════════════════
@@ -17396,7 +17403,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         };
         
-        console.log('✅ SOMFY_PREZZI v8.07 - Listino 2025 completo (OXIMO IO/RTS/WT, Amy, Situo, Smoove, IZYMO)');
+        console.log('✅ SOMFY_PREZZI v8.08 - Listino 2025 completo (OXIMO IO/RTS/WT, Amy, Situo, Smoove, IZYMO)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
@@ -18275,8 +18282,8 @@ if (typeof module !== 'undefined' && module.exports) {
                                 perimetro: '-',
                                 prezzoBase: (motoreDb?.prezzo || 0).toFixed(2),
                                 supplementoTelaio: (comandoDb?.prezzo || 0).toFixed(2),  // Comando
-                                supplementoAnta: (accessori.supporto ? 94.60 : 0).toFixed(2),  // Supporto
-                                supplementoVetro: (accessori.ruota_60 ? 21.00 : 0).toFixed(2),  // Ruota
+                                supplementoAnta: (accessori.supporto ? (SOMFY_PREZZI.accessori.supporto?.listino || 7.88) : 0).toFixed(2),  // Supporto da DB
+                                supplementoVetro: (accessori.ruota_60 ? (SOMFY_PREZZI.accessori.ruota_60?.listino || 21.00) : 0).toFixed(2),  // Ruota da DB
                                 supplementoManiglia: '0.00',
                                 prezzoUnitario: prezzoMotore.toFixed(2),
                                 quantita: quantita,
@@ -21904,7 +21911,7 @@ if (typeof module !== 'undefined' && module.exports) {
             const qty = parseInt(prodotto?.quantita) || parseInt(prodotto?.qta) || 0;
             if (!prodotto || qty === 0) return '';
             
-            // 🔧 v8.07: Normalizza BRM (supporta sia brm.L che BRM_L)
+            // 🔧 v8.08: Normalizza BRM (supporta sia brm.L che BRM_L)
             const brm = {
                 L: prodotto.brm?.L || prodotto.BRM_L || 0,
                 H: prodotto.brm?.H || prodotto.BRM_H || 0
@@ -22694,7 +22701,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         ` : ''}
                     </div>
                     
-                    <!-- 🔩 v8.07: APERTURA E FERRAMENTA con codici Finstral -->
+                    <!-- 🔩 v8.08: APERTURA E FERRAMENTA con codici Finstral -->
                     ${(prodotto.codiceModello || prodotto.ferramenta1 || prodotto.cerniere || prodotto.ferramenta) ? `
                         <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #d97706;">
                             <div style="font-size: 0.9rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
