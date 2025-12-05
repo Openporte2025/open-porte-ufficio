@@ -9,6 +9,7 @@
     DASHBOARD RILIEVI v8.08 - CHANGELOG
     
     🔧 AGGIORNAMENTI v8.08 (05 DIC 2025):
+    - 🔍 LENTE MOTORI: Click su riga motore per vedere dettaglio costi (come tapparelle)
     - 📦 LT50 HELIOS: Aggiunto motore (ref 1045041) €255.06
     - 📦 FIX PREZZI ACCESSORI: Usano database SOMFY invece di valori hardcoded
     - 📦 SOMFY LISTINO 2025: Database completo da Excel ufficiale
@@ -18828,21 +18829,24 @@ if (typeof module !== 'undefined' && module.exports) {
                 const tr = document.createElement('tr');
                 
                 // 🆕 v7.996: TUTTI i tipi sono cliccabili per dettaglio (incluso cassonetto)
+                // 🔌 v8.08: Aggiunto Motore
                 const isTapparella = riga.tipo.toLowerCase().includes('tapparella');
                 const isPersiana = riga.tipo.toLowerCase().includes('persiana');
                 const isCassonetto = riga.tipo.toLowerCase().includes('cassonetto');
+                const isMotore = riga.tipo.toLowerCase().includes('motore') || riga._tipoMotore;
                 const isInfisso = riga.tipo.toLowerCase().includes('infisso') || 
                                   riga.tipo.toLowerCase().includes('finestra') ||
                                   riga.tipo.toLowerCase().includes('porta');
                 const isBlindato = riga.tipo.toLowerCase().includes('blindata') || riga._tipoBlindato;
                 const isPortoncino = riga.tipo.toLowerCase().includes('portoncino') || riga._tipoPortoncino;
-                const isClickable = isTapparella || isPersiana || isCassonetto || isInfisso || isBlindato || isPortoncino;
+                const isClickable = isTapparella || isPersiana || isCassonetto || isInfisso || isBlindato || isPortoncino || isMotore;
                 
                 if (isClickable) {
                     tr.style.cursor = 'pointer';
                     tr.title = '🔍 Clicca per vedere il dettaglio costi';
                     // Colori hover diversi per tipo
-                    const hoverColor = isTapparella ? '#fef3c7' : isPersiana ? '#f3e8ff' : isCassonetto ? '#ffedd5' : isBlindato ? '#fee2e2' : isPortoncino ? '#fce7f3' : '#dbeafe';
+                    // 🔌 v8.08: Motore = arancione chiaro #ffedd5
+                    const hoverColor = isTapparella ? '#fef3c7' : isPersiana ? '#f3e8ff' : isCassonetto ? '#ffedd5' : isBlindato ? '#fee2e2' : isPortoncino ? '#fce7f3' : isMotore ? '#fed7aa' : '#dbeafe';
                     tr.onmouseover = function() { this.style.background = hoverColor; };
                     tr.onmouseout = function() { this.style.background = ''; };
                     
@@ -18850,7 +18854,10 @@ if (typeof module !== 'undefined' && module.exports) {
                     const posIdx = riga.posizione;
                     const rigaCopia = Object.assign({}, riga); // Copia per closure
                     tr.onclick = function() {
-                        if (isPortoncino) {
+                        if (isMotore) {
+                            console.log('🖱️ Click su motore pos', posIdx);
+                            window.mostraDettaglioCostiMotore(posIdx, rigaCopia);
+                        } else if (isPortoncino) {
                             console.log('🖱️ Click su portoncino pos', posIdx);
                             window.mostraDettaglioCostiPortoncino(posIdx, rigaCopia);
                         } else if (isBlindato) {
@@ -19557,6 +19564,203 @@ if (typeof module !== 'undefined' && module.exports) {
                 alert('Errore dettaglio costi: ' + e.message);
             }
         }
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🔌 v8.08: DETTAGLIO COSTI MOTORE SOMFY
+        // ═══════════════════════════════════════════════════════════════════════════
+        function mostraDettaglioCostiMotore(posIndex, rigaPreventivo = {}) {
+            try {
+                console.log(`🔌 v8.08 Dettaglio Motore Pos ${posIndex} - DATI:`, rigaPreventivo);
+                
+                const ambiente = rigaPreventivo.ambiente || `Pos ${posIndex}`;
+                const azienda = rigaPreventivo.azienda || 'Somfy';
+                const modelloId = rigaPreventivo.telaio || 'N/D';
+                const totale = parseFloat(rigaPreventivo.totale) || 0;
+                const quantita = parseInt(rigaPreventivo.quantita) || 1;
+                const prezzoUnitario = parseFloat(rigaPreventivo.prezzoUnitario) || totale;
+                
+                // Prezzi componenti dal preventivo
+                const prezzoMotore = parseFloat(rigaPreventivo.prezzoBase) || 0;
+                const prezzoComando = parseFloat(rigaPreventivo.supplementoTelaio) || 0;
+                const prezzoSupporto = parseFloat(rigaPreventivo.supplementoAnta) || 0;
+                const prezzoRuota = parseFloat(rigaPreventivo.supplementoVetro) || 0;
+                
+                // Dettaglio kit se disponibile
+                const dettaglioKit = rigaPreventivo._dettaglioKit || [];
+                const accessori = rigaPreventivo._accessori || {};
+                const comandoId = rigaPreventivo._comandoId || '';
+                
+                // Cerca info nel database SOMFY
+                const motoreDb = SOMFY_PREZZI.getPrezzoMotore(modelloId.toLowerCase().replace(/\s+/g, '_'));
+                const nomeMotore = motoreDb?.nome || modelloId;
+                const refMotore = motoreDb?.ref || '';
+                const coppia = motoreDb?.coppia || '';
+                const velocita = motoreDb?.velocita || '';
+                
+                let dettaglioHTML = `
+                <div style="padding: 1.5rem;">
+                    <!-- HEADER -->
+                    <div style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.25rem;">🔌 Motore - Posizione ${posIndex}</h3>
+                                <p style="margin: 0.25rem 0 0 0; opacity: 0.9;">${ambiente}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: 700;">€ ${totale.toFixed(2)}</div>
+                                <div style="font-size: 0.875rem; opacity: 0.9;">Totale${quantita > 1 ? ` (${quantita} pz)` : ''}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- INFO MOTORE -->
+                    <div style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="margin: 0 0 0.75rem 0; color: #c2410c;">⚡ Specifiche Motore</h4>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Modello</div>
+                                <div style="font-size: 1rem; font-weight: 600;">${nomeMotore}</div>
+                                ${refMotore ? `<div style="font-size: 0.7rem; color: #9ca3af;">Ref: ${refMotore}</div>` : ''}
+                            </div>
+                            ${coppia ? `
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Coppia</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;">${coppia} Nm</div>
+                            </div>
+                            ` : ''}
+                            ${velocita ? `
+                            <div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Velocità</div>
+                                <div style="font-size: 1.25rem; font-weight: 600;">${velocita} rpm</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- BREAKDOWN COSTI -->
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; margin-bottom: 1rem;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e5e7eb;">Componente</th>
+                                    <th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e5e7eb;">Prezzo Listino</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- MOTORE -->
+                                <tr style="background: #fff7ed;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🔌 Motore</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">${nomeMotore}</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #ea580c;">
+                                        € ${prezzoMotore.toFixed(2)}
+                                    </td>
+                                </tr>
+                                
+                                ${prezzoComando > 0 ? `
+                                <!-- COMANDO -->
+                                <tr>
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🎮 Comando/Ricevitore</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">${comandoId || 'N/D'}</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #2563eb;">
+                                        € ${prezzoComando.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${accessori.supporto ? `
+                                <!-- SUPPORTO -->
+                                <tr style="background: #f9fafb;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>🔩 Supporto Operatore</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Ref: 9019821</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #059669;">
+                                        € ${prezzoSupporto.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${accessori.ruota_60 ? `
+                                <!-- RUOTA -->
+                                <tr>
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>⚙️ Ruota Ottagonale 60mm</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Ref: 9751001</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #059669;">
+                                        € ${prezzoRuota.toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${accessori.corona_60 ? `
+                                <!-- CORONA -->
+                                <tr style="background: #f9fafb;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>👑 Corona Ottagonale 60</strong><br>
+                                        <span style="font-size: 0.8rem; color: #6b7280;">Ref: 9707025</span>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #059669;">
+                                        € ${(SOMFY_PREZZI.accessori.corona_60?.listino || 17.67).toFixed(2)}
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                ${quantita > 1 ? `
+                                <!-- QUANTITA -->
+                                <tr style="background: #fef3c7;">
+                                    <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">
+                                        <strong>📦 Quantità</strong>
+                                    </td>
+                                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e5e7eb; font-weight: 600;">
+                                        × ${quantita} pz
+                                    </td>
+                                </tr>
+                                ` : ''}
+                                
+                                <!-- TOTALE -->
+                                <tr style="background: #ffedd5;">
+                                    <td style="padding: 1rem; font-weight: 700; font-size: 1.1rem;">
+                                        TOTALE MOTORE
+                                    </td>
+                                    <td style="padding: 1rem; text-align: right; font-weight: 700; font-size: 1.25rem; color: #ea580c;">
+                                        € ${totale.toFixed(2)}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- INFO AGGIUNTIVE -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+                        <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.375rem;">
+                            <strong>🏭 Azienda:</strong> ${azienda}
+                        </div>
+                        <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.375rem;">
+                            <strong>💡 Prezzo Unitario:</strong> € ${prezzoUnitario.toFixed(2)}
+                        </div>
+                    </div>
+                    
+                    <!-- NOTE SCONTO -->
+                    <div style="margin-top: 1rem; padding: 0.75rem; background: #fef3c7; border-radius: 0.375rem; font-size: 0.8rem; color: #92400e;">
+                        <strong>⚠️ Nota:</strong> Prezzi da listino SOMFY 2025. Applicare sconto installatore per prezzo netto.
+                    </div>
+                </div>
+            `;
+            
+            mostraModalDettaglioCosti('Motore', dettaglioHTML);
+            } catch (e) {
+                console.error('❌ Errore in mostraDettaglioCostiMotore:', e);
+                alert('Errore dettaglio costi: ' + e.message);
+            }
+        }
+        
+        // Esponi globalmente
+        window.mostraDettaglioCostiMotore = mostraDettaglioCostiMotore;
 
         // 🔐 v7.98_07: DETTAGLIO COSTI BLINDATA
         function mostraDettaglioCostiBlindato(posIndex, rigaPreventivo = {}) {
@@ -26166,15 +26370,19 @@ if (typeof module !== 'undefined' && module.exports) {
                                     <tbody>
                                         ${preventivo.voci.map((voce, index) => {
                                             // 🆕 v7.82: Determina se riga è cliccabile
+                                            // 🔌 v8.08: Aggiunto Motore
                                             const isTapparella = voce.tipo.toLowerCase() === 'tapparella';
                                             const isPersiana = voce.tipo.toLowerCase() === 'persiana';
-                                            const isClickable = isTapparella || isPersiana;
+                                            const isMotore = voce.tipo.toLowerCase() === 'motore';
+                                            const isClickable = isTapparella || isPersiana || isMotore;
                                             const clickStyle = isClickable ? 'cursor: pointer;' : '';
                                             // Estrai numero posizione (es: "Pos. 1" → 1)
                                             const posNum = parseInt(String(voce.posizione).replace(/\D/g, '')) || (index + 1);
                                             // 🆕 v7.84: Supporto persiane
+                                            // 🔌 v8.08: Supporto motori
                                             const clickHandler = isTapparella ? `onclick="window.mostraDettaglioCostiTapparella(${posNum})" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background=''"` : 
-                                                                 isPersiana ? `onclick="window.mostraDettaglioCostiPersiana(${posNum})" onmouseover="this.style.background='#f3e8ff'" onmouseout="this.style.background=''"` : '';
+                                                                 isPersiana ? `onclick="window.mostraDettaglioCostiPersiana(${posNum})" onmouseover="this.style.background='#f3e8ff'" onmouseout="this.style.background=''"` :
+                                                                 isMotore ? `onclick="window.mostraDettaglioCostiMotore(${posNum})" onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background=''"` : '';
                                             const clickIcon = isClickable ? ' 🔍' : '';
                                             const clickTitle = isClickable ? 'title="Clicca per vedere il dettaglio costi"' : '';
                                             
