@@ -6,7 +6,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.03 - CHANGELOG
+    DASHBOARD RILIEVI v8.04 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.04 (05 DIC 2025):
+    - 📊 PREVENTIVO FULL-WIDTH: La tabella preventivo usa tutta la larghezza schermo
+    - 📊 HEADER FISSO: Intestazioni tabella fisse durante scroll
+    - 📊 RIGHE ALTERNATE: Sfondo alternato per migliore leggibilità
+    - 📊 COLORI HEADER: Header blu scuro professionale
+    - 📊 FONT COMPATTO: Font ridotto per mostrare più dati
+    - 📊 HOVER EVIDENZIATO: Riga azzurra al passaggio mouse
     
     🔧 AGGIORNAMENTI v8.03 (05 DIC 2025):
     - 🏭 VISTA AZIENDE RIDISEGNATA: Nuovo layout con configurazione specifica per azienda
@@ -1220,12 +1228,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.03 - Vista Aziende Ridisegnata</title>
+    <title>Dashboard Rilievi v8.04 - Preventivo Full-Width</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.03";
+        const DASHBOARD_VERSION = "8.04";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -4770,34 +4778,69 @@
             padding: 0.25rem 0;
         }
         
+        /* 🔄 v8.04: PREVENTIVO FULL-WIDTH */
+        .preventivo-fullwidth {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 0.5rem !important;
+            margin: 0 !important;
+        }
+        
+        .preventivo-fullwidth .vista-ufficio {
+            max-width: 100% !important;
+            padding: 0 !important;
+        }
+        
+        .preventivo-fullwidth .card {
+            max-width: 100% !important;
+            border-radius: 8px;
+        }
+        
         .preventivo-table-container {
-            padding: 2rem;
+            padding: 0.5rem;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .preventivo-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 0.85rem;
         }
         
         .preventivo-table th {
-            background: #f1f5f9;
-            padding: 1rem;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
+            padding: 0.75rem 0.5rem;
             text-align: left;
             font-weight: 600;
-            color: #475569;
-            border-bottom: 2px solid #cbd5e1;
-            font-size: 0.9rem;
+            color: white;
+            border-bottom: 2px solid #0ea5e9;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         .preventivo-table td {
-            padding: 1rem;
+            padding: 0.6rem 0.5rem;
             border-bottom: 1px solid #e2e8f0;
             color: #1e293b;
+            vertical-align: middle;
         }
         
         .preventivo-table tbody tr:hover {
+            background: #f0f9ff;
+        }
+        
+        .preventivo-table tbody tr:nth-child(even) {
             background: #f8fafc;
+        }
+        
+        .preventivo-table tbody tr:nth-child(even):hover {
+            background: #f0f9ff;
         }
         
         .voce-tipo-badge {
@@ -11045,7 +11088,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.03</span>
+                <span class="logo-version" id="version-badge">v8.04</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -13204,6 +13247,17 @@ if (typeof module !== 'undefined' && module.exports) {
             // 🆕 v7.82 FIX: Usa window.currentData e window.projectData per sicurezza
             const currentData = window.currentData;
             const projectData = window.projectData;
+            
+            // 🔄 v8.04: Applica/rimuovi fullwidth per preventivo
+            const mainContainer = document.querySelector('.blocco.active');
+            if (mainContainer) {
+                if (vistaName === 'preventivo') {
+                    mainContainer.classList.add('preventivo-fullwidth');
+                    document.body.style.overflow = 'auto'; // Permetti scroll
+                } else {
+                    mainContainer.classList.remove('preventivo-fullwidth');
+                }
+            }
             
             // ✅ v7.20 FIX: RESET tutte le viste prima di cambiare
             // Ripristina stato iniziale (placeholder visibile, content nascosto)
