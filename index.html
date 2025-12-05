@@ -10,10 +10,12 @@
     
     🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
     - ✅ FIX CRITICO: Supplemento telaio alluminio corretto (961N = +20.4€/ml gruppo B)
+    - ✅ FIX CRITICO: Supplemento maniglia (712 → 7120 = €11.60)
     - ✅ Separato TELAIO (961) da TIPO ANTA (Nova-line) nel preventivo
     - ✅ Aggiunta tabella rivestimentiTelaiAlluminio con gruppi colore A/B
     - ✅ Dettaglio costi mostra telaio e anta separatamente
     - ✅ Calcolo rivestimento considera colore alluminio (Lxx = gruppo B)
+    - ✅ getManigliaByCode: padding automatico codici 3→4 cifre
     
     🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
     - 📊 TABELLA FULL-WIDTH: Preventivo visibile senza scroll orizzontale
@@ -7854,12 +7856,26 @@ const MANIGLIE_FINSTRAL = {
 
 // Ottiene maniglia per codice
 function getManigliaByCode(codice) {
+    // ✅ v8.10: Cerca codice esatto
     for (const serie in MANIGLIE_FINSTRAL) {
         if (serie === 'colori' || serie === 'accessori') continue;
         if (MANIGLIE_FINSTRAL[serie][codice]) {
             return MANIGLIE_FINSTRAL[serie][codice];
         }
     }
+    
+    // ✅ v8.10: Se non trovato e codice è 3 cifre, prova con "0" alla fine (712 → 7120)
+    if (codice && codice.length === 3) {
+        const codiceEsteso = codice + "0";
+        for (const serie in MANIGLIE_FINSTRAL) {
+            if (serie === 'colori' || serie === 'accessori') continue;
+            if (MANIGLIE_FINSTRAL[serie][codiceEsteso]) {
+                console.log(`🔧 Maniglia: ${codice} → ${codiceEsteso} (padding)`);
+                return MANIGLIE_FINSTRAL[serie][codiceEsteso];
+            }
+        }
+    }
+    
     return null;
 }
 
