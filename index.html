@@ -6,23 +6,17 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.08 - CHANGELOG
+    DASHBOARD RILIEVI v8.09 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.08 (05 DIC 2025):
-    - 🔍 LENTE MOTORI: Click su riga motore per vedere dettaglio costi (come tapparelle)
+    🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
+    - 📊 TABELLA FULL-WIDTH: Preventivo visibile senza scroll orizzontale
+    - 📊 FONT COMPATTO: 0.65rem per celle, 0.6rem per header
+    - 📊 HEADER ABBREVIATI: Pos, L, H, m², ml, Tel., Col., Man., Mont., Qt, TOT
+    - 📊 COLONNE PROPORZIONALI: table-layout fixed per adattarsi allo schermo
+    - 🔍 LENTE MOTORI: Click su riga motore per vedere dettaglio costi
     - 📦 LT50 HELIOS: Aggiunto motore (ref 1045041) €255.06
     - 📦 FIX PREZZI ACCESSORI: Usano database SOMFY invece di valori hardcoded
     - 📦 SOMFY LISTINO 2025: Database completo da Excel ufficiale
-    - 📦 MOTORI OXIMO: IO (6-50Nm), RTS (6-50Nm), WT wireless (6-40Nm), AUTO
-    - 📦 COMANDI: Amy, Situo, Smoove, Telis/Chronis, Nina, Inis
-    - 📦 RICEVITORI: IZYMO, Universal, Micro
-    - 📦 PREZZI LISTINO: Con helper getPrezzoNetto() per sconto installatore
-    - 📐 CODICI FINSTRAL: Database completo codiceModello + ferramenta1
-    - 📐 DECODIFICA AUTOMATICA: "401" → "2 ante con montante mobile"
-    - 📐 FERRAMENTA DECODIFICATA: "411" → "Anta/ribalta" + cerniere a-vista
-    - 📐 VISTA POSIZIONI: Sezione "🔩 APERTURA E FERRAMENTA" nel tab Infisso
-    - 🔧 FIX BRM: Normalizzato supporto sia brm.L/H che BRM_L/BRM_H
-    - 🔧 FIX QUANTITA: Supporto sia "quantita" che "qta" nel tab Infisso
     
     🔧 AGGIORNAMENTI v8.04 (05 DIC 2025):
     - 📊 PREVENTIVO FULL-WIDTH: La tabella preventivo usa tutta la larghezza schermo
@@ -1244,12 +1238,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.08 - Codici Finstral</title>
+    <title>Dashboard Rilievi v8.09 - Codici Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.08";
+        const DASHBOARD_VERSION = "8.09";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -3625,9 +3619,10 @@
            VISTA PREVENTIVO - TABELLA STILE EXCEL
            ================================================================================ */
         
+        /* 🔧 v8.09: Tabella preventivo FULL-WIDTH senza scroll */
         .excel-container {
             width: 100%;
-            overflow-x: auto;
+            overflow-x: visible;  /* No scroll */
             background: white;
         }
 
@@ -3635,8 +3630,9 @@
             width: 100%;
             border-collapse: collapse;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 0.875rem;
+            font-size: 0.7rem;  /* Font compatto */
             background: white;
+            table-layout: fixed;  /* Colonne proporzionali */
         }
 
         .excel-table thead {
@@ -3648,18 +3644,24 @@
         }
 
         .excel-table th {
-            padding: 0.75rem 0.5rem;
+            padding: 0.4rem 0.15rem;  /* Padding ridotto */
             text-align: center;
             font-weight: 600;
             border: 1px solid #dbeafe;
-            white-space: nowrap;
+            white-space: normal;  /* Permetti wrap */
+            word-wrap: break-word;
+            font-size: 0.6rem;  /* Header piccolo */
+            line-height: 1.2;
         }
 
         .excel-table td {
-            padding: 0.5rem;
+            padding: 0.3rem 0.15rem;  /* Padding ridotto */
             text-align: center;
             border: 1px solid #e5e7eb;
             background: white;
+            font-size: 0.65rem;  /* Font compatto */
+            word-wrap: break-word;
+            overflow: hidden;
         }
 
         .excel-table tbody tr:hover {
@@ -3674,19 +3676,17 @@
             background: #f0f9ff;
         }
 
-        /* Colonne specifiche */
+        /* 🔧 v8.09: Larghezze colonne proporzionali */
         .excel-col-narrow {
-            min-width: 60px;
-            max-width: 80px;
+            width: 4%;  /* Colonne strette */
         }
 
         .excel-col-medium {
-            min-width: 100px;
-            max-width: 150px;
+            width: 6%;  /* Colonne medie */
         }
 
         .excel-col-wide {
-            min-width: 120px;
+            width: 7%;  /* Colonna totale */
         }
 
         /* Righe totali */
@@ -4813,38 +4813,68 @@
         }
         
         .preventivo-table-container {
-            padding: 0.5rem;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+            padding: 0.25rem;
+            overflow-x: visible;  /* 🔧 v8.09: No scroll orizzontale */
         }
         
         .preventivo-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.7rem;  /* 🔧 v8.09: Font più piccolo */
+            table-layout: fixed;  /* 🔧 v8.09: Colonne fisse */
         }
         
         .preventivo-table th {
             background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%);
-            padding: 0.75rem 0.5rem;
-            text-align: left;
+            padding: 0.4rem 0.2rem;  /* 🔧 v8.09: Padding ridotto */
+            text-align: center;
             font-weight: 600;
             color: white;
             border-bottom: 2px solid #0ea5e9;
-            font-size: 0.75rem;
+            font-size: 0.6rem;  /* 🔧 v8.09: Header più piccolo */
             text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
+            letter-spacing: 0;
+            white-space: normal;  /* 🔧 v8.09: Permetti wrap */
+            word-wrap: break-word;
             position: sticky;
             top: 0;
             z-index: 10;
         }
         
         .preventivo-table td {
-            padding: 0.6rem 0.5rem;
+            padding: 0.35rem 0.2rem;  /* 🔧 v8.09: Padding ridotto */
             border-bottom: 1px solid #e2e8f0;
             color: #1e293b;
             vertical-align: middle;
+            text-align: center;
+            font-size: 0.68rem;  /* 🔧 v8.09: Font compatto */
+            word-wrap: break-word;
+        }
+        
+        /* 🔧 v8.09: Prima colonna (Pos) allineata a sinistra */
+        .preventivo-table td:first-child,
+        .preventivo-table th:first-child {
+            text-align: center;
+            width: 3%;
+        }
+        
+        /* 🔧 v8.09: Colonna Ambiente più larga */
+        .preventivo-table td:nth-child(2),
+        .preventivo-table th:nth-child(2) {
+            text-align: left;
+            width: 8%;
+        }
+        
+        /* 🔧 v8.09: Colonna Tipo */
+        .preventivo-table td:nth-child(3),
+        .preventivo-table th:nth-child(3) {
+            width: 7%;
+        }
+        
+        /* 🔧 v8.09: Ultima colonna (Totale) evidenziata */
+        .preventivo-table td:last-child {
+            font-weight: 700;
+            color: #059669;
         }
         
         .preventivo-table tbody tr:hover {
@@ -11104,7 +11134,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.08</span>
+                <span class="logo-version" id="version-badge">v8.09</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -11556,25 +11586,25 @@ if (typeof module !== 'undefined' && module.exports) {
                             <table class="excel-table" id="preventivoTable">
                                 <thead>
                                     <tr>
-                                        <th class="excel-col-narrow">Pos.</th>
+                                        <th class="excel-col-narrow">Pos</th>
                                         <th class="excel-col-medium">Ambiente</th>
                                         <th class="excel-col-narrow">Tipo</th>
                                         <th class="excel-col-medium">Azienda</th>
                                         <th class="excel-col-narrow">Telaio</th>
-                                        <th class="excel-col-narrow">L(mm)</th>
-                                        <th class="excel-col-narrow">H(mm)</th>
-                                        <th class="excel-col-narrow">Sup(m²)</th>
-                                        <th class="excel-col-narrow">Perim(ml)</th>
-                                        <th class="excel-col-medium">Base €</th>
-                                        <th class="excel-col-narrow">Telaio €</th>
-                                        <th class="excel-col-narrow">Anta €</th>
-                                        <th class="excel-col-narrow">Vetro €</th>
-                                        <th class="excel-col-narrow">Colore €</th>
-                                        <th class="excel-col-narrow">Maniglia €</th>
-                                        <th class="excel-col-narrow">Montante €</th>
-                                        <th class="excel-col-medium">Unit. €</th>
-                                        <th class="excel-col-narrow">Qtà</th>
-                                        <th class="excel-col-wide">Totale €</th>
+                                        <th class="excel-col-narrow">L</th>
+                                        <th class="excel-col-narrow">H</th>
+                                        <th class="excel-col-narrow">m²</th>
+                                        <th class="excel-col-narrow">ml</th>
+                                        <th class="excel-col-narrow">Base</th>
+                                        <th class="excel-col-narrow">Tel.</th>
+                                        <th class="excel-col-narrow">Anta</th>
+                                        <th class="excel-col-narrow">Vetro</th>
+                                        <th class="excel-col-narrow">Col.</th>
+                                        <th class="excel-col-narrow">Man.</th>
+                                        <th class="excel-col-narrow">Mont.</th>
+                                        <th class="excel-col-narrow">Unit.</th>
+                                        <th class="excel-col-narrow">Qt</th>
+                                        <th class="excel-col-wide">TOT</th>
                                     </tr>
                                 </thead>
                                 <tbody id="preventivoTableBody">
@@ -17058,7 +17088,7 @@ if (typeof module !== 'undefined' && module.exports) {
         console.log('✅ FINSTRAL_CASSONETTI_PREZZI caricato - Listino EUR 2025/3 (pag. 141-146)');
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 v8.08: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
+        // 🔧 v8.09: DATABASE CODICI FINSTRAL (codiceModello + ferramenta)
         // Fonte: OpenPorte v5.52 - FINSTRAL-CODICI-OPENPORTE.md
         // ═══════════════════════════════════════════════════════════════════════════
         const FINSTRAL_CODICI = {
@@ -17202,7 +17232,7 @@ if (typeof module !== 'undefined' && module.exports) {
         // 🔌 DATABASE PREZZI SOMFY - v7.999 (04 DIC 2025)
         // ═══════════════════════════════════════════════════════════════════════════
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔧 v8.08: DATABASE SOMFY LISTINO 2025 (Completo da Excel ufficiale)
+        // 🔧 v8.09: DATABASE SOMFY LISTINO 2025 (Completo da Excel ufficiale)
         // Fonte: Listino_2025_CUSTOMERS_IND_B2B_-_IND_B2C_-_INST_B2C.xlsx
         // ═══════════════════════════════════════════════════════════════════════════
         const SOMFY_PREZZI = {
@@ -17404,7 +17434,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         };
         
-        console.log('✅ SOMFY_PREZZI v8.08 - Listino 2025 completo (OXIMO IO/RTS/WT, Amy, Situo, Smoove, IZYMO)');
+        console.log('✅ SOMFY_PREZZI v8.09 - Listino 2025 completo (OXIMO IO/RTS/WT, Amy, Situo, Smoove, IZYMO)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
@@ -18829,7 +18859,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 const tr = document.createElement('tr');
                 
                 // 🆕 v7.996: TUTTI i tipi sono cliccabili per dettaglio (incluso cassonetto)
-                // 🔌 v8.08: Aggiunto Motore
+                // 🔌 v8.09: Aggiunto Motore
                 const isTapparella = riga.tipo.toLowerCase().includes('tapparella');
                 const isPersiana = riga.tipo.toLowerCase().includes('persiana');
                 const isCassonetto = riga.tipo.toLowerCase().includes('cassonetto');
@@ -18845,7 +18875,7 @@ if (typeof module !== 'undefined' && module.exports) {
                     tr.style.cursor = 'pointer';
                     tr.title = '🔍 Clicca per vedere il dettaglio costi';
                     // Colori hover diversi per tipo
-                    // 🔌 v8.08: Motore = arancione chiaro #ffedd5
+                    // 🔌 v8.09: Motore = arancione chiaro #ffedd5
                     const hoverColor = isTapparella ? '#fef3c7' : isPersiana ? '#f3e8ff' : isCassonetto ? '#ffedd5' : isBlindato ? '#fee2e2' : isPortoncino ? '#fce7f3' : isMotore ? '#fed7aa' : '#dbeafe';
                     tr.onmouseover = function() { this.style.background = hoverColor; };
                     tr.onmouseout = function() { this.style.background = ''; };
@@ -19566,11 +19596,11 @@ if (typeof module !== 'undefined' && module.exports) {
         }
 
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🔌 v8.08: DETTAGLIO COSTI MOTORE SOMFY
+        // 🔌 v8.09: DETTAGLIO COSTI MOTORE SOMFY
         // ═══════════════════════════════════════════════════════════════════════════
         function mostraDettaglioCostiMotore(posIndex, rigaPreventivo = {}) {
             try {
-                console.log(`🔌 v8.08 Dettaglio Motore Pos ${posIndex} - DATI:`, rigaPreventivo);
+                console.log(`🔌 v8.09 Dettaglio Motore Pos ${posIndex} - DATI:`, rigaPreventivo);
                 
                 const ambiente = rigaPreventivo.ambiente || `Pos ${posIndex}`;
                 const azienda = rigaPreventivo.azienda || 'Somfy';
@@ -22115,7 +22145,7 @@ if (typeof module !== 'undefined' && module.exports) {
             const qty = parseInt(prodotto?.quantita) || parseInt(prodotto?.qta) || 0;
             if (!prodotto || qty === 0) return '';
             
-            // 🔧 v8.08: Normalizza BRM (supporta sia brm.L che BRM_L)
+            // 🔧 v8.09: Normalizza BRM (supporta sia brm.L che BRM_L)
             const brm = {
                 L: prodotto.brm?.L || prodotto.BRM_L || 0,
                 H: prodotto.brm?.H || prodotto.BRM_H || 0
@@ -22905,7 +22935,7 @@ if (typeof module !== 'undefined' && module.exports) {
                         ` : ''}
                     </div>
                     
-                    <!-- 🔩 v8.08: APERTURA E FERRAMENTA con codici Finstral -->
+                    <!-- 🔩 v8.09: APERTURA E FERRAMENTA con codici Finstral -->
                     ${(prodotto.codiceModello || prodotto.ferramenta1 || prodotto.cerniere || prodotto.ferramenta) ? `
                         <div style="margin-top: 1.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; border-left: 4px solid #d97706;">
                             <div style="font-size: 0.9rem; font-weight: 700; color: #92400e; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -26370,7 +26400,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                     <tbody>
                                         ${preventivo.voci.map((voce, index) => {
                                             // 🆕 v7.82: Determina se riga è cliccabile
-                                            // 🔌 v8.08: Aggiunto Motore
+                                            // 🔌 v8.09: Aggiunto Motore
                                             const isTapparella = voce.tipo.toLowerCase() === 'tapparella';
                                             const isPersiana = voce.tipo.toLowerCase() === 'persiana';
                                             const isMotore = voce.tipo.toLowerCase() === 'motore';
@@ -26379,7 +26409,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                             // Estrai numero posizione (es: "Pos. 1" → 1)
                                             const posNum = parseInt(String(voce.posizione).replace(/\D/g, '')) || (index + 1);
                                             // 🆕 v7.84: Supporto persiane
-                                            // 🔌 v8.08: Supporto motori
+                                            // 🔌 v8.09: Supporto motori
                                             const clickHandler = isTapparella ? `onclick="window.mostraDettaglioCostiTapparella(${posNum})" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background=''"` : 
                                                                  isPersiana ? `onclick="window.mostraDettaglioCostiPersiana(${posNum})" onmouseover="this.style.background='#f3e8ff'" onmouseout="this.style.background=''"` :
                                                                  isMotore ? `onclick="window.mostraDettaglioCostiMotore(${posNum})" onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background=''"` : '';
