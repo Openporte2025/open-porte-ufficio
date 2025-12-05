@@ -2,11 +2,19 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=3.0, user-scalable=yes">
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.00 - CHANGELOG
+    DASHBOARD RILIEVI v8.01 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.01 (04 DIC 2025):
+    - 📱 CSS RESPONSIVE COMPLETO: Ottimizzato per iPad, tablet e smartphone
+    - 📱 TABLET (768-1024px): Layout adattivo, tabs wrap, tabelle scrollabili
+    - 📱 SMARTPHONE (max 768px): Sidebar posizioni orizzontale, grids 1 colonna
+    - 📱 PICCOLI (max 480px): Font ridotti, totali 2 colonne, elementi compatti
+    - 📱 LANDSCAPE: Layout orizzontale ottimizzato
+    - 📱 TOUCH: Target 44px minimi, feedback tap, no hover su touch
     
     🔧 AGGIORNAMENTI v8.00 (04 DIC 2025):
     - 🔌 TAB MOTORE SEPARATO: Nuovo tab "🔌 Motore" in Vista Posizioni (non più sotto Tapparella)
@@ -1195,12 +1203,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.00 - Motori nel Preventivo</title>
+    <title>Dashboard Rilievi v8.01 - Responsive iPad/Smartphone</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.00";
+        const DASHBOARD_VERSION = "8.01";
         const DASHBOARD_DATE = "04 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -6205,6 +6213,355 @@
             color: #059669;
             font-weight: 700;
         }
+        
+        /* ═══════════════════════════════════════════════════════════════════════════
+           🔌 v8.00 - CSS RESPONSIVE PER IPAD E SMARTPHONE
+           ═══════════════════════════════════════════════════════════════════════════ */
+        
+        /* ===== TABLET / IPAD (768px - 1024px) ===== */
+        @media (max-width: 1024px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .header-container {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .header-left {
+                flex: 1 1 100%;
+                justify-content: center;
+            }
+            
+            .header-right {
+                flex: 1 1 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .nav-tabs {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .nav-tab {
+                flex: 1 1 45%;
+                min-width: 140px;
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .products-tabs {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .product-tab {
+                flex: 1 1 auto;
+                min-width: 100px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+            
+            .wall-chars-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .brm-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            /* Tabella preventivo scrollabile */
+            .preventivo-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .preventivo-table th,
+            .preventivo-table td {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            /* Sidebar posizioni */
+            .positions-sidebar {
+                width: 150px !important;
+                min-width: 120px !important;
+            }
+            
+            .position-card {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* ===== SMARTPHONE (max 768px) ===== */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .main-container {
+                padding: 0.5rem;
+            }
+            
+            .header-container {
+                padding: 0.5rem;
+            }
+            
+            .logo-text {
+                font-size: 1.1rem;
+            }
+            
+            .logo-version {
+                font-size: 0.7rem;
+                padding: 2px 6px;
+            }
+            
+            /* Tabs navigazione verticali su mobile */
+            .nav-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .nav-tab {
+                width: 100%;
+                padding: 0.75rem;
+                font-size: 0.9rem;
+                border-radius: 8px;
+            }
+            
+            /* Products tabs scrollabili orizzontalmente */
+            .products-tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap;
+                gap: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            
+            .product-tab {
+                flex-shrink: 0;
+                min-width: 90px;
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            /* Grid campi: 1 colonna su mobile */
+            .wall-chars-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .brm-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .brm-box {
+                padding: 1rem;
+            }
+            
+            .brm-value {
+                font-size: 1.5rem;
+            }
+            
+            /* Vista posizioni: sidebar sopra contenuto */
+            .position-layout {
+                flex-direction: column;
+            }
+            
+            .positions-sidebar {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+            
+            .position-card {
+                flex-shrink: 0;
+                min-width: 100px;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .position-content {
+                width: 100% !important;
+            }
+            
+            /* Tabella preventivo */
+            .preventivo-table {
+                font-size: 0.75rem;
+            }
+            
+            .preventivo-table th,
+            .preventivo-table td {
+                padding: 0.4rem;
+                white-space: nowrap;
+            }
+            
+            /* Nascondi colonne meno importanti su mobile */
+            .preventivo-table th:nth-child(9),
+            .preventivo-table td:nth-child(9),
+            .preventivo-table th:nth-child(10),
+            .preventivo-table td:nth-child(10),
+            .preventivo-table th:nth-child(11),
+            .preventivo-table td:nth-child(11) {
+                display: none;
+            }
+            
+            /* Bottoni più grandi per touch */
+            button, .btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            /* Modal fullscreen su mobile */
+            .modal-content {
+                width: 95% !important;
+                max-width: 95% !important;
+                margin: 1rem auto;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            /* Cards aziende */
+            .azienda-card {
+                padding: 1rem;
+            }
+            
+            .azienda-header {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            /* Config globale */
+            .config-globale-box {
+                padding: 0.75rem;
+            }
+            
+            /* Totali commessa */
+            .totali-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .totale-card {
+                padding: 0.75rem;
+            }
+            
+            .totale-numero {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* ===== SMARTPHONE PICCOLI (max 480px) ===== */
+        @media (max-width: 480px) {
+            body {
+                font-size: 13px;
+            }
+            
+            .header-container {
+                padding: 0.4rem;
+            }
+            
+            .logo-text {
+                font-size: 1rem;
+            }
+            
+            .header-right {
+                gap: 0.25rem;
+            }
+            
+            .header-right button {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            /* Totali commessa 2 colonne */
+            .totali-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            /* Tab prodotti ancora più compatti */
+            .product-tab {
+                min-width: 70px;
+                padding: 0.4rem;
+                font-size: 0.75rem;
+            }
+            
+            /* Misure BRM compatte */
+            .brm-value {
+                font-size: 1.3rem;
+            }
+            
+            .brm-label {
+                font-size: 0.75rem;
+            }
+            
+            /* Wall chars items più compatti */
+            .wall-char-item {
+                padding: 0.5rem;
+            }
+            
+            .wall-char-label {
+                font-size: 0.7rem;
+            }
+            
+            .wall-char-value {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* ===== LANDSCAPE MODE (tablet/phone orizzontali) ===== */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .header-container {
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: row;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+            }
+            
+            .nav-tab {
+                flex: 0 0 auto;
+                width: auto;
+                padding: 0.5rem 1rem;
+            }
+        }
+        
+        /* ===== TOUCH IMPROVEMENTS ===== */
+        @media (hover: none) and (pointer: coarse) {
+            /* Elementi cliccabili più grandi per dita */
+            button, 
+            .btn,
+            .nav-tab,
+            .product-tab,
+            .position-card {
+                min-height: 44px;
+            }
+            
+            /* Rimuovi hover effects su touch */
+            .nav-tab:hover,
+            .product-tab:hover,
+            .position-card:hover {
+                transform: none;
+            }
+            
+            /* Feedback tap */
+            .nav-tab:active,
+            .product-tab:active,
+            .position-card:active,
+            button:active {
+                transform: scale(0.98);
+                opacity: 0.9;
+            }
+        }
     </style>
     
     <!-- ================================================================================
@@ -10523,7 +10880,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.00</span>
+                <span class="logo-version" id="version-badge">v8.01</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
