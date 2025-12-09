@@ -25,6 +25,12 @@
     - ✅ determinaGruppoColoreCassonetto(): 01,07,27,42,45=bianco | 06,13,19,46,55=scuri
     - ✅ Aggiunto alias "posaclima" per isolamento cassonetto (codice 40830)
     
+    🔧 AGGIORNAMENTI v8.11 (09 DIC 2025):
+    - 📦 CASSONETTI COMPLETI: Config globale mostra materialeCass + codiceCass + coloreCass
+    - 📦 CASSONETTI MISURE: Aggiunto LS, SRSX, SRDX, HCASS, ZSX, ZDX alla normalizzazione
+    - 📐 MISURE RILEVATE: Sezione aggiuntiva con misure originali cassonetto
+    - 🔧 FIX BRM_C/BRM_B: Usa valori calcolati se disponibili
+    
     🔧 AGGIORNAMENTI v8.10 (09 DIC 2025):
     - 🐛 FIX BRM_H NULL: Non mostra più H=0 o H=1200 quando BRM_H non è calcolato
     - 🐛 FIX DEFAULT: Rimossi valori default 1000x1200 nel wizard preventivo
@@ -1265,7 +1271,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.10";
+        const DASHBOARD_VERSION = "8.11";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11961,11 +11967,27 @@ if (typeof module !== 'undefined' && module.exports) {
                                 quantita: pos.cassonetto.qta || 1,
                                 tipo: pos.cassonetto.tipo || '',
                                 azienda: pos.cassonetto.azienda || '',
+                                // 🆕 v8.11: Aggiunti tutti i campi cassonetto
+                                materialeCass: pos.cassonetto.materialeCass || '',
+                                codiceCass: pos.cassonetto.codiceCass || '',
+                                gruppoColoreCass: pos.cassonetto.gruppoColoreCass || '',
+                                coloreCass: pos.cassonetto.coloreCass || '',
+                                codiceIsolamento: pos.cassonetto.codiceIsolamento || '',
+                                // Misure rilevate
+                                LS: pos.cassonetto.LS || 0,
+                                SRSX: pos.cassonetto.SRSX || 0,
+                                SRDX: pos.cassonetto.SRDX || 0,
+                                ZSX: pos.cassonetto.ZSX || 0,
+                                ZSX_tipo: pos.cassonetto.ZSX_tipo || '',
+                                ZDX: pos.cassonetto.ZDX || 0,
+                                ZDX_tipo: pos.cassonetto.ZDX_tipo || '',
+                                HCASS: pos.cassonetto.HCASS || 0,
+                                BSuperiore: pos.cassonetto.BSuperiore || 0,
                                 brm: {
                                     L: pos.cassonetto.BRM_L || 0,
                                     H: pos.cassonetto.BRM_H || pos.cassonetto.HCASS || 0,
-                                    C: pos.cassonetto.C || 0,
-                                    B: pos.cassonetto.B || 0
+                                    C: pos.cassonetto.BRM_C || pos.cassonetto.C || 0,
+                                    B: pos.cassonetto.BRM_B || pos.cassonetto.B || 0
                                 }
                             } : null,
                             
@@ -21477,11 +21499,19 @@ if (typeof module !== 'undefined' && module.exports) {
                     { label: '🔧 MOTORE', value: config.motore || 'N/D' }
                 ];
             } else if (tipo === 'cassonetto') {
+                // 🔧 v8.11: Usa campi corretti da configCassonetti
+                const modelloCompleto = config.materialeCass && config.codiceCass 
+                    ? `${config.materialeCass} ${config.codiceCass}` 
+                    : (config.modello || 'N/D');
+                const coloreCompleto = config.coloreCass || config.gruppoColoreCass || config.colore || 'N/D';
+                const isolamento = config.codiceIsolamento || 'N/D';
+                
                 items = [
                     { label: '🏭 AZIENDA', value: config.azienda || 'N/D' },
-                    { label: '📋 MODELLO', value: config.modello || 'N/D' },
-                    { label: '🎨 COLORE', value: config.colore || 'N/D' },
-                    { label: '📐 TIPO', value: config.tipo || 'N/D' }
+                    { label: '📋 MODELLO', value: modelloCompleto },
+                    { label: '🎨 COLORE', value: coloreCompleto },
+                    { label: '📐 TIPO', value: config.tipo || 'N/D' },
+                    { label: '🧊 ISOLAMENTO', value: isolamento }
                 ];
             } else if (tipo === 'zanzariera') {
                 items = [
@@ -24165,29 +24195,58 @@ if (typeof module !== 'undefined' && module.exports) {
             }
             
             // CASSONETTO
-            if (pos.cassonetto && pos.cassonetto.quantita > 0 && pos.cassonetto.brm) {
-                const brm = pos.cassonetto.brm;
+            if (pos.cassonetto && pos.cassonetto.quantita > 0) {
+                const cass = pos.cassonetto;
+                const brm = cass.brm || {};
+                const hasRilevate = cass.LS || cass.HCASS;
+                
                 html += `
                     <div class="brm-box-large">
-                        <div class="brm-product-title">📦 CASSONETTO</div>
+                        <div class="brm-product-title">📦 CASSONETTO ${cass.materialeCass && cass.codiceCass ? `(${cass.materialeCass} ${cass.codiceCass})` : ''}</div>
+                        
+                        <!-- BRM per ordine -->
                         <div class="brm-measurements">
-                            <div class="brm-measure">
-                                <div class="brm-label">Larghezza (L)</div>
-                                <div class="brm-value">${brm.L || 0}<span class="brm-unit">mm</span></div>
-                            </div>
-                            <div class="brm-measure">
-                                <div class="brm-label">Altezza (H)</div>
-                                <div class="brm-value">${brm.H || 0}<span class="brm-unit">mm</span></div>
-                            </div>
-                            <div class="brm-measure">
-                                <div class="brm-label">Cassettone (C)</div>
-                                <div class="brm-value">${brm.C || 0}<span class="brm-unit">mm</span></div>
-                            </div>
-                            <div class="brm-measure">
-                                <div class="brm-label">Base (B)</div>
-                                <div class="brm-value">${brm.B || 0}<span class="brm-unit">mm</span></div>
-                            </div>
+                            ${brm.L ? `
+                                <div class="brm-measure">
+                                    <div class="brm-label">L (Larghezza)</div>
+                                    <div class="brm-value">${brm.L}<span class="brm-unit">mm</span></div>
+                                </div>
+                            ` : ''}
+                            ${brm.H ? `
+                                <div class="brm-measure">
+                                    <div class="brm-label">H (Altezza)</div>
+                                    <div class="brm-value">${brm.H}<span class="brm-unit">mm</span></div>
+                                </div>
+                            ` : ''}
+                            ${brm.C ? `
+                                <div class="brm-measure">
+                                    <div class="brm-label">C (Profondità)</div>
+                                    <div class="brm-value">${brm.C}<span class="brm-unit">mm</span></div>
+                                </div>
+                            ` : ''}
+                            ${brm.B ? `
+                                <div class="brm-measure">
+                                    <div class="brm-label">B (Base)</div>
+                                    <div class="brm-value">${brm.B}<span class="brm-unit">mm</span></div>
+                                </div>
+                            ` : ''}
                         </div>
+                        
+                        ${hasRilevate ? `
+                            <!-- Misure Rilevate -->
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc;">
+                                <div style="font-size: 0.75rem; color: #666; margin-bottom: 0.5rem;">📏 Misure Rilevate:</div>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; font-size: 0.8rem;">
+                                    ${cass.LS ? `<div><strong>LS:</strong> ${cass.LS}</div>` : ''}
+                                    ${cass.SRSX ? `<div><strong>SRSX:</strong> ${cass.SRSX}</div>` : ''}
+                                    ${cass.SRDX ? `<div><strong>SRDX:</strong> ${cass.SRDX}</div>` : ''}
+                                    ${cass.HCASS ? `<div><strong>HCASS:</strong> ${cass.HCASS}</div>` : ''}
+                                    ${cass.ZSX_tipo ? `<div><strong>ZSX:</strong> ${cass.ZSX_tipo}</div>` : ''}
+                                    ${cass.ZDX_tipo ? `<div><strong>ZDX:</strong> ${cass.ZDX_tipo}</div>` : ''}
+                                    ${cass.BSuperiore ? `<div><strong>B.Sup:</strong> ${cass.BSuperiore}</div>` : ''}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }
