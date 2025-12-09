@@ -6,7 +6,16 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.14 - CHANGELOG
+    DASHBOARD RILIEVI v8.15 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.15 (09 DIC 2025):
+    - 🔧 COSTI LAVORO AUTOMATICI: Posa/Smontaggio/Smaltimento/Componenti calcolati da righe
+    - 🔧 VALORI SUGGERITI: Sistema mostra "sugg. €XXX" basato su tipo prodotto
+    - 🔧 INPUT MODIFICABILI: 4 campi per costi lavoro (posa, smontaggio, smaltimento, componenti)
+    - 🔧 COSTANTE COSTI_LAVORO: Database completo con prezzi per tipo prodotto
+    - 🔧 SEPARATORE GIALLO: Sezione "COSTI LAVORO" ben evidenziata
+    - 🔧 Finestra €200, Portafinestra €250, Scorrevole €300, Blindata €350
+    - 🔧 Predisposto per futuro calcolo al metro lineare (perimetro BRM)
     
     🔧 AGGIORNAMENTI v8.14 (09 DIC 2025):
     - 💰 SISTEMA SCONTI FORNITORI: SCONTI_FORNITORI con 7 aziende configurate
@@ -1294,7 +1303,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.14 - Sistema Sconti Fornitori</title>
+    <title>Dashboard Rilievi v8.15 - Costi Lavoro Automatici</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -11204,7 +11213,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.14</span>
+                <span class="logo-version" id="version-badge">v8.15</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -11699,48 +11708,80 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-subtotal-value" id="totaleNetto" style="background: #d1fae5; color: #059669;">€ 0.00</td>
                                         <td class="excel-subtotal-value" id="totaleCliente" style="background: #dbeafe; color: #1d4ed8;">€ 0.00</td>
                                     </tr>
-                                    <!-- SEPARATORE -->
-                                    <tr style="height: 8px; background: #e5e7eb;">
-                                        <td colspan="21"></td>
+                                    <!-- SEPARATORE LAVORI -->
+                                    <tr style="height: 8px; background: #fbbf24;">
+                                        <td colspan="21" style="text-align: center; font-size: 0.7rem; color: #78350f; font-weight: 600;">🔧 COSTI LAVORO (senza ricarico)</td>
                                     </tr>
-                                    <!-- POSA - INPUT MODIFICABILE -->
-                                    <tr class="excel-row">
-                                        <td colspan="15" style="text-align: right; font-weight: 600;">Posa in opera:</td>
+                                    <!-- POSA IN OPERA -->
+                                    <tr class="excel-row" style="background: #fffbeb;">
+                                        <td colspan="14" style="text-align: right; font-weight: 600;">🔧 Posa in opera:</td>
+                                        <td style="text-align: right; font-size: 0.75rem; color: #6b7280;" id="posaSuggerito">sugg. €0</td>
                                         <td colspan="2" style="text-align: right;">
                                             <input type="number" id="inputPosa" value="0" min="0" step="50" 
                                                    onchange="ricalcolaTotaliPreventivo()" 
-                                                   style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right;">
-                                            <span style="color: #6b7280; font-size: 0.8rem;"> €</span>
+                                                   style="width: 80px; padding: 4px; border: 1px solid #f59e0b; border-radius: 4px; text-align: right; background: #fffbeb;">
+                                            <span style="color: #92400e; font-size: 0.8rem;"> €</span>
                                         </td>
-                                        <td class="excel-value" id="totalePosaListino">€ 0.00</td>
-                                        <td></td>
-                                        <td class="excel-value" id="totalePosaNetto" style="color: #059669;">€ 0.00</td>
-                                        <td class="excel-value" id="totalePosaCliente" style="color: #1d4ed8;">€ 0.00</td>
+                                        <td class="excel-value" id="totalePosaListino" style="background: #fffbeb;">€ 0.00</td>
+                                        <td style="background: #fffbeb;"></td>
+                                        <td class="excel-value" id="totalePosaNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
+                                        <td class="excel-value" id="totalePosaCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
-                                    <!-- SMONTAGGIO - INPUT MODIFICABILE -->
-                                    <tr class="excel-row">
-                                        <td colspan="15" style="text-align: right; font-weight: 600;">Smontaggio/Rimozione:</td>
+                                    <!-- SMONTAGGIO -->
+                                    <tr class="excel-row" style="background: #fffbeb;">
+                                        <td colspan="14" style="text-align: right; font-weight: 600;">🔨 Smontaggio:</td>
+                                        <td style="text-align: right; font-size: 0.75rem; color: #6b7280;" id="smontaggioSuggerito">sugg. €0</td>
                                         <td colspan="2" style="text-align: right;">
-                                            <input type="number" id="inputSmontaggio" value="0" min="0" step="50" 
+                                            <input type="number" id="inputSmontaggio" value="0" min="0" step="10" 
                                                    onchange="ricalcolaTotaliPreventivo()" 
-                                                   style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right;">
-                                            <span style="color: #6b7280; font-size: 0.8rem;"> €</span>
+                                                   style="width: 80px; padding: 4px; border: 1px solid #f59e0b; border-radius: 4px; text-align: right; background: #fffbeb;">
+                                            <span style="color: #92400e; font-size: 0.8rem;"> €</span>
                                         </td>
-                                        <td class="excel-value" id="totaleSmontaggioListino">€ 0.00</td>
-                                        <td></td>
-                                        <td class="excel-value" id="totaleSmontaggioNetto" style="color: #059669;">€ 0.00</td>
-                                        <td class="excel-value" id="totaleSmontaggioCliente" style="color: #1d4ed8;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleSmontaggioListino" style="background: #fffbeb;">€ 0.00</td>
+                                        <td style="background: #fffbeb;"></td>
+                                        <td class="excel-value" id="totaleSmontaggioNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleSmontaggioCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
+                                    </tr>
+                                    <!-- SMALTIMENTO -->
+                                    <tr class="excel-row" style="background: #fffbeb;">
+                                        <td colspan="14" style="text-align: right; font-weight: 600;">🗑️ Smaltimento:</td>
+                                        <td style="text-align: right; font-size: 0.75rem; color: #6b7280;" id="smaltimentoSuggerito">sugg. €0</td>
+                                        <td colspan="2" style="text-align: right;">
+                                            <input type="number" id="inputSmaltimento" value="0" min="0" step="10" 
+                                                   onchange="ricalcolaTotaliPreventivo()" 
+                                                   style="width: 80px; padding: 4px; border: 1px solid #f59e0b; border-radius: 4px; text-align: right; background: #fffbeb;">
+                                            <span style="color: #92400e; font-size: 0.8rem;"> €</span>
+                                        </td>
+                                        <td class="excel-value" id="totaleSmaltimentoListino" style="background: #fffbeb;">€ 0.00</td>
+                                        <td style="background: #fffbeb;"></td>
+                                        <td class="excel-value" id="totaleSmaltimentoNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleSmaltimentoCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
+                                    </tr>
+                                    <!-- COMPONENTI POSA -->
+                                    <tr class="excel-row" style="background: #fffbeb;">
+                                        <td colspan="14" style="text-align: right; font-weight: 600;">🔩 Componenti posa:</td>
+                                        <td style="text-align: right; font-size: 0.75rem; color: #6b7280;" id="componentiSuggerito">sugg. €0</td>
+                                        <td colspan="2" style="text-align: right;">
+                                            <input type="number" id="inputComponenti" value="0" min="0" step="5" 
+                                                   onchange="ricalcolaTotaliPreventivo()" 
+                                                   style="width: 80px; padding: 4px; border: 1px solid #f59e0b; border-radius: 4px; text-align: right; background: #fffbeb;">
+                                            <span style="color: #92400e; font-size: 0.8rem;"> €</span>
+                                        </td>
+                                        <td class="excel-value" id="totaleComponentiListino" style="background: #fffbeb;">€ 0.00</td>
+                                        <td style="background: #fffbeb;"></td>
+                                        <td class="excel-value" id="totaleComponentiNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleComponentiCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
                                     <!-- TOTALE LAVORI -->
-                                    <tr class="excel-row" style="background: #fef9c3;">
-                                        <td colspan="17" style="text-align: right; font-weight: 600;">Totale Lavori:</td>
-                                        <td class="excel-value" id="totaleLavoriListino">€ 0.00</td>
-                                        <td></td>
-                                        <td class="excel-value" id="totaleLavoriNetto" style="color: #059669;">€ 0.00</td>
-                                        <td class="excel-value" id="totaleLavoriCliente" style="color: #1d4ed8;">€ 0.00</td>
+                                    <tr class="excel-row" style="background: #fef3c7;">
+                                        <td colspan="17" style="text-align: right; font-weight: 700; color: #92400e;">TOTALE LAVORI:</td>
+                                        <td class="excel-value" id="totaleLavoriListino" style="font-weight: 700; background: #fef3c7;">€ 0.00</td>
+                                        <td style="background: #fef3c7;"></td>
+                                        <td class="excel-value" id="totaleLavoriNetto" style="color: #059669; font-weight: 700; background: #fef3c7;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleLavoriCliente" style="color: #1d4ed8; font-weight: 700; background: #fef3c7;">€ 0.00</td>
                                     </tr>
                                     <!-- SEPARATORE -->
-                                    <tr style="height: 4px; background: #94a3b8;">
+                                    <tr style="height: 4px; background: #1e40af;">
                                         <td colspan="21"></td>
                                     </tr>
                                     <!-- SUBTOTALE GENERALE -->
@@ -17860,7 +17901,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 'FERREROLEGNO':   50.00,
                 'FLESSYA':        53.00,
                 'OIKOS':          46.00,  // 40% + 10% composto
-                'PLASTICINO':     40.00,  // DEFAULT - da confermare
+                'PLASTICINO':     45.00,  // Tapparelle/Avvolgibili
             },
             
             // Alias per normalizzazione nomi
@@ -17930,6 +17971,130 @@ if (typeof module !== 'undefined' && module.exports) {
         };
         
         console.log('✅ SCONTI_FORNITORI v8.14 - Sistema sconti attivo (7 fornitori configurati)');
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🔧 COSTI LAVORO 2025 - Posa, Smontaggio, Smaltimento, Componenti
+        // Fonte: COSTI-LAVORO-2025.md
+        // ═══════════════════════════════════════════════════════════════════════════
+        const COSTI_LAVORO = {
+            // POSA IN OPERA (€/pezzo)
+            posa: {
+                finestra: 200,
+                portafinestra: 250,
+                scorrevole: 300,
+                portoncino: 350,
+                blindata: 350,
+                persiana: 80,
+                tapparella: 120,      // Completa
+                cassonetto: 80,
+                zanzariera: 40,
+                motore: 60
+            },
+            // SMONTAGGIO (€/pezzo)
+            smontaggio: {
+                finestra: 40,
+                portafinestra: 60,
+                scorrevole: 80,
+                portoncino: 100,
+                blindata: 100,
+                persiana: 30,
+                tapparella: 40,
+                cassonetto: 50,
+                zanzariera: 0,
+                motore: 0
+            },
+            // SMALTIMENTO (€/pezzo)
+            smaltimento: {
+                finestra: 30,
+                portafinestra: 50,
+                scorrevole: 70,
+                portoncino: 80,
+                blindata: 80,
+                persiana: 25,
+                tapparella: 20,
+                cassonetto: 30,
+                zanzariera: 0,
+                motore: 0
+            },
+            // COMPONENTI POSA (€/pezzo)
+            componenti: {
+                finestra: 35,
+                portafinestra: 45,
+                scorrevole: 60,
+                portoncino: 50,
+                blindata: 50,
+                persiana: 15,
+                tapparella: 20,
+                cassonetto: 15,
+                zanzariera: 10,
+                motore: 5
+            },
+            
+            // Determina tipo prodotto da stringa
+            getTipoProdotto: function(tipoStr) {
+                if (!tipoStr) return 'finestra';
+                const t = tipoStr.toLowerCase();
+                if (t.includes('portafinestra') || t.includes('porta-finestra') || t.includes('porta finestra')) return 'portafinestra';
+                if (t.includes('scorrevole') || t.includes('alzante')) return 'scorrevole';
+                if (t.includes('portoncino')) return 'portoncino';
+                if (t.includes('blindat')) return 'blindata';
+                if (t.includes('persiana')) return 'persiana';
+                if (t.includes('tapparella')) return 'tapparella';
+                if (t.includes('cassonetto')) return 'cassonetto';
+                if (t.includes('zanzariera')) return 'zanzariera';
+                if (t.includes('motore')) return 'motore';
+                if (t.includes('finestra')) return 'finestra';
+                return 'finestra'; // default
+            },
+            
+            // Calcola costi per singolo prodotto
+            calcolaCosti: function(tipoStr, quantita = 1) {
+                const tipo = this.getTipoProdotto(tipoStr);
+                return {
+                    tipo: tipo,
+                    posa: (this.posa[tipo] || 0) * quantita,
+                    smontaggio: (this.smontaggio[tipo] || 0) * quantita,
+                    smaltimento: (this.smaltimento[tipo] || 0) * quantita,
+                    componenti: (this.componenti[tipo] || 0) * quantita,
+                    quantita: quantita
+                };
+            },
+            
+            // Calcola totali da array di righe preventivo
+            calcolaTotaliDaRighe: function(righe) {
+                let totPosa = 0, totSmontaggio = 0, totSmaltimento = 0, totComponenti = 0;
+                const dettaglio = [];
+                
+                righe.forEach(riga => {
+                    const costi = this.calcolaCosti(riga.tipo, riga.quantita || 1);
+                    totPosa += costi.posa;
+                    totSmontaggio += costi.smontaggio;
+                    totSmaltimento += costi.smaltimento;
+                    totComponenti += costi.componenti;
+                    dettaglio.push({
+                        posizione: riga.posizione,
+                        tipo: riga.tipo,
+                        tipoNorm: costi.tipo,
+                        quantita: costi.quantita,
+                        posa: costi.posa,
+                        smontaggio: costi.smontaggio,
+                        smaltimento: costi.smaltimento,
+                        componenti: costi.componenti
+                    });
+                });
+                
+                return {
+                    posa: totPosa,
+                    smontaggio: totSmontaggio,
+                    smaltimento: totSmaltimento,
+                    componenti: totComponenti,
+                    totale: totPosa + totSmontaggio + totSmaltimento + totComponenti,
+                    dettaglio: dettaglio
+                };
+            }
+        };
+        
+        console.log('✅ COSTI_LAVORO v8.15 - Posa/Smontaggio/Smaltimento/Componenti configurati');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FUNZIONE CALCOLO PREZZO CASSONETTO FINSTRAL
@@ -19541,19 +19706,34 @@ if (typeof module !== 'undefined' && module.exports) {
             document.getElementById('totaleNetto').textContent = `€ ${totNetto.toFixed(2)}`;
             document.getElementById('totaleCliente').textContent = `€ ${totCliente.toFixed(2)}`;
             
-            // Imposta input posa/smontaggio a 0 (l'utente li inserisce)
-            document.getElementById('inputPosa').value = 0;
-            document.getElementById('inputSmontaggio').value = 0;
+            // 🔧 v8.15: Calcola costi lavoro suggeriti da righe preventivo
+            const costiSuggeriti = COSTI_LAVORO.calcolaTotaliDaRighe(preventivo.righe);
             
-            // Ricalcola totali con input a 0
+            // Mostra suggerimenti
+            document.getElementById('posaSuggerito').textContent = `sugg. €${costiSuggeriti.posa}`;
+            document.getElementById('smontaggioSuggerito').textContent = `sugg. €${costiSuggeriti.smontaggio}`;
+            document.getElementById('smaltimentoSuggerito').textContent = `sugg. €${costiSuggeriti.smaltimento}`;
+            document.getElementById('componentiSuggerito').textContent = `sugg. €${costiSuggeriti.componenti}`;
+            
+            // Imposta input ai valori suggeriti (l'utente può modificare)
+            document.getElementById('inputPosa').value = costiSuggeriti.posa;
+            document.getElementById('inputSmontaggio').value = costiSuggeriti.smontaggio;
+            document.getElementById('inputSmaltimento').value = costiSuggeriti.smaltimento;
+            document.getElementById('inputComponenti').value = costiSuggeriti.componenti;
+            
+            // Salva anche i suggeriti per riferimento
+            window._costiLavoroSuggeriti = costiSuggeriti;
+            
+            // Ricalcola totali con valori suggeriti
             ricalcolaTotaliPreventivo();
             
             console.log(`✅ Tabella preventivo popolata: ${preventivo.righe.length} righe`);
             console.log(`💰 Listino: €${totListino.toFixed(2)} | Netto: €${totNetto.toFixed(2)} | Cliente: €${totCliente.toFixed(2)}`);
+            console.log(`🔧 Costi lavoro suggeriti: Posa €${costiSuggeriti.posa} | Smontaggio €${costiSuggeriti.smontaggio} | Smaltimento €${costiSuggeriti.smaltimento} | Componenti €${costiSuggeriti.componenti}`);
         }
         
         /**
-         * 💰 v8.14: Ricalcola totali quando cambiano posa/smontaggio/ricarico
+         * 💰 v8.15: Ricalcola totali quando cambiano posa/smontaggio/smaltimento/componenti/ricarico
          */
         function ricalcolaTotaliPreventivo() {
             const mat = window._preventivoMateriali;
@@ -19562,20 +19742,26 @@ if (typeof module !== 'undefined' && module.exports) {
             const ricaricoPct = parseFloat(document.getElementById('ricaricoPct')?.value || 30);
             const ivaPercent = parseInt(document.getElementById('ivaSelect')?.value || 0);
             
-            // Posa e smontaggio dagli input
+            // Tutti i costi lavoro dagli input
             const posa = parseFloat(document.getElementById('inputPosa')?.value || 0);
             const smontaggio = parseFloat(document.getElementById('inputSmontaggio')?.value || 0);
+            const smaltimento = parseFloat(document.getElementById('inputSmaltimento')?.value || 0);
+            const componenti = parseFloat(document.getElementById('inputComponenti')?.value || 0);
             
-            // Posa/Smontaggio: netto = costo, cliente = con ricarico
+            // Costi lavoro: netto = costo vivo, cliente = con ricarico
             const posaNetto = posa;
             const posaCliente = posa * (1 + ricaricoPct / 100);
             const smontaggioNetto = smontaggio;
             const smontaggioCliente = smontaggio * (1 + ricaricoPct / 100);
+            const smaltimentoNetto = smaltimento;
+            const smaltimentoCliente = smaltimento * (1 + ricaricoPct / 100);
+            const componentiNetto = componenti;
+            const componentiCliente = componenti * (1 + ricaricoPct / 100);
             
             // Totale lavori
-            const lavoriListino = posa + smontaggio;
-            const lavoriNetto = posaNetto + smontaggioNetto;
-            const lavoriCliente = posaCliente + smontaggioCliente;
+            const lavoriListino = posa + smontaggio + smaltimento + componenti;
+            const lavoriNetto = posaNetto + smontaggioNetto + smaltimentoNetto + componentiNetto;
+            const lavoriCliente = posaCliente + smontaggioCliente + smaltimentoCliente + componentiCliente;
             
             // Subtotali
             const subtotaleListino = mat.listino + lavoriListino;
@@ -19594,6 +19780,16 @@ if (typeof module !== 'undefined' && module.exports) {
             document.getElementById('totaleSmontaggioListino').textContent = `€ ${smontaggio.toFixed(2)}`;
             document.getElementById('totaleSmontaggioNetto').textContent = `€ ${smontaggioNetto.toFixed(2)}`;
             document.getElementById('totaleSmontaggioCliente').textContent = `€ ${smontaggioCliente.toFixed(2)}`;
+            
+            // Smaltimento
+            document.getElementById('totaleSmaltimentoListino').textContent = `€ ${smaltimento.toFixed(2)}`;
+            document.getElementById('totaleSmaltimentoNetto').textContent = `€ ${smaltimentoNetto.toFixed(2)}`;
+            document.getElementById('totaleSmaltimentoCliente').textContent = `€ ${smaltimentoCliente.toFixed(2)}`;
+            
+            // Componenti
+            document.getElementById('totaleComponentiListino').textContent = `€ ${componenti.toFixed(2)}`;
+            document.getElementById('totaleComponentiNetto').textContent = `€ ${componentiNetto.toFixed(2)}`;
+            document.getElementById('totaleComponentiCliente').textContent = `€ ${componentiCliente.toFixed(2)}`;
             
             // Totale lavori
             document.getElementById('totaleLavoriListino').textContent = `€ ${lavoriListino.toFixed(2)}`;
@@ -19630,7 +19826,7 @@ if (typeof module !== 'undefined' && module.exports) {
                 document.getElementById('grandTotalCliente').textContent = `€ ${subtotaleCliente.toFixed(2)}`;
             }
             
-            console.log(`💰 Ricalcolo: Posa €${posa} | Smontaggio €${smontaggio} | Margine €${margineTotale.toFixed(2)}`);
+            console.log(`💰 Ricalcolo: Posa €${posa} | Smontaggio €${smontaggio} | Smaltimento €${smaltimento} | Componenti €${componenti} | Margine €${margineTotale.toFixed(2)}`);
         }
 
         // ═══════════════════════════════════════════════════════════════════
