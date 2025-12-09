@@ -25,6 +25,11 @@
     - ✅ determinaGruppoColoreCassonetto(): 01,07,27,42,45=bianco | 06,13,19,46,55=scuri
     - ✅ Aggiunto alias "posaclima" per isolamento cassonetto (codice 40830)
     
+    🔧 AGGIORNAMENTI v8.12 (09 DIC 2025):
+    - 📦 FIX CASSONETTI: B e C ora mostrati correttamente (parseInt su stringhe)
+    - 📦 BRM CASSONETTO: Mostra L, H, C, B (usa rilevati se BRM null)
+    - 📏 MISURE RILEVATE: Aggiunti B e C alla griglia cassonetto
+    
     🔧 AGGIORNAMENTI v8.11 (09 DIC 2025):
     - 📦 CASSONETTI COMPLETI: Config globale mostra materialeCass + codiceCass + coloreCass
     - 📦 CASSONETTI MISURE: Aggiunto LS, SRSX, SRDX, HCASS, ZSX, ZDX alla normalizzazione
@@ -1271,7 +1276,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.11";
+        const DASHBOARD_VERSION = "8.12";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11974,20 +11979,22 @@ if (typeof module !== 'undefined' && module.exports) {
                                 coloreCass: pos.cassonetto.coloreCass || '',
                                 codiceIsolamento: pos.cassonetto.codiceIsolamento || '',
                                 // Misure rilevate
-                                LS: pos.cassonetto.LS || 0,
-                                SRSX: pos.cassonetto.SRSX || 0,
-                                SRDX: pos.cassonetto.SRDX || 0,
-                                ZSX: pos.cassonetto.ZSX || 0,
+                                LS: parseInt(pos.cassonetto.LS) || 0,
+                                SRSX: parseInt(pos.cassonetto.SRSX) || 0,
+                                SRDX: parseInt(pos.cassonetto.SRDX) || 0,
+                                ZSX: parseInt(pos.cassonetto.ZSX) || 0,
                                 ZSX_tipo: pos.cassonetto.ZSX_tipo || '',
-                                ZDX: pos.cassonetto.ZDX || 0,
+                                ZDX: parseInt(pos.cassonetto.ZDX) || 0,
                                 ZDX_tipo: pos.cassonetto.ZDX_tipo || '',
-                                HCASS: pos.cassonetto.HCASS || 0,
-                                BSuperiore: pos.cassonetto.BSuperiore || 0,
+                                HCASS: parseInt(pos.cassonetto.HCASS) || 0,
+                                B: parseInt(pos.cassonetto.B) || 0,
+                                C: parseInt(pos.cassonetto.C) || 0,
+                                BSuperiore: parseInt(pos.cassonetto.BSuperiore) || 0,
                                 brm: {
-                                    L: pos.cassonetto.BRM_L || 0,
-                                    H: pos.cassonetto.BRM_H || pos.cassonetto.HCASS || 0,
-                                    C: pos.cassonetto.BRM_C || pos.cassonetto.C || 0,
-                                    B: pos.cassonetto.BRM_B || pos.cassonetto.B || 0
+                                    L: parseInt(pos.cassonetto.BRM_L) || 0,
+                                    H: parseInt(pos.cassonetto.BRM_H) || parseInt(pos.cassonetto.HCASS) || 0,
+                                    C: parseInt(pos.cassonetto.BRM_C) || parseInt(pos.cassonetto.C) || 0,
+                                    B: parseInt(pos.cassonetto.BRM_B) || parseInt(pos.cassonetto.B) || 0
                                 }
                             } : null,
                             
@@ -24198,7 +24205,7 @@ if (typeof module !== 'undefined' && module.exports) {
             if (pos.cassonetto && pos.cassonetto.quantita > 0) {
                 const cass = pos.cassonetto;
                 const brm = cass.brm || {};
-                const hasRilevate = cass.LS || cass.HCASS;
+                const hasRilevate = cass.LS || cass.HCASS || cass.B || cass.C;
                 
                 html += `
                     <div class="brm-box-large">
@@ -24241,6 +24248,8 @@ if (typeof module !== 'undefined' && module.exports) {
                                     ${cass.SRSX ? `<div><strong>SRSX:</strong> ${cass.SRSX}</div>` : ''}
                                     ${cass.SRDX ? `<div><strong>SRDX:</strong> ${cass.SRDX}</div>` : ''}
                                     ${cass.HCASS ? `<div><strong>HCASS:</strong> ${cass.HCASS}</div>` : ''}
+                                    ${cass.B ? `<div><strong>B:</strong> ${cass.B}</div>` : ''}
+                                    ${cass.C ? `<div><strong>C:</strong> ${cass.C}</div>` : ''}
                                     ${cass.ZSX_tipo ? `<div><strong>ZSX:</strong> ${cass.ZSX_tipo}</div>` : ''}
                                     ${cass.ZDX_tipo ? `<div><strong>ZDX:</strong> ${cass.ZDX_tipo}</div>` : ''}
                                     ${cass.BSuperiore ? `<div><strong>B.Sup:</strong> ${cass.BSuperiore}</div>` : ''}
@@ -25712,9 +25721,16 @@ if (typeof module !== 'undefined' && module.exports) {
                             ...pos.cassonetto,
                             quantita: parseInt(pos.cassonetto.qta) || 0,
                             azienda: pos.cassonetto.azienda || 'Non specificata',
+                            // 🆕 v8.12: Misure rilevate
+                            LS: parseInt(pos.cassonetto.LS) || 0,
+                            HCASS: parseInt(pos.cassonetto.HCASS) || 0,
+                            B: parseInt(pos.cassonetto.B) || 0,
+                            C: parseInt(pos.cassonetto.C) || 0,
                             brm: {
-                                L: pos.cassonetto.BRM_L || 0,
-                                H: pos.cassonetto.BRM_H || 0
+                                L: parseInt(pos.cassonetto.BRM_L) || 0,
+                                H: parseInt(pos.cassonetto.BRM_H) || parseInt(pos.cassonetto.HCASS) || 0,
+                                C: parseInt(pos.cassonetto.BRM_C) || parseInt(pos.cassonetto.C) || 0,
+                                B: parseInt(pos.cassonetto.BRM_B) || parseInt(pos.cassonetto.B) || 0
                             }
                         };
                     }
