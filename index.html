@@ -25,7 +25,10 @@
     - ✅ determinaGruppoColoreCassonetto(): 01,07,27,42,45=bianco | 06,13,19,46,55=scuri
     - ✅ Aggiunto alias "posaclima" per isolamento cassonetto (codice 40830)
     
-    🔧 AGGIORNAMENTI v8.10 (05 DIC 2025):
+    🔧 AGGIORNAMENTI v8.10 (09 DIC 2025):
+    - 🐛 FIX BRM_H NULL: Non mostra più H=0 o H=1200 quando BRM_H non è calcolato
+    - 🐛 FIX DEFAULT: Rimossi valori default 1000x1200 nel wizard preventivo
+    - 📐 MISURE CONDIZIONALI: L, H, C, B mostrati solo se hanno valore reale
     
     🔧 AGGIORNAMENTI v8.09 (05 DIC 2025):
     - 📊 TABELLA FULL-WIDTH: Preventivo visibile senza scroll orizzontale
@@ -1262,7 +1265,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.09";
+        const DASHBOARD_VERSION = "8.10";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -24103,22 +24106,30 @@ if (typeof module !== 'undefined' && module.exports) {
                         <div class="brm-box-large">
                             <div class="brm-product-title">🪟 INFISSO ${pos.infisso.tipo || ''}</div>
                             <div class="brm-measurements">
-                                <div class="brm-measure">
-                                    <div class="brm-label">Larghezza (L)</div>
-                                    <div class="brm-value">${L}<span class="brm-unit">mm</span></div>
-                                </div>
-                                <div class="brm-measure">
-                                    <div class="brm-label">Altezza (H)</div>
-                                    <div class="brm-value">${H}<span class="brm-unit">mm</span></div>
-                                </div>
-                                <div class="brm-measure">
-                                    <div class="brm-label">Cassettone (C)</div>
-                                    <div class="brm-value">${C}<span class="brm-unit">mm</span></div>
-                                </div>
-                                <div class="brm-measure">
-                                    <div class="brm-label">Base (B)</div>
-                                    <div class="brm-value">${B}<span class="brm-unit">mm</span></div>
-                                </div>
+                                ${L ? `
+                                    <div class="brm-measure">
+                                        <div class="brm-label">Larghezza (L)</div>
+                                        <div class="brm-value">${L}<span class="brm-unit">mm</span></div>
+                                    </div>
+                                ` : ''}
+                                ${H ? `
+                                    <div class="brm-measure">
+                                        <div class="brm-label">Altezza (H)</div>
+                                        <div class="brm-value">${H}<span class="brm-unit">mm</span></div>
+                                    </div>
+                                ` : ''}
+                                ${C ? `
+                                    <div class="brm-measure">
+                                        <div class="brm-label">Cassettone (C)</div>
+                                        <div class="brm-value">${C}<span class="brm-unit">mm</span></div>
+                                    </div>
+                                ` : ''}
+                                ${B ? `
+                                    <div class="brm-measure">
+                                        <div class="brm-label">Base (B)</div>
+                                        <div class="brm-value">${B}<span class="brm-unit">mm</span></div>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -27230,10 +27241,8 @@ if (typeof module !== 'undefined' && module.exports) {
                         
                         console.log(`✅ BRM applicato a ${problema.posizione}: ${prodotto.brm.L}×${prodotto.brm.H}`);
                     } else {
-                        // Usa valori di default se non trova misure
-                        prodotto.brm.L = 1000;
-                        prodotto.brm.H = 1200;
-                        console.warn(`⚠️ Nessuna misura trovata per ${problema.posizione}, uso default`);
+                        // 🔧 v8.10: NON usare valori di default - lascia null per non mostrare dati falsi
+                        console.warn(`⚠️ Nessuna misura trovata per ${problema.posizione}, BRM non calcolabile`);
                     }
                 });
             },
