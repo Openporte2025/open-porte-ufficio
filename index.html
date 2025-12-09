@@ -17,6 +17,9 @@
     - 💰 MARGINE LORDO: Riga dedicata che mostra il tuo guadagno
     - 💰 TOTALI TRIPLI: Listino/Netto/Cliente per materiali, posa, smontaggio, IVA
     - 💰 calcolaNetto(), calcolaPrezzoCliente(), calcolaDettaglio()
+    - 🔧 POSA/SMONTAGGIO: Input modificabili (non più automatici) - spostati sotto subtotale
+    - 🔧 TOTALE LAVORI: Nuova riga che somma posa + smontaggio
+    - 🏢 VISTA AZIENDE: Box con Listino e Netto separati + colonna Netto nella tabella
     
     🔧 AGGIORNAMENTI v8.13 (09 DIC 2025):
     - 🦟 PALAGINA ZANZARIERE: Database completo integrato (18 modelli, 3 fasce, 6 reti, 10 accessori)
@@ -11638,8 +11641,8 @@ if (typeof module !== 'undefined' && module.exports) {
                             <div style="margin-left: auto; display: flex; gap: 0.5rem; align-items: center;">
                                 <label style="font-weight: 600;">Ricarico:</label>
                                 <input type="number" id="ricaricoPct" value="30" min="0" max="100" step="1" 
-                                       onchange="ricalcolaPreventivo()" 
-                                       style="width: 60px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; text-align: center;">
+                                       onchange="ricalcolaPreventivo(); ricalcolaTotaliPreventivo();" 
+                                       style="width: 60px; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; text-align: center; font-weight: 600; background: #fef3c7;">
                                 <span style="color: #64748b;">%</span>
                                 
                                 <div style="width: 1px; height: 24px; background: #d1d5db; margin: 0 0.5rem;"></div>
@@ -11688,27 +11691,59 @@ if (typeof module !== 'undefined' && module.exports) {
                                     <!-- Popolato dinamicamente -->
                                 </tbody>
                                 <tfoot>
-                                    <tr class="excel-total-row">
-                                        <td colspan="17" style="text-align: right; font-weight: 700;">TOTALE MATERIALI:</td>
-                                        <td class="excel-total-value" id="totaleListino" style="background: #fef3c7;">€ 0.00</td>
+                                    <!-- SUBTOTALE MATERIALI -->
+                                    <tr class="excel-subtotal-row" style="background: #f0f9ff;">
+                                        <td colspan="17" style="text-align: right; font-weight: 700;">SUBTOTALE MATERIALI:</td>
+                                        <td class="excel-subtotal-value" id="totaleListino" style="background: #fef3c7;">€ 0.00</td>
                                         <td style="background: #d1fae5;"></td>
-                                        <td class="excel-total-value" id="totaleNetto" style="background: #d1fae5; color: #059669;">€ 0.00</td>
-                                        <td class="excel-total-value" id="totaleCliente" style="background: #dbeafe; color: #1d4ed8;">€ 0.00</td>
+                                        <td class="excel-subtotal-value" id="totaleNetto" style="background: #d1fae5; color: #059669;">€ 0.00</td>
+                                        <td class="excel-subtotal-value" id="totaleCliente" style="background: #dbeafe; color: #1d4ed8;">€ 0.00</td>
                                     </tr>
+                                    <!-- SEPARATORE -->
+                                    <tr style="height: 8px; background: #e5e7eb;">
+                                        <td colspan="21"></td>
+                                    </tr>
+                                    <!-- POSA - INPUT MODIFICABILE -->
                                     <tr class="excel-row">
-                                        <td colspan="17" style="text-align: right; font-weight: 600;">Posa (€/pezzo):</td>
+                                        <td colspan="15" style="text-align: right; font-weight: 600;">Posa in opera:</td>
+                                        <td colspan="2" style="text-align: right;">
+                                            <input type="number" id="inputPosa" value="0" min="0" step="50" 
+                                                   onchange="ricalcolaTotaliPreventivo()" 
+                                                   style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right;">
+                                            <span style="color: #6b7280; font-size: 0.8rem;"> €</span>
+                                        </td>
                                         <td class="excel-value" id="totalePosaListino">€ 0.00</td>
                                         <td></td>
-                                        <td class="excel-value" id="totalePosaNetto">€ 0.00</td>
-                                        <td class="excel-value" id="totalePosaCliente">€ 0.00</td>
+                                        <td class="excel-value" id="totalePosaNetto" style="color: #059669;">€ 0.00</td>
+                                        <td class="excel-value" id="totalePosaCliente" style="color: #1d4ed8;">€ 0.00</td>
                                     </tr>
+                                    <!-- SMONTAGGIO - INPUT MODIFICABILE -->
                                     <tr class="excel-row">
-                                        <td colspan="17" style="text-align: right; font-weight: 600;">Smontaggio (€/pezzo):</td>
+                                        <td colspan="15" style="text-align: right; font-weight: 600;">Smontaggio/Rimozione:</td>
+                                        <td colspan="2" style="text-align: right;">
+                                            <input type="number" id="inputSmontaggio" value="0" min="0" step="50" 
+                                                   onchange="ricalcolaTotaliPreventivo()" 
+                                                   style="width: 80px; padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; text-align: right;">
+                                            <span style="color: #6b7280; font-size: 0.8rem;"> €</span>
+                                        </td>
                                         <td class="excel-value" id="totaleSmontaggioListino">€ 0.00</td>
                                         <td></td>
-                                        <td class="excel-value" id="totaleSmontaggioNetto">€ 0.00</td>
-                                        <td class="excel-value" id="totaleSmontaggioCliente">€ 0.00</td>
+                                        <td class="excel-value" id="totaleSmontaggioNetto" style="color: #059669;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleSmontaggioCliente" style="color: #1d4ed8;">€ 0.00</td>
                                     </tr>
+                                    <!-- TOTALE LAVORI -->
+                                    <tr class="excel-row" style="background: #fef9c3;">
+                                        <td colspan="17" style="text-align: right; font-weight: 600;">Totale Lavori:</td>
+                                        <td class="excel-value" id="totaleLavoriListino">€ 0.00</td>
+                                        <td></td>
+                                        <td class="excel-value" id="totaleLavoriNetto" style="color: #059669;">€ 0.00</td>
+                                        <td class="excel-value" id="totaleLavoriCliente" style="color: #1d4ed8;">€ 0.00</td>
+                                    </tr>
+                                    <!-- SEPARATORE -->
+                                    <tr style="height: 4px; background: #94a3b8;">
+                                        <td colspan="21"></td>
+                                    </tr>
+                                    <!-- SUBTOTALE GENERALE -->
                                     <tr class="excel-subtotal-row">
                                         <td colspan="17" style="text-align: right; font-weight: 700;">SUBTOTALE:</td>
                                         <td class="excel-subtotal-value" id="subtotaleListino">€ 0.00</td>
@@ -11716,6 +11751,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-subtotal-value" id="subtotaleNetto" style="color: #059669;">€ 0.00</td>
                                         <td class="excel-subtotal-value" id="subtotaleCliente" style="color: #1d4ed8;">€ 0.00</td>
                                     </tr>
+                                    <!-- MARGINE -->
                                     <tr class="excel-row" style="background: #ecfdf5;">
                                         <td colspan="17" style="text-align: right; font-weight: 700; color: #059669;">💰 TUO MARGINE:</td>
                                         <td></td>
@@ -11723,6 +11759,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td></td>
                                         <td class="excel-value" id="totaleMargineLordo" style="font-weight: 700; color: #059669;">€ 0.00</td>
                                     </tr>
+                                    <!-- IVA -->
                                     <tr class="excel-row" id="rowIVA" style="display: none;">
                                         <td colspan="17" style="text-align: right; font-weight: 600;">IVA (<span id="ivaPercent">22</span>%):</td>
                                         <td class="excel-value" id="totaleIVAListino">€ 0.00</td>
@@ -11730,6 +11767,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-value" id="totaleIVANetto">€ 0.00</td>
                                         <td class="excel-value" id="totaleIVACliente">€ 0.00</td>
                                     </tr>
+                                    <!-- TOTALE FINALE -->
                                     <tr class="excel-grand-total-row">
                                         <td colspan="17" style="text-align: right; font-weight: 700; font-size: 1.1rem;">TOTALE PREVENTIVO:</td>
                                         <td class="excel-grand-total-value" id="grandTotalListino">€ 0.00</td>
@@ -19489,63 +19527,110 @@ if (typeof module !== 'undefined' && module.exports) {
             const totCliente = preventivo._totaleCliente || totListino;
             const margine = totCliente - totNetto;
             
-            // Materiali
+            // Salva totali materiali in variabili globali per ricalcolo
+            window._preventivoMateriali = {
+                listino: totListino,
+                netto: totNetto,
+                cliente: totCliente,
+                ricaricoPct: preventivo._ricaricoPct || 30,
+                ivaPercent: preventivo.ivaPercent
+            };
+            
+            // Popola totali materiali
             document.getElementById('totaleListino').textContent = `€ ${totListino.toFixed(2)}`;
             document.getElementById('totaleNetto').textContent = `€ ${totNetto.toFixed(2)}`;
             document.getElementById('totaleCliente').textContent = `€ ${totCliente.toFixed(2)}`;
             
-            // Posa
-            const posaNetto = preventivo._posaNetto || preventivo.posa;
-            const posaCliente = preventivo._posaCliente || preventivo.posa;
-            document.getElementById('totalePosaListino').textContent = `€ ${preventivo.posa.toFixed(2)}`;
+            // Imposta input posa/smontaggio a 0 (l'utente li inserisce)
+            document.getElementById('inputPosa').value = 0;
+            document.getElementById('inputSmontaggio').value = 0;
+            
+            // Ricalcola totali con input a 0
+            ricalcolaTotaliPreventivo();
+            
+            console.log(`✅ Tabella preventivo popolata: ${preventivo.righe.length} righe`);
+            console.log(`💰 Listino: €${totListino.toFixed(2)} | Netto: €${totNetto.toFixed(2)} | Cliente: €${totCliente.toFixed(2)}`);
+        }
+        
+        /**
+         * 💰 v8.14: Ricalcola totali quando cambiano posa/smontaggio/ricarico
+         */
+        function ricalcolaTotaliPreventivo() {
+            const mat = window._preventivoMateriali;
+            if (!mat) return;
+            
+            const ricaricoPct = parseFloat(document.getElementById('ricaricoPct')?.value || 30);
+            const ivaPercent = parseInt(document.getElementById('ivaSelect')?.value || 0);
+            
+            // Posa e smontaggio dagli input
+            const posa = parseFloat(document.getElementById('inputPosa')?.value || 0);
+            const smontaggio = parseFloat(document.getElementById('inputSmontaggio')?.value || 0);
+            
+            // Posa/Smontaggio: netto = costo, cliente = con ricarico
+            const posaNetto = posa;
+            const posaCliente = posa * (1 + ricaricoPct / 100);
+            const smontaggioNetto = smontaggio;
+            const smontaggioCliente = smontaggio * (1 + ricaricoPct / 100);
+            
+            // Totale lavori
+            const lavoriListino = posa + smontaggio;
+            const lavoriNetto = posaNetto + smontaggioNetto;
+            const lavoriCliente = posaCliente + smontaggioCliente;
+            
+            // Subtotali
+            const subtotaleListino = mat.listino + lavoriListino;
+            const subtotaleNetto = mat.netto + lavoriNetto;
+            const subtotaleCliente = mat.cliente + lavoriCliente;
+            
+            // Margine
+            const margineTotale = subtotaleCliente - subtotaleNetto;
+            
+            // Aggiorna DOM - Posa
+            document.getElementById('totalePosaListino').textContent = `€ ${posa.toFixed(2)}`;
             document.getElementById('totalePosaNetto').textContent = `€ ${posaNetto.toFixed(2)}`;
             document.getElementById('totalePosaCliente').textContent = `€ ${posaCliente.toFixed(2)}`;
             
             // Smontaggio
-            const smontaggioNetto = preventivo._smontaggioNetto || preventivo.smontaggio;
-            const smontaggioCliente = preventivo._smontaggioCliente || preventivo.smontaggio;
-            document.getElementById('totaleSmontaggioListino').textContent = `€ ${preventivo.smontaggio.toFixed(2)}`;
+            document.getElementById('totaleSmontaggioListino').textContent = `€ ${smontaggio.toFixed(2)}`;
             document.getElementById('totaleSmontaggioNetto').textContent = `€ ${smontaggioNetto.toFixed(2)}`;
             document.getElementById('totaleSmontaggioCliente').textContent = `€ ${smontaggioCliente.toFixed(2)}`;
             
+            // Totale lavori
+            document.getElementById('totaleLavoriListino').textContent = `€ ${lavoriListino.toFixed(2)}`;
+            document.getElementById('totaleLavoriNetto').textContent = `€ ${lavoriNetto.toFixed(2)}`;
+            document.getElementById('totaleLavoriCliente').textContent = `€ ${lavoriCliente.toFixed(2)}`;
+            
             // Subtotali
-            const subtotaleListino = preventivo.subtotale;
-            const subtotaleNetto = totNetto + posaNetto + smontaggioNetto;
-            const subtotaleCliente = totCliente + posaCliente + smontaggioCliente;
             document.getElementById('subtotaleListino').textContent = `€ ${subtotaleListino.toFixed(2)}`;
             document.getElementById('subtotaleNetto').textContent = `€ ${subtotaleNetto.toFixed(2)}`;
             document.getElementById('subtotaleCliente').textContent = `€ ${subtotaleCliente.toFixed(2)}`;
             
             // Margine
-            const margineTotale = subtotaleCliente - subtotaleNetto;
             document.getElementById('totaleMargineLordo').textContent = `€ ${margineTotale.toFixed(2)}`;
             
-            // Gestisci IVA
+            // IVA
             const rowIVA = document.getElementById('rowIVA');
-            if (preventivo.ivaPercent > 0) {
+            if (ivaPercent > 0) {
                 rowIVA.style.display = 'table-row';
-                document.getElementById('ivaPercent').textContent = preventivo.ivaPercent;
-                const ivaListino = subtotaleListino * preventivo.ivaPercent / 100;
-                const ivaNetto = subtotaleNetto * preventivo.ivaPercent / 100;
-                const ivaCliente = subtotaleCliente * preventivo.ivaPercent / 100;
+                document.getElementById('ivaPercent').textContent = ivaPercent;
+                const ivaListino = subtotaleListino * ivaPercent / 100;
+                const ivaNetto = subtotaleNetto * ivaPercent / 100;
+                const ivaCliente = subtotaleCliente * ivaPercent / 100;
                 document.getElementById('totaleIVAListino').textContent = `€ ${ivaListino.toFixed(2)}`;
                 document.getElementById('totaleIVANetto').textContent = `€ ${ivaNetto.toFixed(2)}`;
                 document.getElementById('totaleIVACliente').textContent = `€ ${ivaCliente.toFixed(2)}`;
                 
-                // Grand totali con IVA
                 document.getElementById('grandTotalListino').textContent = `€ ${(subtotaleListino + ivaListino).toFixed(2)}`;
                 document.getElementById('grandTotalNetto').textContent = `€ ${(subtotaleNetto + ivaNetto).toFixed(2)}`;
                 document.getElementById('grandTotalCliente').textContent = `€ ${(subtotaleCliente + ivaCliente).toFixed(2)}`;
             } else {
                 rowIVA.style.display = 'none';
-                // Grand totali senza IVA
                 document.getElementById('grandTotalListino').textContent = `€ ${subtotaleListino.toFixed(2)}`;
                 document.getElementById('grandTotalNetto').textContent = `€ ${subtotaleNetto.toFixed(2)}`;
                 document.getElementById('grandTotalCliente').textContent = `€ ${subtotaleCliente.toFixed(2)}`;
             }
             
-            console.log(`✅ Tabella preventivo popolata: ${preventivo.righe.length} righe`);
-            console.log(`💰 Listino: €${totListino.toFixed(2)} | Netto: €${totNetto.toFixed(2)} | Cliente: €${totCliente.toFixed(2)} | Margine: €${margineTotale.toFixed(2)}`);
+            console.log(`💰 Ricalcolo: Posa €${posa} | Smontaggio €${smontaggio} | Margine €${margineTotale.toFixed(2)}`);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -21577,6 +21662,10 @@ if (typeof module !== 'undefined' && module.exports) {
             const posizioniCount = aziendaData.posizioniCoinvolte.size;
             const totaleEuro = aziendaData.prodotti.reduce((sum, p) => sum + (p.prezzoTotale || 0), 0);
             
+            // 💰 v8.14: Calcola totale netto con sconto fornitore
+            const scontoFornitore = SCONTI_FORNITORI.getSconto(aziendaName);
+            const totaleNetto = totaleEuro * (1 - scontoFornitore / 100);
+            
             // Determina quali badge mostrare
             const badges = [];
             if (aziendaData.totali.infissi > 0) badges.push({ label: `${aziendaData.totali.infissi} Infissi`, class: 'infissi' });
@@ -21605,12 +21694,18 @@ if (typeof module !== 'undefined' && module.exports) {
                                 `).join('')}
                             </div>
                         </div>
-                        <div class="azienda-totale-box" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1rem 1.5rem; border-radius: 12px; text-align: right; min-width: 180px;">
-                            <div style="font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">Totale Ordine</div>
-                            <div style="font-size: 1.8rem; font-weight: 700; margin-top: 0.25rem;">
-                                ${totaleEuro > 0 ? `€ ${totaleEuro.toFixed(2)}` : '-'}
+                        <!-- 💰 v8.14: Box con Listino e Netto -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <div style="background: #fef3c7; color: #92400e; padding: 0.75rem 1rem; border-radius: 8px; text-align: right;">
+                                <div style="font-size: 0.7rem; text-transform: uppercase;">Listino</div>
+                                <div style="font-size: 1.2rem; font-weight: 700;">€ ${totaleEuro.toFixed(2)}</div>
+                                <div style="font-size: 0.7rem;">-${scontoFornitore}%</div>
                             </div>
-                            <div style="font-size: 0.75rem; opacity: 0.85; margin-top: 0.25rem;">${totaleQuantita} pz • ${posizioniCount} posizioni</div>
+                            <div class="azienda-totale-box" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.75rem 1rem; border-radius: 8px; text-align: right;">
+                                <div style="font-size: 0.7rem; text-transform: uppercase; opacity: 0.9;">Tuo Costo</div>
+                                <div style="font-size: 1.4rem; font-weight: 700;">€ ${totaleNetto.toFixed(2)}</div>
+                                <div style="font-size: 0.7rem; opacity: 0.85;">${totaleQuantita} pz</div>
+                            </div>
                         </div>
                     </div>
 
@@ -21629,13 +21724,15 @@ if (typeof module !== 'undefined' && module.exports) {
                                     <th>Modello</th>
                                     <th style="width: 120px;">Misure (mm)</th>
                                     <th style="width: 50px; text-align: center;">Qty</th>
-                                    <th style="width: 100px; text-align: right;">Prezzo</th>
-                                    <th style="width: 100px; text-align: right;">Totale</th>
+                                    <th style="width: 90px; text-align: right;">Listino</th>
+                                    <th style="width: 90px; text-align: right; background: #d1fae5;">Netto</th>
                                     <th style="width: 100px;">Posizione</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${aziendaData.prodotti.map(prod => `
+                                ${aziendaData.prodotti.map(prod => {
+                                    const prezzoNetto = (prod.prezzoTotale || 0) * (1 - scontoFornitore / 100);
+                                    return `
                                     <tr>
                                         <td>
                                             <span class="product-type-badge ${prod.tipo}">
@@ -21653,19 +21750,18 @@ if (typeof module !== 'undefined' && module.exports) {
                                                 '-'}
                                         </td>
                                         <td style="text-align: center; font-weight: 600; color: #10b981;">${prod.quantita}</td>
-                                        <td style="text-align: right; font-weight: 500; color: #2563eb;">
-                                            ${prod.prezzoUnitario !== null && prod.prezzoUnitario > 0 ? 
-                                                `€ ${prod.prezzoUnitario.toFixed(2)}` : '-'}
-                                        </td>
-                                        <td style="text-align: right; font-weight: 700; color: #059669;">
+                                        <td style="text-align: right; font-weight: 500; color: #92400e;">
                                             ${prod.prezzoTotale !== null && prod.prezzoTotale > 0 ? 
                                                 `€ ${prod.prezzoTotale.toFixed(2)}` : '-'}
+                                        </td>
+                                        <td style="text-align: right; font-weight: 700; color: #059669; background: #ecfdf5;">
+                                            ${prezzoNetto > 0 ? `€ ${prezzoNetto.toFixed(2)}` : '-'}
                                         </td>
                                         <td>
                                             <span class="position-tag">${prod.posizione}</span>
                                         </td>
                                     </tr>
-                                `).join('')}
+                                `}).join('')}
                             </tbody>
                             <tfoot>
                                 <tr class="azienda-totale-row">
@@ -21673,9 +21769,11 @@ if (typeof module !== 'undefined' && module.exports) {
                                         TOTALE ${aziendaName.toUpperCase()}
                                     </td>
                                     <td style="text-align: center; font-weight: 700; color: #065f46;">${totaleQuantita}</td>
-                                    <td></td>
-                                    <td style="text-align: right; font-weight: 700; font-size: 1.1rem; color: #059669;">
+                                    <td style="text-align: right; font-weight: 600; color: #92400e;">
                                         € ${totaleEuro.toFixed(2)}
+                                    </td>
+                                    <td style="text-align: right; font-weight: 700; font-size: 1.1rem; color: #059669; background: #d1fae5;">
+                                        € ${totaleNetto.toFixed(2)}
                                     </td>
                                     <td></td>
                                 </tr>
