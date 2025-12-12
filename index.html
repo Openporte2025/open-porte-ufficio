@@ -32541,5 +32541,223 @@ const FLESSYA_2025 = {
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    <!-- 📄 SCRIPT STAMPA DOCUMENTI - GLOBALE v8.27 -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    <script>
+    (function() {
+        'use strict';
+        
+        // Funzione principale - GLOBALE
+        window.generaDocumentoCliente = function(tipo) {
+            console.log('📄 generaDocumentoCliente CHIAMATA:', tipo);
+            
+            if (!window.currentData) {
+                alert('⚠️ Nessun progetto caricato. Carica prima un rilievo.');
+                return;
+            }
+            
+            // Imposta tipo documento
+            var tipoInput = document.getElementById('tipoDocumentoCliente');
+            if (tipoInput) tipoInput.value = tipo;
+            
+            // Aggiorna titolo modal
+            var titolo = tipo === 'preventivo' ? '📄 Genera Preventivo' : '📋 Genera Conferma d\'Ordine';
+            var titoloEl = document.getElementById('titoloModalDocumento');
+            if (titoloEl) titoloEl.textContent = titolo;
+            
+            // Mostra/nascondi sezione acconto
+            var sezioneAcconto = document.getElementById('sezioneAccontoConferma');
+            if (sezioneAcconto) sezioneAcconto.style.display = tipo === 'conferma' ? 'block' : 'none';
+            
+            // Precompila data odierna
+            var oggi = new Date().toISOString().split('T')[0];
+            var dataInput = document.getElementById('docData');
+            if (dataInput) dataInput.value = oggi;
+            
+            // Precompila numero documento
+            var anno = new Date().getFullYear();
+            var numSuggerito = tipo === 'preventivo' ? 'PREV-' + anno + '/' : 'ORD-' + anno + '/';
+            var numInput = document.getElementById('docNumero');
+            if (numInput) numInput.value = numSuggerito;
+            
+            // Precompila da progetto se disponibile
+            var progetto = window.currentData;
+            if (progetto) {
+                if (progetto.cliente) {
+                    var nomeInput = document.getElementById('clienteNome');
+                    if (nomeInput && progetto.cliente.nome) nomeInput.value = progetto.cliente.nome;
+                    var telInput = document.getElementById('clienteTelefono');
+                    if (telInput && progetto.cliente.telefono) telInput.value = progetto.cliente.telefono;
+                    var emailInput = document.getElementById('clienteEmail');
+                    if (emailInput && progetto.cliente.email) emailInput.value = progetto.cliente.email;
+                }
+                if (progetto.indirizzo) {
+                    var indInput = document.getElementById('clienteIndirizzo');
+                    if (indInput) indInput.value = progetto.indirizzo;
+                }
+            }
+            
+            // Mostra modal
+            var modal = document.getElementById('modalDatiCliente');
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('✅ Modal aperto');
+            } else {
+                console.error('❌ Modal non trovato!');
+                alert('Errore: Modal non trovato');
+            }
+        };
+        
+        window.chiudiModalDatiCliente = function() {
+            var modal = document.getElementById('modalDatiCliente');
+            if (modal) modal.style.display = 'none';
+        };
+        
+        window.generaDocumentoFinale = function() {
+            var tipo = document.getElementById('tipoDocumentoCliente').value;
+            
+            // Raccogli dati form
+            var datiCliente = {
+                nome: document.getElementById('clienteNome').value || 'Cliente',
+                indirizzo: document.getElementById('clienteIndirizzo').value || '',
+                telefono: document.getElementById('clienteTelefono').value || '',
+                email: document.getElementById('clienteEmail').value || '',
+                cf: document.getElementById('clienteCF').value || ''
+            };
+            
+            var datiDoc = {
+                numero: document.getElementById('docNumero').value || '',
+                data: document.getElementById('docData').value || new Date().toISOString().split('T')[0],
+                oggetto: document.getElementById('docOggetto').value || 'Fornitura e posa serramenti',
+                note: document.getElementById('docNote').value || '',
+                accontoPct: parseFloat(document.getElementById('accontoPct') ? document.getElementById('accontoPct').value : 30) || 30,
+                tempiConsegna: document.getElementById('tempiConsegna') ? document.getElementById('tempiConsegna').value : '6-8 settimane'
+            };
+            
+            // Raccogli totali
+            var totali = {
+                cliente: document.getElementById('totaleCliente') ? document.getElementById('totaleCliente').textContent : '€ 0.00',
+                lavori: document.getElementById('valTotaleLavori') ? document.getElementById('valTotaleLavori').textContent : '€ 0.00',
+                subtotale: document.getElementById('valSubtotale') ? document.getElementById('valSubtotale').textContent : '€ 0.00',
+                imponibile10: document.getElementById('valImponibile10') ? document.getElementById('valImponibile10').textContent : '',
+                imponibile22: document.getElementById('valImponibile22') ? document.getElementById('valImponibile22').textContent : '',
+                iva10: document.getElementById('valIVA10') ? document.getElementById('valIVA10').textContent : '',
+                iva22: document.getElementById('valIVA22') ? document.getElementById('valIVA22').textContent : '',
+                totaleFinale: document.getElementById('valGrandTotal') ? document.getElementById('valGrandTotal').textContent : '€ 0.00',
+                tipoIntervento: document.getElementById('tipoInterventoSelect') ? document.getElementById('tipoInterventoSelect').value : 'manutenzione'
+            };
+            
+            // Genera HTML
+            var righe = window.righePreventivo || [];
+            var htmlDoc = generaHTMLDocumentoStampa(tipo, datiCliente, datiDoc, righe, totali);
+            
+            // Apri in nuova finestra
+            var win = window.open('', '_blank');
+            win.document.write(htmlDoc);
+            win.document.close();
+            
+            // Chiudi modal
+            window.chiudiModalDatiCliente();
+            console.log('✅ Documento generato:', tipo);
+        };
+        
+        function generaHTMLDocumentoStampa(tipo, cliente, doc, righe, totali) {
+            var isPreventivo = tipo === 'preventivo';
+            var titoloDoc = isPreventivo ? 'PREVENTIVO' : 'CONFERMA D\'ORDINE';
+            var dataObj = new Date(doc.data);
+            var dataFormattata = dataObj.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+            
+            var tipiIntervento = {
+                'nessuna': 'Senza IVA',
+                'manutenzione': 'Manutenzione ordinaria/straordinaria',
+                'ristrutturazione': 'Ristrutturazione edilizia',
+                'nuova_costruzione_prima': 'Nuova costruzione - Prima casa',
+                'nuova_costruzione_altra': 'Nuova costruzione - Altra abitazione',
+                'sola_fornitura': 'Sola fornitura materiali'
+            };
+            var descIntervento = tipiIntervento[totali.tipoIntervento] || '';
+            
+            // Righe tabella
+            var righeHtml = '';
+            righe.forEach(function(riga, i) {
+                var prezzoCliente = riga._totaleCliente || riga.totale;
+                righeHtml += '<tr>' +
+                    '<td style="text-align:center;">' + (i + 1) + '</td>' +
+                    '<td>' + (riga.ambiente || '') + '</td>' +
+                    '<td>' + (riga.tipo || '') + (riga.azienda ? ' - ' + riga.azienda : '') + '</td>' +
+                    '<td style="text-align:center;">' + (riga.larghezza || '') + '×' + (riga.altezza || '') + '</td>' +
+                    '<td style="text-align:center;">' + (riga.quantita || 1) + '</td>' +
+                    '<td style="text-align:right;font-weight:600;">€ ' + parseFloat(prezzoCliente).toFixed(2) + '</td>' +
+                    '</tr>';
+            });
+            
+            // Acconto per conferma
+            var accontoHtml = '';
+            if (!isPreventivo) {
+                var totaleNum = parseFloat(totali.totaleFinale.replace(/[€\s.]/g, '').replace(',', '.')) || 0;
+                var acconto = totaleNum * (doc.accontoPct / 100);
+                var saldo = totaleNum - acconto;
+                accontoHtml = '<tr style="background:#fef3c7;">' +
+                    '<td colspan="4" style="text-align:right;font-weight:600;">Acconto alla conferma (' + doc.accontoPct + '%):</td>' +
+                    '<td style="text-align:right;font-weight:700;color:#d97706;">€ ' + acconto.toFixed(2) + '</td></tr>' +
+                    '<tr><td colspan="4" style="text-align:right;font-weight:600;">Saldo alla consegna:</td>' +
+                    '<td style="text-align:right;font-weight:600;">€ ' + saldo.toFixed(2) + '</td></tr>';
+            }
+            
+            return '<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8"><title>' + titoloDoc + ' ' + doc.numero + '</title>' +
+                '<style>@page{size:A4;margin:15mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Tahoma,sans-serif;font-size:11pt;line-height:1.4;color:#1f2937;padding:20px}' +
+                '.header{display:flex;justify-content:space-between;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid #2563eb}' +
+                '.azienda-nome{font-size:14pt;font-weight:700;color:#1e40af}' +
+                '.azienda-info{text-align:right;font-size:9pt;color:#4b5563}' +
+                '.documento-info{display:flex;justify-content:space-between;margin-bottom:25px}' +
+                '.tipo-documento{font-size:18pt;font-weight:700;color:#1e40af;padding:10px 20px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);border-radius:8px}' +
+                '.numero-data{text-align:right}.numero-data .numero{font-size:14pt;font-weight:700}.numero-data .data{color:#6b7280}' +
+                '.cliente-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:15px;margin-bottom:25px}' +
+                '.cliente-box h4{color:#374151;margin-bottom:10px;font-size:10pt;text-transform:uppercase}' +
+                '.cliente-nome{font-size:13pt;font-weight:700;color:#111827}.cliente-dettagli{color:#4b5563;margin-top:5px}' +
+                '.oggetto{background:#eff6ff;padding:12px 15px;border-left:4px solid #2563eb;margin-bottom:20px}' +
+                '.oggetto-label{font-size:9pt;color:#6b7280;text-transform:uppercase}.oggetto-testo{font-weight:600;color:#1e40af}' +
+                'table{width:100%;border-collapse:collapse;margin-bottom:20px}' +
+                'th{background:#1e40af;color:white;padding:10px 8px;text-align:left;font-size:10pt}' +
+                'td{padding:8px;border-bottom:1px solid #e5e7eb;font-size:10pt}tr:nth-child(even){background:#f9fafb}' +
+                '.totali-table{width:50%;margin-left:auto}.totali-table td{padding:6px 10px}' +
+                '.totale-finale{background:#1e40af;color:white;font-size:14pt;font-weight:700}' +
+                '.condizioni{margin-top:30px;font-size:9pt;color:#6b7280}.condizioni h4{color:#374151;margin-bottom:10px}.condizioni ul{margin-left:20px}.condizioni li{margin-bottom:5px}' +
+                '.firma-section{margin-top:40px;display:flex;justify-content:space-between}.firma-box{width:45%}.firma-box h5{font-size:10pt;color:#374151;margin-bottom:40px}.firma-linea{border-top:1px solid #9ca3af;padding-top:5px;font-size:9pt;color:#6b7280}' +
+                '.footer{margin-top:40px;padding-top:15px;border-top:2px solid #e5e7eb;text-align:center;font-size:8pt;color:#9ca3af}' +
+                '.print-btn{position:fixed;top:20px;right:20px;background:#2563eb;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:14pt;font-weight:600}' +
+                '@media print{.print-btn{display:none}}</style></head><body>' +
+                '<button class="print-btn" onclick="window.print()">🖨️ Stampa PDF</button>' +
+                '<div class="header"><div><div class="azienda-nome">OPEN PORTE & FINESTRE</div><div style="font-size:10pt;color:#4b5563;margin-top:5px">Serramenti di qualità</div></div>' +
+                '<div class="azienda-info"><div>Via Example 123 - 24100 Bergamo</div><div>Tel. 035 123456</div><div>P.IVA 01234567890</div></div></div>' +
+                '<div class="documento-info"><div class="tipo-documento">' + titoloDoc + '</div><div class="numero-data"><div class="numero">' + doc.numero + '</div><div class="data">' + dataFormattata + '</div></div></div>' +
+                '<div class="cliente-box"><h4>Intestatario</h4><div class="cliente-nome">' + cliente.nome + '</div><div class="cliente-dettagli">' +
+                (cliente.indirizzo ? cliente.indirizzo + '<br>' : '') +
+                (cliente.telefono ? 'Tel. ' + cliente.telefono : '') + (cliente.email ? ' - ' + cliente.email : '') +
+                (cliente.cf ? '<br>C.F./P.IVA: ' + cliente.cf : '') + '</div></div>' +
+                '<div class="oggetto"><div class="oggetto-label">Oggetto</div><div class="oggetto-testo">' + doc.oggetto + '</div>' +
+                (descIntervento ? '<div style="font-size:9pt;color:#6b7280;margin-top:5px">Tipo intervento: ' + descIntervento + '</div>' : '') + '</div>' +
+                '<table><thead><tr><th style="width:5%;text-align:center">N.</th><th style="width:15%">Ambiente</th><th style="width:40%">Descrizione</th><th style="width:15%;text-align:center">Misure</th><th style="width:8%;text-align:center">Qtà</th><th style="width:17%;text-align:right">Importo</th></tr></thead><tbody>' + righeHtml + '</tbody></table>' +
+                '<table class="totali-table"><tr><td colspan="4" style="text-align:right">Totale Materiali:</td><td style="text-align:right;font-weight:600">' + totali.cliente + '</td></tr>' +
+                '<tr><td colspan="4" style="text-align:right">Posa e installazione:</td><td style="text-align:right">' + totali.lavori + '</td></tr>' +
+                '<tr style="border-top:2px solid #d1d5db"><td colspan="4" style="text-align:right;font-weight:600">Imponibile:</td><td style="text-align:right;font-weight:600">' + totali.subtotale + '</td></tr>' +
+                (totali.iva10 ? '<tr><td colspan="4" style="text-align:right;font-size:9pt">IVA 10%:</td><td style="text-align:right">' + totali.iva10 + '</td></tr>' : '') +
+                (totali.iva22 ? '<tr><td colspan="4" style="text-align:right;font-size:9pt">IVA 22%:</td><td style="text-align:right">' + totali.iva22 + '</td></tr>' : '') +
+                '<tr class="totale-finale"><td colspan="4" style="text-align:right;padding:12px">TOTALE:</td><td style="text-align:right;padding:12px">' + totali.totaleFinale + '</td></tr>' + accontoHtml + '</table>' +
+                (doc.note ? '<div style="margin-top:30px;padding:15px;background:#fffbeb;border:1px solid #fbbf24;border-radius:8px"><h4 style="color:#92400e;margin-bottom:8px">📝 Note</h4><p>' + doc.note + '</p></div>' : '') +
+                '<div class="condizioni"><h4>' + (isPreventivo ? 'Condizioni di Offerta' : 'Condizioni Contrattuali') + '</h4><ul>' +
+                (isPreventivo ? '<li><strong>Validità:</strong> 30 giorni</li><li>Prezzi per merce resa in cantiere, posa inclusa</li><li>Escluse opere murarie e ponteggi</li>' :
+                '<li><strong>Acconto:</strong> ' + doc.accontoPct + '% alla conferma</li><li><strong>Saldo:</strong> alla consegna</li><li><strong>Tempi:</strong> ' + doc.tempiConsegna + '</li>') +
+                '<li>Garanzia secondo normativa vigente</li></ul></div>' +
+                '<div class="firma-section"><div class="firma-box"><h5>Per accettazione - Il Cliente</h5><div class="firma-linea">Firma: _______________________</div></div>' +
+                '<div class="firma-box"><h5>Open Porte & Finestre</h5><div class="firma-linea">Firma: _______________________</div></div></div>' +
+                '<div class="footer"><p>Open Porte & Finestre - Bergamo - Tel. 035 123456 - P.IVA 01234567890</p></div></body></html>';
+        }
+        
+        console.log('✅ Script Stampa Documenti caricato - window.generaDocumentoCliente disponibile');
+    })();
+    </script>
+
 </body>
 </html>
