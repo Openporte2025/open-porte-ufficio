@@ -11,14 +11,17 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.26 - CHANGELOG
+    DASHBOARD RILIEVI v8.27 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.26 (12 DIC 2025):
+    🔧 AGGIORNAMENTI v8.27 (12 DIC 2025):
+    - 🆕 STAMPA DOCUMENTI CLIENTE: Preventivo e Conferma Ordine
+      - Modal inserimento dati cliente
+      - Generazione documento HTML professionale
+      - Stampa diretta / Salva PDF
+      - Layout pulito con logo, tabella prodotti, totali IVA, condizioni
+      - Differenziazione Preventivo vs Conferma (acconti, tempi consegna)
     - 🐛 FIX: Corretta sintassi JavaScript (parentesi mancante in listaModelliColombo)
     - 🐛 FIX CRITICO: calcolaIVAMista ora usa _totaleCliente (con sconto applicato)
-      Prima: listino × ricarico (SBAGLIATO - ignorava sconti fornitori)
-      Ora: usa _totaleCliente già calcolato correttamente
-    - Menu hamburger funzionante
     - 💰 RICARICO DEFAULT: Cambiato da 30% a 50%
     - 🔧 LAVORI SENZA RICARICO: Posa, Smontaggio, Smaltimento, Componenti non ricaricati
     - 📄 ENEA ECOBONUS: Nuova voce €250 (modificabile) con checkbox per escludere
@@ -1377,12 +1380,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.26 - Ricarico 50%, ENEA Ecobonus</title>
+    <title>Dashboard Rilievi v8.27 - Ricarico 50%, ENEA Ecobonus</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.26";
+        const DASHBOARD_VERSION = "8.27";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11702,14 +11705,26 @@ if (typeof module !== 'undefined' && module.exports) {
                             <button class="btn btn-success" onclick="exportPreventivoExcel()">
                                 📊 Export Excel
                             </button>
-                            <button class="btn" onclick="window.print()">
-                                🖨️ Stampa PDF
+                            
+                            <!-- Separatore -->
+                            <div style="width: 2px; height: 30px; background: #d1d5db;"></div>
+                            
+                            <!-- 🆕 v8.27: STAMPA DOCUMENTI CLIENTE -->
+                            <button class="btn" onclick="generaDocumentoCliente('preventivo')" 
+                                    style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; font-weight: 600;"
+                                    title="Genera Preventivo PDF per il cliente">
+                                📄 Preventivo Cliente
+                            </button>
+                            <button class="btn" onclick="generaDocumentoCliente('conferma')" 
+                                    style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; font-weight: 600;"
+                                    title="Genera Conferma d'Ordine">
+                                📋 Conferma Ordine
                             </button>
                             
                             <!-- Separatore -->
                             <div style="width: 2px; height: 30px; background: #d1d5db;"></div>
                             
-                            <!-- NUOVI BOTTONI -->
+                            <!-- ALTRI BOTTONI -->
                             <button class="btn" onclick="apriGestioneListini()" 
                                     style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; font-weight: 600;"
                                     title="Gestione listini fornitori">
@@ -11853,7 +11868,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-value" id="totaleComponentiNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
                                         <td class="excel-value" id="totaleComponentiCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
-                                    <!-- ENEA ECOBONUS v8.26 -->
+                                    <!-- ENEA ECOBONUS v8.27 -->
                                     <tr class="excel-row" id="rowENEA" style="background: #f0fdf4;">
                                         <td colspan="13" style="text-align: right; font-weight: 600;">📄 Elaborazione ENEA:</td>
                                         <td style="text-align: center;">
@@ -23061,13 +23076,13 @@ const FLESSYA_2025 = {
             let dettaglioBeniSignif = [];
             let dettaglioPartiAutonome = [];
             
-            // 🐛 v8.26 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
+            // 🐛 v8.27 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
             // const moltiplicatore = 1 + (ricaricoPct / 100);
             
-            console.log('📊 calcolaIVAMista v8.26 - Analisi righe:', righe.length, '| ENEA:', enea);
+            console.log('📊 calcolaIVAMista v8.27 - Analisi righe:', righe.length, '| ENEA:', enea);
             
             righe.forEach(riga => {
-                // 🐛 v8.26 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
+                // 🐛 v8.27 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
                 // Prima usava: totaleListino * moltiplicatore (SBAGLIATO - mancava sconto!)
                 const totaleCliente = parseFloat(riga._totaleCliente) || 0;
                 const classificazione = classificaProdottoFiscale(riga.tipo, true);
@@ -23167,11 +23182,11 @@ const FLESSYA_2025 = {
             const smaltimento = parseFloat(document.getElementById('inputSmaltimento')?.value || 0);
             const componenti = parseFloat(document.getElementById('inputComponenti')?.value || 0);
             
-            // ENEA Ecobonus (v8.26)
+            // ENEA Ecobonus (v8.27)
             const eneaChecked = document.getElementById('checkENEA')?.checked || false;
             const eneaValore = eneaChecked ? parseFloat(document.getElementById('inputENEA')?.value || 0) : 0;
             
-            // Costi lavoro: netto = cliente = SENZA ricarico (v8.26)
+            // Costi lavoro: netto = cliente = SENZA ricarico (v8.27)
             const posaNetto = posa;
             const posaCliente = posa;
             const smontaggioNetto = smontaggio;
@@ -23214,7 +23229,7 @@ const FLESSYA_2025 = {
             document.getElementById('totaleComponentiNetto').textContent = `€ ${componentiNetto.toFixed(2)}`;
             document.getElementById('totaleComponentiCliente').textContent = `€ ${componentiCliente.toFixed(2)}`;
             
-            // ENEA (v8.26)
+            // ENEA (v8.27)
             document.getElementById('totaleENEAListino').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEANetto').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEACliente').textContent = `€ ${eneaValore.toFixed(2)}`;
@@ -23272,7 +23287,7 @@ const FLESSYA_2025 = {
                 // Usa le righe del preventivo salvate
                 const righe = window.righePreventivo || [];
                 
-                // Calcola IVA mista (v8.26: ENEA al 22%)
+                // Calcola IVA mista (v8.27: ENEA al 22%)
                 const calcolo = calcolaIVAMista(righe, {
                     posa: posaCliente,
                     smontaggio: smontaggioCliente,
@@ -23316,7 +23331,7 @@ const FLESSYA_2025 = {
                 
             } else if (configIVA.aliquotaUnica > 0) {
                 // ═══════════════════════════════════════════════════════════════
-                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.26: ENEA sempre al 22%
+                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.27: ENEA sempre al 22%
                 // ═══════════════════════════════════════════════════════════════
                 const aliquota = configIVA.aliquotaUnica;
                 if (labelTipoIVA) labelTipoIVA.textContent = `IVA ${aliquota}%`;
@@ -23326,7 +23341,7 @@ const FLESSYA_2025 = {
                 if (rowIVA) rowIVA.style.display = 'table-row';
                 document.getElementById('ivaPercent').textContent = aliquota;
                 
-                // v8.26: ENEA sempre al 22%, resto all'aliquota selezionata
+                // v8.27: ENEA sempre al 22%, resto all'aliquota selezionata
                 const baseCliente = subtotaleCliente - eneaValore;
                 const baseListino = subtotaleListino - eneaValore;
                 const baseNetto = subtotaleNetto - eneaValore;
@@ -23352,7 +23367,7 @@ const FLESSYA_2025 = {
             document.getElementById('grandTotalNetto').textContent = `€ ${grandTotalNetto.toFixed(2)}`;
             document.getElementById('grandTotalCliente').textContent = `€ ${grandTotalCliente.toFixed(2)}`;
             
-            console.log(`💰 Ricalcolo v8.26: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
+            console.log(`💰 Ricalcolo v8.27: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -30260,6 +30275,411 @@ const FLESSYA_2025 = {
         
         console.log('✅ Sistema Preventivazione initialized');
 
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // 📄 MODULO STAMPA DOCUMENTI CLIENTE - v8.27
+        // ═══════════════════════════════════════════════════════════════════════════════
+        
+        /**
+         * Apre il modal per inserire dati cliente e generare documento
+         * @param {string} tipo - 'preventivo' o 'conferma'
+         */
+        function generaDocumentoCliente(tipo) {
+            console.log('📄 generaDocumentoCliente:', tipo);
+            
+            if (!window.currentData) {
+                alert('⚠️ Nessun progetto caricato. Carica prima un rilievo.');
+                return;
+            }
+            
+            // Imposta tipo documento
+            document.getElementById('tipoDocumentoCliente').value = tipo;
+            
+            // Aggiorna titolo modal
+            const titolo = tipo === 'preventivo' ? '📄 Genera Preventivo' : '📋 Genera Conferma d\'Ordine';
+            document.getElementById('titoloModalDocumento').textContent = titolo;
+            
+            // Mostra/nascondi sezione acconto
+            document.getElementById('sezioneAccontoConferma').style.display = tipo === 'conferma' ? 'block' : 'none';
+            
+            // Precompila data odierna
+            const oggi = new Date().toISOString().split('T')[0];
+            document.getElementById('docData').value = oggi;
+            
+            // Precompila numero documento
+            const anno = new Date().getFullYear();
+            const numSuggerito = tipo === 'preventivo' ? `PREV-${anno}/` : `ORD-${anno}/`;
+            document.getElementById('docNumero').value = numSuggerito;
+            
+            // Precompila oggetto dal progetto se disponibile
+            const progetto = window.currentData;
+            if (progetto.cliente) {
+                document.getElementById('clienteNome').value = progetto.cliente.nome || '';
+                document.getElementById('clienteIndirizzo').value = progetto.cliente.indirizzo || progetto.indirizzo || '';
+                document.getElementById('clienteTelefono').value = progetto.cliente.telefono || '';
+                document.getElementById('clienteEmail').value = progetto.cliente.email || '';
+            }
+            if (progetto.indirizzo) {
+                document.getElementById('clienteIndirizzo').value = progetto.indirizzo;
+            }
+            
+            // Mostra modal
+            document.getElementById('modalDatiCliente').style.display = 'flex';
+        }
+        
+        function chiudiModalDatiCliente() {
+            document.getElementById('modalDatiCliente').style.display = 'none';
+        }
+        
+        /**
+         * Genera il documento finale e lo apre per la stampa
+         */
+        function generaDocumentoFinale() {
+            const tipo = document.getElementById('tipoDocumentoCliente').value;
+            
+            // Raccogli dati form
+            const datiCliente = {
+                nome: document.getElementById('clienteNome').value || 'Cliente',
+                indirizzo: document.getElementById('clienteIndirizzo').value || '',
+                telefono: document.getElementById('clienteTelefono').value || '',
+                email: document.getElementById('clienteEmail').value || '',
+                cf: document.getElementById('clienteCF').value || ''
+            };
+            
+            const datiDoc = {
+                numero: document.getElementById('docNumero').value || '',
+                data: document.getElementById('docData').value || new Date().toISOString().split('T')[0],
+                oggetto: document.getElementById('docOggetto').value || 'Fornitura e posa serramenti',
+                note: document.getElementById('docNote').value || '',
+                accontoPct: parseFloat(document.getElementById('accontoPct')?.value) || 30,
+                tempiConsegna: document.getElementById('tempiConsegna')?.value || '6-8 settimane'
+            };
+            
+            // Raccogli dati preventivo
+            const righe = window.righePreventivo || [];
+            const totali = raccogliTotaliPreventivo();
+            
+            // Genera HTML documento
+            const htmlDoc = generaHTMLDocumento(tipo, datiCliente, datiDoc, righe, totali);
+            
+            // Apri in nuova finestra
+            const win = window.open('', '_blank');
+            win.document.write(htmlDoc);
+            win.document.close();
+            
+            // Chiudi modal
+            chiudiModalDatiCliente();
+            
+            console.log('✅ Documento generato:', tipo);
+        }
+        
+        /**
+         * Raccoglie i totali dal preventivo corrente
+         */
+        function raccogliTotaliPreventivo() {
+            return {
+                listino: document.getElementById('totaleListino')?.textContent || '€ 0.00',
+                netto: document.getElementById('totaleNetto')?.textContent || '€ 0.00',
+                cliente: document.getElementById('totaleCliente')?.textContent || '€ 0.00',
+                lavori: document.getElementById('valTotaleLavori')?.textContent || '€ 0.00',
+                subtotale: document.getElementById('valSubtotale')?.textContent || '€ 0.00',
+                margine: document.getElementById('valMargine')?.textContent || '€ 0.00',
+                // IVA Mista
+                beniSignif10: document.getElementById('valBeniSignif10')?.textContent || '',
+                beniSignif22: document.getElementById('valBeniSignif22')?.textContent || '',
+                partiAutonome: document.getElementById('valPartiAutonome')?.textContent || '',
+                manodopera: document.getElementById('valManodoperaFiscale')?.textContent || '',
+                imponibile10: document.getElementById('valImponibile10')?.textContent || '',
+                imponibile22: document.getElementById('valImponibile22')?.textContent || '',
+                iva10: document.getElementById('valIVA10')?.textContent || '',
+                iva22: document.getElementById('valIVA22')?.textContent || '',
+                // Totale finale
+                totaleFinale: document.getElementById('valGrandTotal')?.textContent || '€ 0.00',
+                // Configurazioni
+                ricaricoPct: document.getElementById('ricaricoPct')?.value || '50',
+                tipoIntervento: document.getElementById('tipoInterventoSelect')?.value || 'manutenzione'
+            };
+        }
+        
+        /**
+         * Genera l'HTML completo del documento
+         */
+        function generaHTMLDocumento(tipo, cliente, doc, righe, totali) {
+            const isPreventivo = tipo === 'preventivo';
+            const titoloDoc = isPreventivo ? 'PREVENTIVO' : 'CONFERMA D\'ORDINE';
+            const dataFormattata = new Date(doc.data).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+            
+            // Descrizione tipo intervento
+            const tipiIntervento = {
+                'nessuna': 'Senza IVA',
+                'manutenzione': 'Manutenzione ordinaria/straordinaria',
+                'ristrutturazione': 'Ristrutturazione edilizia',
+                'nuova_costruzione_prima': 'Nuova costruzione - Prima casa',
+                'nuova_costruzione_altra': 'Nuova costruzione - Altra abitazione',
+                'sola_fornitura': 'Sola fornitura materiali'
+            };
+            const descIntervento = tipiIntervento[totali.tipoIntervento] || '';
+            
+            // Calcola acconto se conferma
+            let accontoHtml = '';
+            if (!isPreventivo) {
+                const totaleNum = parseFloat(totali.totaleFinale.replace(/[€\s.]/g, '').replace(',', '.')) || 0;
+                const acconto = totaleNum * (doc.accontoPct / 100);
+                const saldo = totaleNum - acconto;
+                accontoHtml = `
+                    <tr style="background: #fef3c7;">
+                        <td colspan="4" style="text-align: right; font-weight: 600;">Acconto alla conferma (${doc.accontoPct}%):</td>
+                        <td style="text-align: right; font-weight: 700; color: #d97706;">€ ${acconto.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" style="text-align: right; font-weight: 600;">Saldo alla consegna:</td>
+                        <td style="text-align: right; font-weight: 600;">€ ${saldo.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+            
+            // Genera righe tabella prodotti (semplificata per cliente)
+            let righeHtml = '';
+            righe.forEach((riga, i) => {
+                const prezzoCliente = riga._totaleCliente || riga.totale;
+                righeHtml += `
+                    <tr>
+                        <td style="text-align: center;">${i + 1}</td>
+                        <td>${riga.ambiente || ''}</td>
+                        <td>${riga.tipo || ''} ${riga.azienda ? '- ' + riga.azienda : ''}</td>
+                        <td style="text-align: center;">${riga.larghezza || ''}×${riga.altezza || ''}</td>
+                        <td style="text-align: center;">${riga.quantita || 1}</td>
+                        <td style="text-align: right; font-weight: 600;">€ ${parseFloat(prezzoCliente).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            
+            // HTML documento completo
+            return `<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${titoloDoc} ${doc.numero} - Open Porte & Finestre</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-size: 11pt; 
+            line-height: 1.4; 
+            color: #1f2937;
+            padding: 20px;
+        }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #2563eb; }
+        .logo-section { flex: 1; }
+        .logo { max-height: 80px; }
+        .azienda-info { text-align: right; font-size: 9pt; color: #4b5563; }
+        .azienda-nome { font-size: 14pt; font-weight: 700; color: #1e40af; margin-bottom: 5px; }
+        
+        .documento-info { display: flex; justify-content: space-between; margin-bottom: 25px; }
+        .tipo-documento { 
+            font-size: 18pt; font-weight: 700; color: #1e40af; 
+            padding: 10px 20px; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); 
+            border-radius: 8px; 
+        }
+        .numero-data { text-align: right; }
+        .numero-data .numero { font-size: 14pt; font-weight: 700; }
+        .numero-data .data { color: #6b7280; }
+        
+        .cliente-box { 
+            background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; 
+            padding: 15px; margin-bottom: 25px; 
+        }
+        .cliente-box h4 { color: #374151; margin-bottom: 10px; font-size: 10pt; text-transform: uppercase; letter-spacing: 1px; }
+        .cliente-nome { font-size: 13pt; font-weight: 700; color: #111827; }
+        .cliente-dettagli { color: #4b5563; margin-top: 5px; }
+        
+        .oggetto { background: #eff6ff; padding: 12px 15px; border-left: 4px solid #2563eb; margin-bottom: 20px; }
+        .oggetto-label { font-size: 9pt; color: #6b7280; text-transform: uppercase; }
+        .oggetto-testo { font-weight: 600; color: #1e40af; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #1e40af; color: white; padding: 10px 8px; text-align: left; font-size: 10pt; }
+        td { padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 10pt; }
+        tr:nth-child(even) { background: #f9fafb; }
+        
+        .totali-section { margin-top: 20px; }
+        .totali-table { width: 50%; margin-left: auto; }
+        .totali-table td { padding: 6px 10px; }
+        .totali-table .totale-finale { background: #1e40af; color: white; font-size: 14pt; font-weight: 700; }
+        
+        .note-section { margin-top: 30px; padding: 15px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; }
+        .note-section h4 { color: #92400e; margin-bottom: 8px; }
+        
+        .condizioni { margin-top: 30px; font-size: 9pt; color: #6b7280; }
+        .condizioni h4 { color: #374151; margin-bottom: 10px; }
+        .condizioni ul { margin-left: 20px; }
+        .condizioni li { margin-bottom: 5px; }
+        
+        .firma-section { margin-top: 40px; display: flex; justify-content: space-between; }
+        .firma-box { width: 45%; }
+        .firma-box h5 { font-size: 10pt; color: #374151; margin-bottom: 40px; }
+        .firma-linea { border-top: 1px solid #9ca3af; padding-top: 5px; font-size: 9pt; color: #6b7280; }
+        
+        .footer { margin-top: 40px; padding-top: 15px; border-top: 2px solid #e5e7eb; text-align: center; font-size: 8pt; color: #9ca3af; }
+        
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+        }
+        
+        .print-btn { 
+            position: fixed; top: 20px; right: 20px; 
+            background: #2563eb; color: white; border: none; 
+            padding: 12px 24px; border-radius: 8px; cursor: pointer;
+            font-size: 14pt; font-weight: 600; box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+        .print-btn:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <button class="print-btn no-print" onclick="window.print()">🖨️ Stampa / Salva PDF</button>
+    
+    <!-- HEADER -->
+    <div class="header">
+        <div class="logo-section">
+            <div class="azienda-nome">OPEN PORTE & FINESTRE</div>
+            <div style="font-size: 10pt; color: #4b5563; margin-top: 5px;">Serramenti e infissi di qualità</div>
+        </div>
+        <div class="azienda-info">
+            <div>Via Example 123 - 24100 Bergamo</div>
+            <div>Tel. 035 123456 - info@openporte.it</div>
+            <div>P.IVA 01234567890</div>
+        </div>
+    </div>
+    
+    <!-- TIPO DOCUMENTO E NUMERO -->
+    <div class="documento-info">
+        <div class="tipo-documento">${titoloDoc}</div>
+        <div class="numero-data">
+            <div class="numero">${doc.numero}</div>
+            <div class="data">${dataFormattata}</div>
+        </div>
+    </div>
+    
+    <!-- DATI CLIENTE -->
+    <div class="cliente-box">
+        <h4>Intestatario</h4>
+        <div class="cliente-nome">${cliente.nome}</div>
+        <div class="cliente-dettagli">
+            ${cliente.indirizzo ? cliente.indirizzo + '<br>' : ''}
+            ${cliente.telefono ? 'Tel. ' + cliente.telefono : ''} ${cliente.email ? '- ' + cliente.email : ''}
+            ${cliente.cf ? '<br>C.F./P.IVA: ' + cliente.cf : ''}
+        </div>
+    </div>
+    
+    <!-- OGGETTO -->
+    <div class="oggetto">
+        <div class="oggetto-label">Oggetto</div>
+        <div class="oggetto-testo">${doc.oggetto}</div>
+        ${descIntervento ? '<div style="font-size: 9pt; color: #6b7280; margin-top: 5px;">Tipo intervento: ' + descIntervento + '</div>' : ''}
+    </div>
+    
+    <!-- TABELLA PRODOTTI -->
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 5%; text-align: center;">N.</th>
+                <th style="width: 15%;">Ambiente</th>
+                <th style="width: 40%;">Descrizione</th>
+                <th style="width: 15%; text-align: center;">Misure (mm)</th>
+                <th style="width: 8%; text-align: center;">Qtà</th>
+                <th style="width: 17%; text-align: right;">Importo</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${righeHtml}
+        </tbody>
+    </table>
+    
+    <!-- RIEPILOGO TOTALI -->
+    <div class="totali-section">
+        <table class="totali-table">
+            <tr>
+                <td colspan="4" style="text-align: right;">Totale Materiali:</td>
+                <td style="text-align: right; font-weight: 600;">${totali.cliente}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right;">Posa e installazione:</td>
+                <td style="text-align: right;">${totali.lavori}</td>
+            </tr>
+            <tr style="border-top: 2px solid #d1d5db;">
+                <td colspan="4" style="text-align: right; font-weight: 600;">Imponibile:</td>
+                <td style="text-align: right; font-weight: 600;">${totali.subtotale}</td>
+            </tr>
+            ${totali.imponibile10 && totali.iva10 ? `
+            <tr>
+                <td colspan="4" style="text-align: right; font-size: 9pt;">IVA 10% su ${totali.imponibile10}:</td>
+                <td style="text-align: right;">${totali.iva10}</td>
+            </tr>` : ''}
+            ${totali.imponibile22 && totali.iva22 ? `
+            <tr>
+                <td colspan="4" style="text-align: right; font-size: 9pt;">IVA 22% su ${totali.imponibile22}:</td>
+                <td style="text-align: right;">${totali.iva22}</td>
+            </tr>` : ''}
+            <tr class="totale-finale">
+                <td colspan="4" style="text-align: right; padding: 12px;">TOTALE:</td>
+                <td style="text-align: right; padding: 12px;">${totali.totaleFinale}</td>
+            </tr>
+            ${accontoHtml}
+        </table>
+    </div>
+    
+    ${doc.note ? `
+    <div class="note-section">
+        <h4>📝 Note</h4>
+        <p>${doc.note}</p>
+    </div>` : ''}
+    
+    <!-- CONDIZIONI -->
+    <div class="condizioni">
+        <h4>${isPreventivo ? 'Condizioni di Offerta' : 'Condizioni Contrattuali'}</h4>
+        <ul>
+            ${isPreventivo ? `
+            <li><strong>Validità offerta:</strong> 30 giorni dalla data del presente documento</li>
+            <li>I prezzi si intendono per merce resa in cantiere, posa inclusa</li>
+            <li>Sono esclusi: opere murarie, ponteggi esterni, permessi comunali</li>
+            <li>Eventuali modifiche in corso d'opera saranno quotate separatamente</li>
+            ` : `
+            <li><strong>Acconto:</strong> ${doc.accontoPct}% alla conferma d'ordine</li>
+            <li><strong>Saldo:</strong> alla consegna/fine lavori</li>
+            <li><strong>Tempi di consegna:</strong> ${doc.tempiConsegna} dalla conferma</li>
+            <li>La merce resta di proprietà del fornitore fino al completo pagamento</li>
+            `}
+            <li>Garanzia prodotti: secondo normativa vigente e condizioni del produttore</li>
+        </ul>
+    </div>
+    
+    <!-- FIRME -->
+    <div class="firma-section">
+        <div class="firma-box">
+            <h5>Per accettazione - Il Cliente</h5>
+            <div class="firma-linea">Firma: _______________________</div>
+            <div style="margin-top: 10px; font-size: 9pt; color: #6b7280;">Data: _______________________</div>
+        </div>
+        <div class="firma-box">
+            <h5>Open Porte & Finestre</h5>
+            <div class="firma-linea">Firma: _______________________</div>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>Open Porte & Finestre - Via Example 123, 24100 Bergamo - Tel. 035 123456</p>
+        <p>P.IVA 01234567890 - info@openporte.it - www.openporte.it</p>
+    </div>
+    
+</body>
+</html>`;
+        }
+        
+        console.log('📄 Modulo Stampa Documenti Cliente initialized');
+
     </script>
 
     <!-- Moduli Sistema Menu Avanzato (opzionali) -->
@@ -32014,6 +32434,119 @@ const FLESSYA_2025 = {
                 </button>
                 <button id="btn-salva-prezzo-manuale" class="btn-preventivo btn-primary" onclick="salvaPrezzoManuale()" disabled style="opacity: 0.5;">
                     ✅ Salva Prezzo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    <!-- 📄 MODAL DATI CLIENTE - v8.27 -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    <div id="modalDatiCliente" class="preventivo-modal" style="display: none;">
+        <div class="preventivo-modal-content" style="max-width: 600px;">
+            <div class="preventivo-modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <h3 id="titoloModalDocumento">📄 Genera Preventivo</h3>
+                <button class="preventivo-modal-close" onclick="chiudiModalDatiCliente()">×</button>
+            </div>
+            
+            <div class="preventivo-modal-body" style="padding: 1.5rem;">
+                <!-- Tipo documento (nascosto) -->
+                <input type="hidden" id="tipoDocumentoCliente" value="preventivo">
+                
+                <!-- Dati Cliente -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">
+                        👤 Dati Cliente
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Nome e Cognome *</label>
+                            <input type="text" id="clienteNome" placeholder="Mario Rossi" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Telefono</label>
+                            <input type="text" id="clienteTelefono" placeholder="333 1234567" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Indirizzo Cantiere *</label>
+                        <input type="text" id="clienteIndirizzo" placeholder="Via Roma 1, Bergamo" 
+                               style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Email</label>
+                            <input type="email" id="clienteEmail" placeholder="mario@email.it" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Codice Fiscale / P.IVA</label>
+                            <input type="text" id="clienteCF" placeholder="RSSMRA80A01B157K" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Riferimenti Documento -->
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">
+                        📋 Riferimenti
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Numero Documento</label>
+                            <input type="text" id="docNumero" placeholder="2025/001" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Data</label>
+                            <input type="date" id="docData" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Oggetto / Descrizione Lavori</label>
+                        <input type="text" id="docOggetto" placeholder="Sostituzione serramenti appartamento" 
+                               style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                    </div>
+                </div>
+                
+                <!-- Note (solo per conferma ordine) -->
+                <div id="sezioneAccontoConferma" style="display: none; margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem; color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;">
+                        💰 Pagamento
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Acconto richiesto (%)</label>
+                            <input type="number" id="accontoPct" value="30" min="0" max="100" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Tempi consegna stimati</label>
+                            <input type="text" id="tempiConsegna" value="6-8 settimane" 
+                                   style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Note aggiuntive -->
+                <div>
+                    <label style="font-weight: 600; font-size: 0.85rem; color: #4b5563;">Note aggiuntive</label>
+                    <textarea id="docNote" rows="2" placeholder="Eventuali note..." 
+                              style="width: 100%; padding: 0.6rem; border: 1px solid #d1d5db; border-radius: 6px; margin-top: 0.25rem; resize: vertical;"></textarea>
+                </div>
+            </div>
+            
+            <div class="preventivo-modal-actions" style="padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb;">
+                <button class="btn-preventivo btn-secondary" onclick="chiudiModalDatiCliente()">
+                    Annulla
+                </button>
+                <button class="btn-preventivo btn-primary" onclick="generaDocumentoFinale()" 
+                        style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                    📄 Genera Documento
                 </button>
             </div>
         </div>
