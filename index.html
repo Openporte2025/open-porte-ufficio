@@ -15,6 +15,9 @@
     
     🔧 AGGIORNAMENTI v8.26 (12 DIC 2025):
     - 🐛 FIX: Corretta sintassi JavaScript (parentesi mancante in listaModelliColombo)
+    - 🐛 FIX CRITICO: calcolaIVAMista ora usa _totaleCliente (con sconto applicato)
+      Prima: listino × ricarico (SBAGLIATO - ignorava sconti fornitori)
+      Ora: usa _totaleCliente già calcolato correttamente
     - Menu hamburger funzionante
     - 💰 RICARICO DEFAULT: Cambiato da 30% a 50%
     - 🔧 LAVORI SENZA RICARICO: Posa, Smontaggio, Smaltimento, Componenti non ricaricati
@@ -23058,17 +23061,18 @@ const FLESSYA_2025 = {
             let dettaglioBeniSignif = [];
             let dettaglioPartiAutonome = [];
             
-            const moltiplicatore = 1 + (ricaricoPct / 100);
+            // 🐛 v8.26 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
+            // const moltiplicatore = 1 + (ricaricoPct / 100);
             
             console.log('📊 calcolaIVAMista v8.26 - Analisi righe:', righe.length, '| ENEA:', enea);
             
             righe.forEach(riga => {
-                // Usa prezzo CLIENTE (listino * ricarico)
-                const totaleListino = parseFloat(riga.totale) || 0;
-                const totaleCliente = totaleListino * moltiplicatore;
+                // 🐛 v8.26 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
+                // Prima usava: totaleListino * moltiplicatore (SBAGLIATO - mancava sconto!)
+                const totaleCliente = parseFloat(riga._totaleCliente) || 0;
                 const classificazione = classificaProdottoFiscale(riga.tipo, true);
                 
-                console.log(`   - ${riga.tipo}: €${totaleListino.toFixed(2)} → €${totaleCliente.toFixed(2)} [${classificazione}]`);
+                console.log(`   - ${riga.tipo}: €${riga.totale} (listino) → €${totaleCliente.toFixed(2)} (cliente) [${classificazione}]`);
                 
                 if (classificazione === 'bene_significativo') {
                     totaleBeniSignificativi += totaleCliente;
