@@ -11,7 +11,15 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.21 - CHANGELOG
+    DASHBOARD RILIEVI v8.23 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.23 (11 DIC 2025):
+    - 🚪 FLESSYA-DATABASE-2025: Porte interne (17 linee, 50+ finiture, telai, accessori)
+    
+    🔧 AGGIORNAMENTI v8.22 (11 DIC 2025):
+    - 🚪 FERREROLEGNO-DATABASE-2025: Porte interne (Collezioni FL, Replica, Zero)
+    - 🔧 OLIVARI-DATABASE-2025: Maniglie (105+ modelli, 14 finiture)
+    - 💰 SCONTI: Aggiunti OLIVARI 43%, COLOMBO DESIGN 40%
     
     🔧 AGGIORNAMENTI v8.21 (10 DIC 2025):
     - 🐛 FIX CRITICO IVA MISTA: righePreventivo ora accessibile globalmente
@@ -15589,6 +15597,2382 @@ if (typeof module !== 'undefined' && module.exports) {
             };
         }
         
+
+        // ============================================================================
+        // 🚪 FERREROLEGNO PORTE INTERNE 2025 - Collezioni FL, Replica, Zero
+        // ============================================================================
+/**
+ * FERREROLEGNO DATABASE 2025
+ * Porte Interne - Collezioni FL, Replica, Zero
+ * 
+ * ValiditÃ : 1 Aprile 2025
+ * Sconto Installatore: 50%
+ * 
+ * STRUTTURA:
+ * - FERREROLEGNO_CONFIG: Configurazione generale
+ * - FERREROLEGNO_COLLEZIONI_FL: Collezioni standard legno/laccato
+ * - FERREROLEGNO_REPLICA: Linea sintetica
+ * - FERREROLEGNO_ZERO: Linea filo muro
+ * - FERREROLEGNO_TELAI: Telai per ogni linea
+ * - FERREROLEGNO_MAGGIORAZIONI: Supplementi comuni
+ * - calcolaPrezzoFerreroLegno(): Funzione calcolo
+ */
+
+// =============================================================================
+// CONFIGURAZIONE GENERALE
+// =============================================================================
+
+const FERREROLEGNO_CONFIG = {
+    fornitore: "FerreroLegno S.p.A.",
+    validita: "2025-04-01",
+    scontoInstallatore: 0.50,
+    ivaEsclusa: true,
+    trasportoEscluso: true,
+    
+    // Dimensioni standard
+    larghezzeStandard: [600, 650, 700, 750, 800, 850, 900],
+    altezzeStandard: [2000, 2100],
+    
+    // Linee disponibili
+    linee: ["COLLEZIONI_FL", "REPLICA", "ZERO"]
+};
+
+// =============================================================================
+// COLLEZIONI FL - PREZZI ANTE
+// =============================================================================
+
+const FERREROLEGNO_COLLEZIONI_FL = {
+    
+    // EXIT / EXITLYNE
+    EXIT: {
+        nome: "EXIT",
+        spessore: 44,
+        tipologia: "tamburata_cristallo",
+        finiture: {
+            "grezzo_prefinito": { cieca: 327, vetro: null },
+            "iride": { cieca: 552, vetro: 1063 },
+            "natural_touch_rovere": { cieca: 582, vetro: 1095 },
+            "natural_touch_noce": { cieca: 592, vetro: 1105 },
+            "ultralucido_base": { cieca: 906, vetro: 1451 },
+            "ultralucido_cartella": { cieca: 1105, vetro: 1648 }
+        }
+    },
+    
+    EXITLYNE: {
+        nome: "EXITLYNE",
+        spessore: 44,
+        tipologia: "tamburata_cristallo",
+        finiture: {
+            "iride": { cieca: 533, vetro: 1047 },
+            "natural_touch_rovere": { cieca: 563, vetro: 1079 },
+            "natural_touch_noce": { cieca: 573, vetro: 1089 }
+        }
+    },
+    
+    // EQUA
+    EQUA: {
+        nome: "EQUA",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "blond_tanganika": { cieca: 436, con_1: 578, vetro: 981 },
+            "noce_nazionale": { cieca: 491, con_1: 633, vetro: 1036 },
+            "opaco_base": { cieca: 361, con_1: 503, vetro: 983 },
+            "opaco_ral": { cieca: 417, con_1: 559, vetro: 1040 },
+            "ultraopaco_base": { cieca: 381, con_1: 523, vetro: 1003 },
+            "ultraopaco_cartella": { cieca: 437, con_1: 579, vetro: 1060 },
+            "trame_base": { cieca: 522, con_1: 664, vetro: 1068 },
+            "trame_ral": { cieca: 577, con_1: 719, vetro: 1123 }
+        }
+    },
+    
+    EQUA_STYLA: {
+        nome: "EQUA STYLA",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "opaco_base": { cieca: 520 },
+            "opaco_ral": { cieca: 576 },
+            "ultraopaco_base": { cieca: 540 },
+            "ultraopaco_cartella": { cieca: 596 }
+        }
+    },
+    
+    // NOVA
+    NOVA: {
+        nome: "NOVA",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "blond_tanganika": { cieca: 266, supernova: 354, vetro: 553 },
+            "noce_nazionale": { cieca: 362, supernova: 450, vetro: 649 },
+            "opaco_base": { cieca: 300, vetro: 583 },
+            "opaco_ral": { cieca: 417, vetro: 704 }
+        }
+    },
+    
+    // GLASS
+    GLASS: {
+        nome: "GLASS",
+        spessore: 44,
+        tipologia: "tamburata_vetro",
+        finiture: {
+            "blond_tanganika": { satinato: 844, fronte_retro: 892, decorato: 904, bolla: 944 },
+            "noce_nazionale": { satinato: 885, fronte_retro: 933, decorato: 945, bolla: 985 },
+            "opaco_base": { satinato: 873, fronte_retro: 921, decorato: 933, bolla: 973 },
+            "opaco_ral": { satinato: 929, fronte_retro: 977, decorato: 989, bolla: 1029 },
+            "ultraopaco_base": { satinato: 894, fronte_retro: 942, decorato: 954, bolla: 994 },
+            "trame_base": { satinato: 935, fronte_retro: 983, decorato: 995, bolla: 1035 },
+            "iride": { satinato: 974, fronte_retro: 1022, decorato: 1034, bolla: 1074 }
+        }
+    },
+    
+    // INTAGLIO
+    INTAGLIO: {
+        nome: "INTAGLIO",
+        spessore: 44,
+        tipologia: "pantografata",
+        modelli: ["0", "0_vetro", "1", "2", "4", "8", "10"],
+        finiture: {
+            "blond_tanganika": { "0": 632, "0_vetro": 721, "1": 600, "2": 632, "4": 684, "8": 655 },
+            "noce_nazionale": { "0": 672, "0_vetro": 782, "1": 663, "2": 672, "4": 743, "8": 703 },
+            "opaco_base": { "0": 472, "0_vetro": 651, "1": 472, "2": 472, "4": 613, "8": 472 },
+            "ultraopaco_base": { "0": 492, "0_vetro": 671, "1": 492, "2": 492, "4": 633, "8": 492 },
+            "trame_base": { "0": 716, "0_vetro": 836, "1": 712, "2": 716, "4": 797, "8": 740 }
+        }
+    },
+    
+    // PLISSÃˆ
+    PLISSE: {
+        nome: "PLISSÃˆ",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "opaco_base": { cieca: 423 },
+            "opaco_ral": { cieca: 480 },
+            "ultraopaco_base": { cieca: 443 },
+            "ultraopaco_cartella": { cieca: 500 }
+        }
+    },
+    
+    // SUITE
+    SUITE: {
+        nome: "SUITE",
+        spessore: 44,
+        tipologia: "tamburata",
+        modelli: ["4_6", "9", "10", "21_22_27"],
+        finiture: {
+            "opaco_base": { "4_6": 403, "9": 457, "10": 500, "21_22_27": 423 },
+            "opaco_ral": { "4_6": 458, "9": 512, "10": 557, "21_22_27": 480 },
+            "ultraopaco_base": { "4_6": 423, "9": 477, "10": 520, "21_22_27": 443 },
+            "ultraopaco_cartella": { "4_6": 478, "9": 532, "10": 577, "21_22_27": 500 },
+            "trame_base": { "21_22_27": 553 },
+            "trame_ral": { "21_22_27": 609 }
+        }
+    },
+    
+    // MIXY
+    MIXY: {
+        nome: "MIXY",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "opaco_base": { cieca: 367, predisposta_cristallo: 486 },
+            "opaco_ral": { cieca: 423, predisposta_cristallo: 540 },
+            "ultraopaco_base": { cieca: 387, predisposta_cristallo: 506 },
+            "ultraopaco_cartella": { cieca: 443, predisposta_cristallo: 560 }
+        }
+    },
+    
+    // YNCISA
+    YNCISA: {
+        nome: "YNCISA",
+        spessore: 44,
+        tipologia: "tamburata",
+        finiture: {
+            "opaco_base": { cieca: 414, con_cristallo: 532 },
+            "opaco_ral": { cieca: 470, con_cristallo: 588 },
+            "ultraopaco_base": { cieca: 434, con_cristallo: 552 },
+            "ultraopaco_cartella": { cieca: 490, con_cristallo: 608 }
+        }
+    },
+    
+    // KÃ‰VIA
+    KEVIA: {
+        nome: "KÃ‰VIA",
+        spessore: 44,
+        tipologia: "pantografata",
+        finiture: {
+            "opaco_base": { cieca: 403, con_cristallo: 521 },
+            "opaco_ral": { cieca: 458, con_cristallo: 576 },
+            "ultraopaco_base": { cieca: 423, con_cristallo: 541 }
+        }
+    },
+    
+    // CLASSICHE
+    DIVA: {
+        nome: "DIVA",
+        spessore: 44,
+        tipologia: "pantografata",
+        finiture: {
+            "opaco_base": { cieca: 563 },
+            "opaco_ral": { cieca: 618 },
+            "patinato_bianco": { cieca: 678 },
+            "patinato_crema": { cieca: 678 }
+        }
+    },
+    
+    EPOCA: {
+        nome: "EPOCA",
+        spessore: 44,
+        tipologia: "pantografata",
+        finiture: {
+            "opaco_base": { cieca: 563 },
+            "opaco_ral": { cieca: 618 },
+            "patinato_bianco": { cieca: 678 },
+            "patinato_crema": { cieca: 678 }
+        }
+    }
+};
+
+// =============================================================================
+// REPLICA - PREZZI ANTE
+// =============================================================================
+
+const FERREROLEGNO_REPLICA = {
+    
+    // LISS
+    LISS: {
+        nome: "LISS",
+        tipologia: "liscia_sintetica",
+        finiture: {
+            "bianco_grigio_lino": { 
+                liss: 173, liss_1: 245, liss_4: 296, liss_90: 296,
+                vetro_sat: 427, vetro_fr: 469, vetro_point: 615, vetro_strip: 615
+            },
+            "noce": { 
+                liss: 168, liss_1: 240, liss_4: 291, liss_90: 291,
+                vetro_sat: 422, vetro_fr: 464, vetro_point: 610, vetro_strip: 610
+            },
+            "grafis": { 
+                liss: 205, liss_1: 277, liss_4: 328, liss_90: 328,
+                vetro_sat: 459, vetro_fr: 501, vetro_point: 647, vetro_strip: 647
+            },
+            "materic_ontario": { 
+                liss: 230, liss_1: 302, liss_4: 353, liss_90: 353,
+                vetro_sat: 484, vetro_fr: 526, vetro_point: 672, vetro_strip: 672
+            }
+        }
+    },
+    
+    // LISS VETRO LARGE
+    LISS_VETRO_LARGE: {
+        nome: "LISS VETRO LARGE",
+        tipologia: "vetro_grande",
+        finiture: {
+            "bianco_grigio_lino": { satinato: 636, fronte_retro: 684, decorato: 693, graffio: 782, bolla: 782 },
+            "noce": { satinato: 621, fronte_retro: 669, decorato: 678, graffio: 767, bolla: 767 },
+            "grafis": { satinato: 634, fronte_retro: 682, decorato: 691, graffio: 780, bolla: 780 },
+            "materic_ontario": { satinato: 662, fronte_retro: 710, decorato: 719, graffio: 808, bolla: 808 }
+        }
+    },
+    
+    // LOGICA
+    LOGICA: {
+        nome: "LOGICA",
+        tipologia: "pantografata_sintetica",
+        finiture: {
+            "grafis": { 
+                logica: 223, logica_1: 295, logica_4: 346, logica_90: 346,
+                vetro_sat: 477, vetro_fr: 519, vetro_point: 665, vetro_strip: 665
+            },
+            "materic_ontario": { 
+                logica: 249, logica_1: 321, logica_4: 372, logica_90: 372,
+                vetro_sat: 503, vetro_fr: 545, vetro_point: 691, vetro_strip: 691
+            }
+        }
+    },
+    
+    // TRATTO / SEGNI
+    TRATTO: {
+        nome: "TRATTO",
+        tipologia: "pantografata_sintetica",
+        finiture: {
+            "materic": { cieca: 394 },
+            "ontario": { cieca: 394 }
+        }
+    },
+    
+    SEGNI: {
+        nome: "SEGNI",
+        tipologia: "pantografata_sintetica",
+        finiture: {
+            "materic": { cieca: 394 },
+            "ontario": { cieca: 394 }
+        }
+    },
+    
+    // AREA
+    AREA: {
+        nome: "AREA",
+        tipologia: "pannelletti",
+        finiture: {
+            "bianco": { cieca: 475, satinato: 567, fronte_retro: 617, decorato: 644, bolla: 723, graffio: 723 },
+            "noce": { cieca: 461, satinato: 553, fronte_retro: 603, decorato: 630, bolla: 709, graffio: 709 },
+            "grafis": { cieca: 475, satinato: 567, fronte_retro: 617, decorato: 644, bolla: 723, graffio: 723 },
+            "materic_ontario": { cieca: 490, satinato: 582, fronte_retro: 632, decorato: 659, bolla: 738, graffio: 738 }
+        }
+    },
+    
+    // AREA/31 SIMPLY
+    AREA_31_SIMPLY: {
+        nome: "AREA/31 SIMPLY",
+        tipologia: "pannelletti_simply",
+        finiture: {
+            "bianco": { lisci: 360, satinato: 506, fronte_retro: 556, decorato: 583, bolla: 662, graffio: 662 },
+            "noce": { lisci: 351, satinato: 497, fronte_retro: 547, decorato: 574, bolla: 653, graffio: 653 },
+            "grafis": { lisci: 398, satinato: 544, fronte_retro: 594, decorato: 621, bolla: 700, graffio: 700 },
+            "materic_ontario": { lisci: 414, satinato: 560, fronte_retro: 610, decorato: 637, bolla: 716, graffio: 716 }
+        }
+    },
+    
+    // FORMA
+    FORMA: {
+        nome: "FORMA",
+        tipologia: "sagomata",
+        finiture: {
+            "bianco": { pannelletto: 375, satinato: 491, fronte_retro: 541, decorato: 572 },
+            "noce": { pannelletto: 364, satinato: 480, fronte_retro: 530, decorato: 561 },
+            "rovere_gold": { pannelletto: 439, satinato: 555, fronte_retro: 605, decorato: 636 }
+        }
+    }
+};
+
+// =============================================================================
+// REPLICA - TELAI
+// =============================================================================
+
+const FERREROLEGNO_TELAI_REPLICA = {
+    
+    FLAT: {
+        nome: "FLAT",
+        tipo: "complanare",
+        spessori: [75, 100],
+        finiture: {
+            "bianco_grigio_lino": { pivot: 308, scomparsa: 333 },
+            "grafis_bianco": { pivot: 314, scomparsa: 339 },
+            "materic": { pivot: 314, scomparsa: 339 },
+            "ontario": { pivot: 314, scomparsa: 339 },
+            "rovere_gold": { pivot: 314, scomparsa: 339 }
+        }
+    },
+    
+    GENIUS_ELEVA: {
+        nome: "GENIUS ELEVA",
+        tipo: "standard",
+        spessori: [75, 100],
+        finiture: {
+            "bianco_grigio_lino": { anuba: 161, pivot: 191 },
+            "noce": { anuba: 157, pivot: 187 },
+            "grafis_bianco": { anuba: 193, pivot: 223 },
+            "grafis_beige_moka": { anuba: 193, pivot: 223 },
+            "materic": { anuba: 208, pivot: null },
+            "ontario": { anuba: 208, pivot: null },
+            "rovere_gold": { anuba: 208, pivot: 238 }
+        }
+    },
+    
+    OVAL_ELEVA: {
+        nome: "OVAL ELEVA",
+        tipo: "standard_stondato",
+        spessori: [80, 100],
+        finiture: {
+            "bianco_grigio_lino": { anuba: 182, pivot: 212 },
+            "noce": { anuba: 177, pivot: 207 },
+            "grafis_bianco": { anuba: 212, pivot: 242 },
+            "grafis_beige_moka": { anuba: 212, pivot: 242 },
+            "rovere_gold": { anuba: 227, pivot: 257 }
+        }
+    }
+};
+
+// =============================================================================
+// ZERO - PREZZI ANTE
+// =============================================================================
+
+const FERREROLEGNO_ZERO = {
+    
+    // EXIT ZERO
+    EXIT_ZERO: {
+        nome: "EXIT ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "grezzo_prefinito": { cieca: 327 },
+            "iride": { cieca: 587 },
+            "natural_touch_rovere": { cieca: 595 },
+            "natural_touch_noce": { cieca: 605 },
+            "ultralucido_base": { cieca: 906 },
+            "ultralucido_cartella": { cieca: 1105 }
+        }
+    },
+    
+    // EXITLYNE ZERO
+    EXITLYNE_ZERO: {
+        nome: "EXITLYNE ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "iride": { cieca: 568 },
+            "natural_touch_rovere": { cieca: 576 },
+            "natural_touch_noce": { cieca: 586 }
+        }
+    },
+    
+    // EQUA ZERO
+    EQUA_ZERO: {
+        nome: "EQUA ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "opaco_base": { cieca: 396 },
+            "opaco_ral": { cieca: 452 },
+            "ultraopaco_base": { cieca: 416 },
+            "ultraopaco_cartella": { cieca: 472 },
+            "trame_base": { cieca: 557 },
+            "trame_ral": { cieca: 612 }
+        }
+    },
+    
+    // SUITE ZERO
+    SUITE_ZERO: {
+        nome: "SUITE ZERO",
+        tipologia: "filo_muro",
+        modelli: ["21", "22", "27"],
+        finiture: {
+            "opaco_base": { cieca: 423 },
+            "opaco_ral": { cieca: 480 },
+            "ultraopaco_base": { cieca: 443 },
+            "ultraopaco_cartella": { cieca: 500 },
+            "trame_base": { cieca: 553 }
+        }
+    },
+    
+    // MIXY ZERO
+    MIXY_ZERO: {
+        nome: "MIXY ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "opaco_base": { cieca: 367 },
+            "opaco_ral": { cieca: 423 },
+            "ultraopaco_base": { cieca: 387 },
+            "ultraopaco_cartella": { cieca: 443 }
+        }
+    },
+    
+    // YNCISA ZERO
+    YNCISA_ZERO: {
+        nome: "YNCISA ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "opaco_base": { cieca: 414 },
+            "opaco_ral": { cieca: 469 },
+            "ultraopaco_base": { cieca: 434 },
+            "ultraopaco_cartella": { cieca: 489 }
+        }
+    },
+    
+    // LOGICA ZERO
+    LOGICA_ZERO: {
+        nome: "LOGICA ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "materic": { cieca: 249 },
+            "ontario": { cieca: 249 }
+        }
+    },
+    
+    // PLISSE ZERO
+    PLISSE_ZERO: {
+        nome: "PLISSÃˆ ZERO",
+        tipologia: "filo_muro",
+        finiture: {
+            "opaco_base": { cieca: 423 },
+            "opaco_ral": { cieca: 480 },
+            "ultraopaco_base": { cieca: 443 },
+            "ultraopaco_cartella": { cieca: 500 }
+        }
+    }
+};
+
+// =============================================================================
+// ZERO - TELAI A_FILO
+// =============================================================================
+
+const FERREROLEGNO_TELAI_ZERO = {
+    
+    A_FILO: {
+        nome: "A_FILO",
+        materiale: "alluminio",
+        prezzi: {
+            70: 506,
+            100: 540,
+            125: 582
+        }
+    },
+    
+    CONCEPT: {
+        nome: "CONCEPT",
+        materiale: "alluminio",
+        prezzi: {
+            100: 677
+        }
+    },
+    
+    maggiorazioni: {
+        telaio_doppio: 327,
+        telaio_muratura: 27  // zanche + rete porta intonaco
+    }
+};
+
+// =============================================================================
+// ZERO - BASIC ZERO (Vetro Temperato 8mm)
+// =============================================================================
+
+const FERREROLEGNO_BASIC_ZERO = {
+    
+    nome: "BASIC ZERO",
+    tipologia: "vetro_temperato_8mm",
+    
+    // Prezzi per fascia altezza
+    prezziPerAltezza: {
+        "2000-2049": {
+            trasparente: 680,
+            satinato: 752,
+            grigio_bronzo: 752,
+            extrachiaro: 824,
+            decorato: 1060
+        },
+        "2050-2100": {
+            trasparente: 714,
+            satinato: 790,
+            grigio_bronzo: 790,
+            extrachiaro: 866,
+            decorato: 1113
+        },
+        "2101-2249": {
+            trasparente: 812,
+            satinato: 897,
+            grigio_bronzo: 897,
+            extrachiaro: 984,
+            decorato: 1264
+        },
+        "2250-2449": {
+            trasparente: 896,
+            satinato: 978,
+            grigio_bronzo: 1069,
+            extrachiaro: 1216,
+            decorato: 1609
+        },
+        "2450-2700": {
+            trasparente: 896,
+            satinato: 978,
+            grigio_bronzo: 1069,
+            extrachiaro: 1297,
+            decorato: 1751
+        }
+    },
+    
+    // Maniglie
+    maniglie: {
+        ponte_alluminio: 140,
+        ponte_laccato: 150,
+        vitra_senza_foro_cromo: 215,
+        vitra_senza_foro_laccato: 225,
+        vitra_yale_cromo: 325,
+        vitra_yale_laccato: 335,
+        vitra_nottolino_cromo: 360,
+        vitra_nottolino_laccato: 370,
+        pomax_tonda: 164
+    }
+};
+
+// =============================================================================
+// ZERO - FRAME ZERO (Vetro Temperato 6mm con profilo)
+// =============================================================================
+
+const FERREROLEGNO_FRAME_ZERO = {
+    
+    nome: "FRAME ZERO",
+    tipologia: "vetro_temperato_6mm_profilo",
+    spessoreVetro: "6mm filtrante / 3+3mm coprente",
+    
+    // Prezzi per fascia altezza e larghezza
+    // Larghezze: 600-850, 900-1000, 1050-1200
+    prezziPerAltezza: {
+        "2000-2049": {
+            trasparente_bianco: { "600-850": 758, "900-1000": 799, "1050-1200": 855 },
+            satinato_bianco: { "600-850": 852, "900-1000": 910, "1050-1200": 987 },
+            grigio_bronzo: { "600-850": 927, "900-1000": 998, "1050-1200": 1093 },
+            extrachiaro: { "600-850": 1048, "900-1000": 1143, "1050-1200": 1267 },
+            decorato: { "600-850": 1142, "900-1000": 1251, "1050-1200": 1397 }
+        },
+        "2050-2100": {
+            trasparente_bianco: { "600-850": 797, "900-1000": 840, "1050-1200": 899 },
+            satinato_bianco: { "600-850": 897, "900-1000": 958, "1050-1200": 1039 },
+            grigio_bronzo: { "600-850": 975, "900-1000": 1050, "1050-1200": 1150 },
+            extrachiaro: { "600-850": 1103, "900-1000": 1203, "1050-1200": 1335 },
+            decorato: { "600-850": 1202, "900-1000": 1316, "1050-1200": 1470 }
+        },
+        "2101-2249": {
+            trasparente_bianco: { "600-850": 834, "900-1000": 878, "1050-1200": 939 },
+            satinato_bianco: { "600-850": 938, "900-1000": 1002, "1050-1200": 1086 },
+            grigio_bronzo: { "600-850": 1019, "900-1000": 1097, "1050-1200": 1202 },
+            extrachiaro: { "600-850": 1153, "900-1000": 1258, "1050-1200": 1396 },
+            decorato: { "600-850": 1257, "900-1000": 1376, "1050-1200": 1537 }
+        },
+        "2250-2449": {
+            trasparente_bianco: { "600-850": 870, "900-1000": 918, "1050-1200": 980 },
+            satinato_bianco: { "600-850": 977, "900-1000": 1044, "1050-1200": 1132 },
+            grigio_bronzo: { "600-850": 1062, "900-1000": 1143, "1050-1200": 1253 },
+            lucido_nero: { "600-850": 1142, "900-1000": 1238, "1050-1200": 1365 },
+            riflettente: { "600-850": 1142, "900-1000": 1238, "1050-1200": 1365 },
+            extrachiaro: { "600-850": 1236, "900-1000": 1349, "1050-1200": 1498 },
+            satinato_nero: { "600-850": 1330, "900-1000": 1459, "1050-1200": 1629 },
+            decorato_bit03: { "600-850": 1686, "900-1000": 1878, "1050-1200": 2132 },
+            milky: { "600-850": 938, "900-1000": 995, "1050-1200": 1074 },
+            lucido_colori: { "600-850": 1236, "900-1000": 1349, "1050-1200": 1498 },
+            specchio_smoke_bronze: { "600-850": 1461, "900-1000": 1613, "1050-1200": 1814 }
+        },
+        "2450-2749": {
+            trasparente_bianco: { "600-850": 895, "900-1000": 945, "1050-1200": 1012 },
+            satinato_bianco: { "600-850": 1009, "900-1000": 1078, "1050-1200": 1169 },
+            grigio_bronzo: { "600-850": 1097, "900-1000": 1181, "1050-1200": 1294 },
+            lucido_nero: { "600-850": 1201, "900-1000": 1310, "1050-1200": 1453 },
+            riflettente: { "600-850": 1201, "900-1000": 1310, "1050-1200": 1453 },
+            extrachiaro: { "600-850": 1309, "900-1000": 1434, "1050-1200": 1603 },
+            satinato_nero: { "600-850": 1414, "900-1000": 1560, "1050-1200": 1754 },
+            decorato_bit03: { "600-850": 1808, "900-1000": 2022, "1050-1200": 2309 },
+            milky: { "600-850": 977, "900-1000": 1044, "1050-1200": 1132 },
+            lucido_colori: { "600-850": 1310, "900-1000": 1435, "1050-1200": 1604 },
+            specchio_smoke_bronze: { "600-850": 1563, "900-1000": 1723, "1050-1200": 1946 }
+        }
+    },
+    
+    // Telai specifici FRAME ZERO
+    telai: {
+        A_FILO_70: 591,
+        A_FILO_100: 625,
+        A_FILO_125: 667,
+        muratura: 27
+    },
+    
+    // Cristalli disponibili
+    cristalli: [
+        "trasparente", "satinato", "satinato_fronte_retro", "riflettente",
+        "lucido_nero", "segni", "point", "strip", "textil", "bit03",
+        "chillout", "flutes", "milky", "lucido_colori", "satinato_colori", "specchio"
+    ]
+};
+
+// =============================================================================
+// ZERO - PREMIUM ZERO (Vetro Sicurezza 3mm bifacciale)
+// =============================================================================
+
+const FERREROLEGNO_PREMIUM_ZERO = {
+    
+    nome: "PREMIUM ZERO",
+    tipologia: "vetro_sicurezza_3mm_bifacciale",
+    spessoreAnta: 44,
+    spessoreVetro: "3mm + 3mm (bifacciale)",
+    
+    // Prezzi per fascia altezza
+    // Larghezze: 600-850, 900-1000
+    prezziPerAltezza: {
+        "1400-2200": {
+            lucido_base: { "600-850": 1222, "900-1000": 1393 },        // Black/Antracite/Ginger/Red/Beige/White
+            specchio_classic: { "600-850": 1222, "900-1000": 1393 },
+            satinato: { "600-850": 1441, "900-1000": 1626 },           // Black/Antracite/Ginger/Silver/White/Blue
+            lucido_pearl_blue: { "600-850": 1441, "900-1000": 1626 },
+            specchio_smoke_bronze: { "600-850": 1441, "900-1000": 1626 },
+            bicolore: { "600-850": 1441, "900-1000": 1626 }            // escluso Ginger
+        },
+        "2201-2400": {
+            lucido_base: { "600-850": 1296, "900-1000": 1549 },
+            specchio_classic: { "600-850": 1296, "900-1000": 1549 },
+            satinato: { "600-850": 1533, "900-1000": 1798 },
+            lucido_pearl_blue: { "600-850": 1533, "900-1000": 1798 },
+            specchio_smoke_bronze: { "600-850": 1533, "900-1000": 1798 },
+            bicolore: { "600-850": 1533, "900-1000": 1798 }
+        },
+        "2401-2700": {
+            lucido_base: { "600-850": 1432, "900-1000": 1722 },
+            specchio_classic: { "600-850": 1432, "900-1000": 1722 },
+            satinato: { "600-850": 1643, "900-1000": 1962 },
+            lucido_pearl_blue: { "600-850": 1643, "900-1000": 1962 },
+            specchio_smoke_bronze: { "600-850": 1643, "900-1000": 1962 },
+            bicolore: { "600-850": 1643, "900-1000": 1962 }
+        },
+        "2701-2900": {
+            lucido_base: { "600-850": 1709, "900-1000": 1801 },
+            specchio_classic: { "600-850": 1709, "900-1000": 1801 },
+            satinato: { "600-850": 1980, "900-1000": 2116 },
+            lucido_pearl_blue: { "600-850": 1980, "900-1000": 2116 },
+            specchio_smoke_bronze: { "600-850": 1980, "900-1000": 2116 },
+            bicolore: { "600-850": 1980, "900-1000": 2116 }
+        }
+    },
+    
+    // Maggiorazioni laccatura profilo
+    laccaturaProfilo: {
+        "1400-2200": { bianco_base: 150, metallizzato: 265 },
+        "2201-2400": { bianco_base: 160, metallizzato: 280 },
+        "2401-2700": { bianco_base: 170, metallizzato: 295 },
+        "2701-2900": { bianco_base: 180, metallizzato: 310 }
+    },
+    
+    // Maggiorazioni laccatura CONCEPT
+    laccaturaConceptProfilo: {
+        "1400-2200": { bianco_base: 80, metallizzato: 110 },
+        "2201-2450": { bianco_base: 90, metallizzato: 125 },
+        "2451-2700": { bianco_base: 100, metallizzato: 140 },
+        "2701-2900": { bianco_base: 110, metallizzato: 155 }
+    },
+    
+    // Telai Premium Zero (stessi di ZERO standard)
+    telai: {
+        A_FILO_70: 506,
+        A_FILO_100: 540,
+        A_FILO_125: 582,
+        CONCEPT_100: 677,
+        muratura: 27
+    },
+    
+    // Colori vetro disponibili
+    coloriLucido: ["Black", "Antracite", "Ginger", "Red", "Beige", "White", "Pearl", "Blue"],
+    coloriSatinato: ["Black", "Antracite", "Ginger", "Silver", "White", "Blue"],
+    coloriSpecchio: ["Classic", "Smoke", "Bronze"],
+    
+    // Note
+    note: "NO ANTE DOPPIE per Premium Zero"
+};
+
+// =============================================================================
+// MAGGIORAZIONI COMUNI
+// =============================================================================
+
+const FERREROLEGNO_MAGGIORAZIONI = {
+    
+    // Dimensioni
+    dimensioni: {
+        larghezza: {
+            standard: [600, 650, 700, 750, 800, 850, 900],
+            fuori_standard_50: { range: [500, 550, 950, 1000, 1050, 1100, 1150, 1200], perc: 0.50 }
+        },
+        altezza: {
+            standard: [2000, 2100],
+            fuori_standard_15: { range_min: 1950, range_max: 2200, perc: 0.15 },  // escluso 2000-2100
+            fuori_standard_50: { ranges: [[1400, 1949], [1750, 1900], [2250, 2400]], perc: 0.50 },
+            fuori_standard_55: { range_min: 2401, range_max: 2600, perc: 0.55 },
+            fuori_standard_60: { range_min: 2601, range_max: 2900, perc: 0.60 }
+        }
+    },
+    
+    // Versioni battente
+    battente: {
+        specchio_sicurezza_4mm: 500,  // su 1 lato
+        cappucci_copricerniera: 23,    // per telaio
+        serratura_yale: 55,
+        serratura_yale_passepartout: 95
+    },
+    
+    // Versioni scorrevole
+    scorrevole: {
+        rolling_scrighi_con_serratura: 150,
+        rolling_scrighi_senza_serratura: 130,
+        rolling_scrighi_senza_nulla: 110,
+        rolling_prima_con_serratura: 545,
+        rolling_prima_senza_serratura: 465,
+        rolling_prima_senza_nulla: 440,
+        rolling_magic_completo: 510,
+        rolling_magic_senza_nulla: 485,
+        essential_syntesis_con_serratura: 225,
+        essential_syntesis_senza_serratura: 205,
+        essential_syntesis_senza_nulla: 185,
+        maniglia_quadra: 15,
+        serratura_yale: 55,
+        fermo_soft_monolaterale: 60,
+        fermo_soft_bilaterale: 90,
+        esclusione_cassonetto: -295
+    },
+    
+    // Pieghevoli
+    pieghevoli: {
+        modula_ferramenta: 420,
+        indue_ferramenta: 445,
+        fold_90_ferramenta_anta: 570,
+        fold_90_ferramenta_telaio: 120,
+        fold_180_ferramenta_anta: 590,
+        fold_180_ferramenta_telaio: 120,
+        telaio_doppio_replica: 85,
+        telaio_doppio_zero: 327,
+        anta_semifissa_wave: 110
+    },
+    
+    // Maniglie
+    maniglie: {
+        wave_senza_foro: 110,
+        wave_nottolino: 130,
+        quadra: 15,
+        rettangolare: 30
+    }
+};
+
+// =============================================================================
+// BEST SELLER - SOLUZIONI COMPLETE
+// =============================================================================
+
+const FERREROLEGNO_BEST_SELLER = {
+    
+    // REPLICA Best Seller
+    REPLICA: {
+        "LISS_bianco_genius_anuba": { anta: 173, telaio: 161, totale: 334 },
+        "LISS_bianco_flat_pivot": { anta: 173, telaio: 308, totale: 481 },
+        "LISS_grafis_genius_anuba": { anta: 205, telaio: 193, totale: 398 },
+        "LOGICA_grafis_genius_anuba": { anta: 223, telaio: 193, totale: 416 },
+        "LOGICA_materic_genius_anuba": { anta: 249, telaio: 208, totale: 457 },
+        "AREA_grafis_genius_anuba": { anta: 475, telaio: 193, totale: 668 }
+    },
+    
+    // ZERO Best Seller
+    ZERO: {
+        "EXIT_grezzo_afilo_100": { anta: 327, telaio: 540, totale: 867 },
+        "EQUA_opaco_afilo_100": { anta: 396, telaio: 540, totale: 936 },
+        "EQUA_ultraopaco_afilo_100": { anta: 416, telaio: 540, totale: 956 },
+        "EXITLYNE_iride_afilo_100": { anta: 568, telaio: 540, totale: 1108 },
+        "MIXY_opaco_afilo_100": { anta: 367, telaio: 540, totale: 907 },
+        "YNCISA_opaco_afilo_100": { anta: 414, telaio: 540, totale: 954 },
+        "LOGICA_materic_afilo_100": { anta: 249, telaio: 540, totale: 789 }
+    }
+};
+
+// =============================================================================
+// FUNZIONE CALCOLO PREZZO
+// =============================================================================
+
+/**
+ * Calcola prezzo porta FerreroLegno
+ * @param {Object} config - Configurazione porta
+ * @returns {Object} - Dettaglio prezzi
+ */
+function calcolaPrezzoFerreroLegno(config) {
+    const {
+        linea = "COLLEZIONI_FL",     // COLLEZIONI_FL, REPLICA, ZERO
+        collezione,                   // es. "EXIT", "LISS", "EQUA_ZERO"
+        modello = "cieca",            // cieca, vetro, liss_4, etc.
+        finitura,                     // es. "opaco_base", "grafis"
+        telaio,                       // es. "GENIUS_ELEVA", "A_FILO"
+        telaioSpessore = 100,         // mm
+        telaioFinitura,               // finitura telaio
+        telaioCerniera = "anuba",     // anuba, pivot, scomparsa
+        larghezza = 800,              // mm
+        altezza = 2100,               // mm
+        versione = "battente",        // battente, scorrevole, pieghevole
+        opzioni = []                  // array opzioni aggiuntive
+    } = config;
+    
+    let prezzoAnta = 0;
+    let prezzoTelaio = 0;
+    let prezzoOpzioni = 0;
+    let maggiorazioneDim = 0;
+    
+    // Recupera prezzo anta in base alla linea
+    let datiCollezione;
+    if (linea === "COLLEZIONI_FL") {
+        datiCollezione = FERREROLEGNO_COLLEZIONI_FL[collezione];
+    } else if (linea === "REPLICA") {
+        datiCollezione = FERREROLEGNO_REPLICA[collezione];
+    } else if (linea === "ZERO") {
+        datiCollezione = FERREROLEGNO_ZERO[collezione];
+    }
+    
+    if (datiCollezione && datiCollezione.finiture[finitura]) {
+        prezzoAnta = datiCollezione.finiture[finitura][modello] || 0;
+    }
+    
+    // Recupera prezzo telaio
+    if (linea === "REPLICA" && FERREROLEGNO_TELAI_REPLICA[telaio]) {
+        const datiTelaio = FERREROLEGNO_TELAI_REPLICA[telaio];
+        if (datiTelaio.finiture[telaioFinitura]) {
+            prezzoTelaio = datiTelaio.finiture[telaioFinitura][telaioCerniera] || 0;
+        }
+    } else if (linea === "ZERO" && FERREROLEGNO_TELAI_ZERO[telaio]) {
+        prezzoTelaio = FERREROLEGNO_TELAI_ZERO[telaio].prezzi[telaioSpessore] || 0;
+    }
+    
+    // Calcola maggiorazione dimensioni
+    const stdL = FERREROLEGNO_CONFIG.larghezzeStandard;
+    const stdH = FERREROLEGNO_CONFIG.altezzeStandard;
+    
+    if (!stdL.includes(larghezza)) {
+        maggiorazioneDim += 0.50;  // fuori standard larghezza
+    }
+    if (!stdH.includes(altezza)) {
+        if (altezza >= 1950 && altezza <= 2200) {
+            maggiorazioneDim += 0.15;
+        } else {
+            maggiorazioneDim += 0.50;
+        }
+    }
+    
+    // Calcola opzioni
+    opzioni.forEach(opt => {
+        if (FERREROLEGNO_MAGGIORAZIONI.battente[opt]) {
+            prezzoOpzioni += FERREROLEGNO_MAGGIORAZIONI.battente[opt];
+        } else if (FERREROLEGNO_MAGGIORAZIONI.scorrevole[opt]) {
+            prezzoOpzioni += FERREROLEGNO_MAGGIORAZIONI.scorrevole[opt];
+        } else if (FERREROLEGNO_MAGGIORAZIONI.pieghevoli[opt]) {
+            prezzoOpzioni += FERREROLEGNO_MAGGIORAZIONI.pieghevoli[opt];
+        } else if (FERREROLEGNO_MAGGIORAZIONI.maniglie[opt]) {
+            prezzoOpzioni += FERREROLEGNO_MAGGIORAZIONI.maniglie[opt];
+        }
+    });
+    
+    // Calcoli finali
+    const subtotale = prezzoAnta + prezzoTelaio + prezzoOpzioni;
+    const totaleListino = subtotale * (1 + maggiorazioneDim);
+    const totaleNetto = totaleListino * (1 - FERREROLEGNO_CONFIG.scontoInstallatore);
+    
+    return {
+        linea,
+        collezione,
+        modello,
+        finitura,
+        dimensioni: { larghezza, altezza },
+        prezzoAnta,
+        prezzoTelaio,
+        prezzoOpzioni,
+        maggiorazioneDim: `${(maggiorazioneDim * 100).toFixed(0)}%`,
+        subtotale,
+        totaleListino: Math.round(totaleListino * 100) / 100,
+        scontoInstallatore: `${FERREROLEGNO_CONFIG.scontoInstallatore * 100}%`,
+        totaleNetto: Math.round(totaleNetto * 100) / 100
+    };
+}
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+
+        console.log('✅ FERREROLEGNO-DATABASE-2025 caricato');
+
+        // ============================================================================
+        // 🔧 OLIVARI MANIGLIE 2025 - Listino N°55
+        // ============================================================================
+/**
+ * OLIVARI DATABASE 2025
+ * Maniglie e Accessori - Listino NÂ°55 Gennaio 2025
+ * 
+ * SCONTO INSTALLATORE: 40% + 5% = 43% effettivo
+ * Calcolo: 100 Ã— 0.60 Ã— 0.95 = 57.00 (netto 57%, sconto 43%)
+ * 
+ * NOTA: Aumento 4% previsto dal 01/01/2026
+ * 
+ * @version 1.0
+ * @date 11/12/2025
+ */
+
+const OLIVARI_2025 = {
+    
+    // ==================== INFORMAZIONI GENERALI ====================
+    info: {
+        nome: "OLIVARI",
+        listino: "NÂ°55",
+        anno: "Gennaio 2025",
+        sconto_1: 0.40,
+        sconto_2: 0.05,
+        sconto_effettivo: 0.43,  // 1 - (0.60 Ã— 0.95) = 0.43
+        tipo: "maniglie",
+        materiale: "Ottone",
+        produzione: "Made in Italy dal 1911",
+        minimo_ordine: 250,  // â‚¬ Italia
+        validita: "31/12/2025",
+        note: "Prezzi per coppia (maniglie/pomoli) o pezzo (cremonesi/DK)"
+    },
+
+    // ==================== FINITURE ====================
+    finiture: {
+        // CROMO - Garanzia 10 anni
+        CR: { nome: "Cromo lucido", codice: "CR", garanzia: 10, maggiorazione: 0 },
+        CO: { nome: "Cromo satinato", codice: "CO", garanzia: 10, maggiorazione: 0.09 },
+        
+        // SUPERFINISHÂ® - Garanzia 30 anni
+        ZL: { nome: "SuperOro lucido", codice: "ZL", garanzia: 30, maggiorazione: 0.22 },
+        TS: { nome: "SuperOro satinato", codice: "TS", garanzia: 30, maggiorazione: 0.27 },
+        NL: { nome: "SuperNichel lucido", codice: "NL", garanzia: 30, maggiorazione: 0.22 },
+        NS: { nome: "SuperNichel satinato", codice: "NS", garanzia: 30, maggiorazione: 0.27 },
+        IS: { nome: "SuperInox satinato", codice: "IS", garanzia: 30, maggiorazione: 0.21 },
+        
+        // SUPERFINISHÂ® - Garanzia 10 anni
+        RS: { nome: "SuperRame satinato", codice: "RS", garanzia: 10, maggiorazione: 0.33 },
+        DS: { nome: "SuperBronzo satinato", codice: "DS", garanzia: 10, maggiorazione: 0.33 },
+        US: { nome: "SuperAntracite satinato", codice: "US", garanzia: 10, maggiorazione: 0.28 },
+        
+        // ALTRI
+        NP: { nome: "Nero opaco", codice: "NP", garanzia: 5, maggiorazione: -0.03 },
+        BP: { nome: "Bianco opaco", codice: "BP", garanzia: 5, maggiorazione: -0.03 },
+        
+        // COMBINAZIONI
+        CD: { nome: "Cromo lucido + bianco", codice: "CD", garanzia: 10, maggiorazione: -0.28 },
+        MD: { nome: "Cromo satinato + bianco", codice: "MD", garanzia: 10, maggiorazione: -0.19 }
+    },
+
+    // ==================== MODELLI MANIGLIE ====================
+    // Prezzi base in Cromo lucido (CR) per coppia
+    // Formato: { rosette, verticali, placca, magnetica }
+    maniglie: {
+        // DESIGN ICONICI
+        ABC: { codice: 255, designer: "OMA/Rem Koolhaas", rosette: 176.45, verticali: 176.45, placca: 236.45 },
+        ADAMANT: { codice: 216, designer: "Patricia Urquiola", rosette: 222.60, verticali: 237.20, placca: 292.80 },
+        AGATA: { codice: 116, designer: "Franco Albini/Franca Helg", rosette: 127.60, verticali: 142.90, placca: 198.10, magnetica: 148.65 },
+        ALA: { codice: 215, designer: "Studio Olivari", rosette: 146.75, verticali: 162.05, placca: 217.25, magnetica: 167.80 },
+        ALBA: { codice: 267, designer: "Studio Olivari", rosette: 231.90, verticali: 231.90, placca: 291.90 },
+        ALEXANDRA: { codice: 150, designer: "Studio Olivari", rosette: 99.95, verticali: 115.25, placca: 170.45, magnetica: 121.00 },
+        ARC: { codice: 225, designer: "Studio Olivari", rosette: 227.15, verticali: 227.15, placca: 287.00 },
+        ASTER: { codice: 174, designer: "Studio Olivari", rosette: 158.10, verticali: 173.40, placca: 228.60, magnetica: 179.15 },
+        ATENA_LIGNE: { codice: "1AL", designer: "Studio Olivari", rosette: 245.60, verticali: 245.60, placca: 305.60 },
+        ATENA_PANIER: { codice: "1AP", designer: "Studio Olivari", rosette: 263.35, verticali: 263.35, placca: 323.35 },
+        ATENA_RANK: { codice: "1AR", designer: "Studio Olivari", rosette: 291.95, verticali: 291.95, placca: 351.95 },
+        AURELIA: { codice: 185, designer: "Studio Olivari", rosette: 163.40, verticali: 178.70, placca: 233.90, magnetica: 184.45 },
+        AURORA: { codice: 164, designer: "Studio Olivari", rosette: 134.65, verticali: 134.65, placca: 194.50 },
+        BAU: { codice: 263, designer: "Studio Olivari", rosette: 229.05, verticali: 229.05, placca: 288.90 },
+        BEIJING: { codice: 208, designer: "Studio Olivari", rosette: 188.85, verticali: 188.85, placca: 248.85 },
+        BETA: { codice: 221, designer: "Studio Olivari", rosette: 155.35, verticali: 155.35, placca: 215.20 },
+        BIOS: { codice: 204, designer: "Studio Olivari", rosette: 154.80, verticali: 154.80, placca: 214.65 },
+        BLADE: { codice: 213, designer: "Studio Olivari", rosette: 170.30, verticali: 170.30, placca: 230.15 },
+        BOND: { codice: 163, designer: "Studio Olivari", rosette: 80.60, verticali: 95.90, placca: 151.10, magnetica: 101.65 },
+        CHELSEA: { codice: 232, designer: "Studio Olivari", rosette: 150.05, verticali: 150.05, placca: 209.90 },
+        CHEVRON: { codice: 248, designer: "Studio Olivari", rosette: 306.00, verticali: 306.00, placca: 366.00 },
+        CHIARA: { codice: 125, designer: "Studio Olivari", rosette: 94.55, verticali: 109.85, placca: 165.05, magnetica: 115.60 },
+        CLUB: { codice: 181, designer: "Studio Olivari", rosette: 100.40, verticali: 115.70, placca: 170.90, magnetica: 121.45 },
+        COMET: { codice: 183, designer: "Studio Olivari", rosette: 120.40, verticali: 120.40, placca: 180.25 },
+        CONCA: { codice: 236, designer: "Patricia Urquiola", rosette: 152.75, verticali: 152.75, placca: 212.60 },
+        CONCA_L: { codice: 272, designer: "Patricia Urquiola", rosette: 204.55, verticali: 219.15, placca: 274.75 },
+        CONO: { codice: 265, designer: "Luigi Caccia Dominioni", rosette: 131.70, verticali: 131.70, placca: 191.55 },
+        CRYSTAL_DIAMOND: { codice: 246, designer: "Studio Olivari", rosette: 248.50, verticali: 248.50, placca: 308.35 },
+        CRYSTALROYAL: { codice: 245, designer: "Studio Olivari", rosette: 255.60, verticali: 255.60, placca: 315.45 },
+        DENVER: { codice: 218, designer: "Studio Olivari", rosette: 144.75, verticali: 144.75, placca: 204.60 },
+        DIANA: { codice: 206, designer: "Studio Olivari", rosette: 137.35, verticali: 152.65, placca: 207.85, magnetica: 158.40 },
+        DIANA_BARLEY: { codice: "1DB", designer: "Studio Olivari", rosette: 217.70, verticali: 232.30, placca: 287.90 },
+        DIANA_CHEVRON: { codice: "1DC", designer: "Studio Olivari", rosette: 232.35, verticali: 246.95, placca: 302.55 },
+        DIANA_DAMIER: { codice: "1DD", designer: "Studio Olivari", rosette: 227.60, verticali: 242.20, placca: 297.80 },
+        DIVA: { codice: 256, designer: "Studio Olivari", rosette: 192.90, verticali: 192.90, placca: 252.75 },
+        DOLCE_VITA: { codice: 243, designer: "Studio Olivari", rosette: 141.95, verticali: 141.95, placca: 201.80 },
+        DYNAMIC: { codice: 261, designer: "Studio Olivari", rosette: 235.35, verticali: 235.35, placca: 295.35 },
+        EMILIA: { codice: 167, designer: "Studio Olivari", rosette: 106.85, verticali: 122.15, placca: 177.35, magnetica: 127.90 },
+        EUCLIDE: { codice: 229, designer: "Studio Olivari", rosette: 144.10, verticali: 144.10, placca: 203.95 },
+        EUCLIDE_Q: { codice: 230, designer: "Studio Olivari", rosette: 185.40, verticali: 185.40, placca: 245.25 },
+        FIN: { codice: 217, designer: "Studio Olivari", rosette: 131.25, verticali: 131.25, placca: 191.10 },
+        FLAMINIA: { codice: 159, designer: "Studio Olivari", rosette: 107.40, verticali: 107.40, placca: 167.25 },
+        FLUTE: { codice: 270, designer: "Studio Olivari", rosette: 116.95, verticali: 132.25, placca: 187.45, magnetica: 138.00 },
+        FUTURA: { codice: 172, designer: "Studio Olivari", rosette: 121.05, verticali: 136.35, placca: 191.55, magnetica: 142.10 },
+        GARDA: { codice: 105, designer: "Studio Olivari", rosette: 77.80, verticali: 93.10, placca: 148.30, magnetica: 98.85 },
+        GLORIA: { codice: 268, designer: "Studio Olivari", rosette: 141.45, verticali: 141.45, placca: 201.45 },
+        GLORIA_Q: { codice: 269, designer: "Studio Olivari", rosette: 146.05, verticali: 146.05, placca: 206.05 },
+        GOLIA: { codice: 160, designer: "Studio Olivari", rosette: 112.00, verticali: 112.00, placca: 171.85 },
+        HYBRID: { codice: 271, designer: "Studio Olivari", rosette: 126.45, verticali: 126.45, placca: 186.30 },  // cromo+bianco
+        ICE_CUBE: { codice: 223, designer: "Studio Olivari", rosette: 266.60, verticali: null, placca: null },  // solo rosette
+        ICONA: { codice: 254, designer: "Studio Olivari", rosette: 137.35, verticali: 152.65, placca: 207.85, magnetica: 158.40 },
+        LAMA: { codice: 107, designer: "Studio Olivari", rosette: 123.85, verticali: 139.15, placca: 194.35, magnetica: 144.90 },
+        LAMA_L: { codice: 106, designer: "Studio Olivari", rosette: 155.45, verticali: 163.75, placca: null },
+        LASER: { codice: 176, designer: "Studio Olivari", rosette: 170.40, verticali: 178.70, placca: null },
+        LINK: { codice: 200, designer: "Studio Olivari", rosette: 152.05, verticali: 160.35, placca: null },
+        LIPSTICK: { codice: 273, designer: "Studio Olivari", rosette: 143.20, verticali: 151.50, placca: null },
+        LIVING: { codice: 222, designer: "Studio Olivari", rosette: 134.95, verticali: 143.25, placca: null },
+        LOGO_L: { codice: 198, designer: "Studio Olivari", rosette: 175.40, verticali: 183.70, placca: null },
+        LOTUS: { codice: 238, designer: "Studio Olivari", rosette: 170.95, verticali: 179.25, placca: null },
+        LOTUS_Q: { codice: 241, designer: "Studio Olivari", rosette: 179.55, verticali: 187.85, placca: null },
+        LUCY: { codice: 231, designer: "Studio Olivari", rosette: 100.50, verticali: 108.80, placca: null },
+        LUGANO: { codice: 258, designer: "Studio Olivari", rosette: 103.30, verticali: 111.60, placca: null },
+        MARBELLA: { codice: 237, designer: "Studio Olivari", rosette: 104.65, verticali: 112.95, placca: null },
+        MARILYN: { codice: 252, designer: "Studio Olivari", rosette: 153.90, verticali: 162.20, placca: null },
+        MELANZANA: { codice: 266, designer: "Luigi Caccia Dominioni", rosette: 155.90, verticali: 155.90, placca: 215.75 },
+        MILANO: { codice: 259, designer: "Studio Olivari", rosette: 109.10, verticali: 117.40, placca: null },
+        MILANO_Q: { codice: 260, designer: "Studio Olivari", rosette: 121.50, verticali: 129.80, placca: null },
+        MINERVA: { codice: 205, designer: "Studio Olivari", rosette: 137.05, verticali: 145.35, placca: null },
+        NINA: { codice: 234, designer: "Studio Olivari", rosette: 71.50, verticali: 79.80, placca: null },
+        NOVELLA: { codice: 165, designer: "Studio Olivari", rosette: 83.45, verticali: 91.75, placca: null },
+        OKAY: { codice: 262, designer: "Studio Olivari", rosette: 81.45, verticali: 89.75, placca: null },
+        ONDA: { codice: 175, designer: "Studio Olivari", rosette: 74.75, verticali: 83.05, placca: null },
+        OPEN: { codice: 249, designer: "Studio Olivari", rosette: 76.00, verticali: 84.30, placca: null },
+        ORVIETO: { codice: 170, designer: "Studio Olivari", rosette: 93.05, verticali: 101.35, placca: null },
+        PADDLE: { codice: 264, designer: "Studio Olivari", rosette: 76.55, verticali: 84.85, placca: null },
+        PLANET: { codice: 195, designer: "Studio Olivari", rosette: 132.00, verticali: 147.30, placca: 202.50, magnetica: 153.05 },
+        PLANET_Q: { codice: 203, designer: "Studio Olivari", rosette: 166.50, verticali: 180.70, placca: 236.70 },
+        PLUME: { codice: 253, designer: "Studio Olivari", rosette: 66.30, verticali: 74.60, placca: null },
+        RADIAL: { codice: 235, designer: "Studio Olivari", rosette: 66.90, verticali: 75.20, placca: null },
+        RAFFAELLA: { codice: 128, designer: "Studio Olivari", rosette: 62.25, verticali: 70.55, placca: null },
+        SECTOR: { codice: 186, designer: "Studio Olivari", rosette: 47.05, verticali: 55.35, placca: null },
+        SERENELLA: { codice: 130, designer: "Studio Olivari", rosette: 61.55, verticali: 69.85, placca: null },
+        SIBILLA: { codice: 154, designer: "Studio Olivari", rosette: 57.10, verticali: 65.40, placca: null },
+        SIENA: { codice: 169, designer: "Studio Olivari", rosette: 72.35, verticali: 80.65, placca: null },
+        SKY: { codice: 214, designer: "Studio Olivari", rosette: 82.55, verticali: 90.85, placca: null },
+        STILO: { codice: 190, designer: "Studio Olivari", rosette: 57.15, verticali: 65.45, placca: null },
+        TECNO: { codice: 182, designer: "Studio Olivari", rosette: 68.15, verticali: 76.45, placca: null },
+        TIME: { codice: 192, designer: "Studio Olivari", rosette: 47.55, verticali: 55.85, placca: null },
+        TIME_Q: { codice: 201, designer: "Studio Olivari", rosette: 89.40, verticali: 97.70, placca: null },
+        TIZIANELLA_F: { codice: 112, designer: "Studio Olivari", rosette: 92.60, verticali: 100.90, placca: null },
+        TOTAL: { codice: 207, designer: "Studio Olivari", rosette: 96.75, verticali: 105.05, placca: null },
+        TREND: { codice: 228, designer: "Studio Olivari", rosette: 115.55, verticali: 123.85, placca: null },
+        TWIST: { codice: 242, designer: "Studio Olivari", rosette: 137.70, verticali: 146.00, placca: null },
+        UOVO: { codice: 108, designer: "Studio Olivari", rosette: 138.85, verticali: 154.15, placca: 209.35, magnetica: 159.90 },
+        VIRGOLA: { codice: 251, designer: "Studio Olivari", rosette: 83.55, verticali: 91.85, placca: null },
+        VOLA: { codice: 257, designer: "Max Pajetta", rosette: 192.90, verticali: 192.90, placca: 252.75 },
+        WIND: { codice: 187, designer: "Studio Olivari", rosette: 109.50, verticali: 124.80, placca: 180.00, magnetica: 130.55 }
+    },
+
+    // ==================== CREMONESI (per finestre) ====================
+    // Prezzi in Cromo lucido (CR) per PEZZO
+    cremonesi: {
+        ABC: { senza_mov: 97.65, con_mov: 105.95, dk_4scatti: 105.95, dk_sicurezza: 130.00 },
+        ADAMANT: { senza_mov: 123.85, con_mov: 132.15, dk_4scatti: 132.15, dk_sicurezza: 156.20 },
+        AGATA: { senza_mov: 75.90, con_mov: 84.20, dk_4scatti: 84.20, dk_sicurezza: 108.25 },
+        ALA: { senza_mov: 94.75, con_mov: 103.05, dk_4scatti: 103.05, dk_sicurezza: 127.10 },
+        ASTER: { senza_mov: 101.15, con_mov: 109.45, dk_4scatti: 109.45, dk_sicurezza: 133.50 },
+        BOND: { senza_mov: 47.05, con_mov: 55.35, dk_4scatti: 55.35, dk_sicurezza: 79.40 },
+        CHIARA: { senza_mov: 57.10, con_mov: 65.40, dk_4scatti: 65.40, dk_sicurezza: 89.45 },
+        CLUB: { senza_mov: 62.25, con_mov: 70.55, dk_4scatti: 70.55, dk_sicurezza: 94.60 },
+        DIANA: { senza_mov: 89.40, con_mov: 97.70, dk_4scatti: 97.70, dk_sicurezza: 121.75 },
+        EMILIA: { senza_mov: 57.15, con_mov: 65.45, dk_4scatti: 65.45, dk_sicurezza: 89.50 },
+        FUTURA: { senza_mov: 71.50, con_mov: 79.80, dk_4scatti: 79.80, dk_sicurezza: 103.85 },
+        GARDA: { senza_mov: 47.55, con_mov: 55.85, dk_4scatti: 55.85, dk_sicurezza: 79.90 },
+        ICONA: { senza_mov: 82.55, con_mov: 90.85, dk_4scatti: 90.85, dk_sicurezza: 114.90 },
+        LAMA: { senza_mov: 71.50, con_mov: 79.80, dk_4scatti: 79.80, dk_sicurezza: 103.85 },
+        PLANET: { senza_mov: 83.30, con_mov: 92.80, dk_4scatti: 92.80, dk_sicurezza: 116.85 },
+        UOVO: { senza_mov: 87.90, con_mov: 97.40, dk_4scatti: 97.40, dk_sicurezza: 121.45 },
+        VOLA: { senza_mov: 126.70, con_mov: 135.00, dk_4scatti: 135.00, dk_sicurezza: 159.05 },
+        WIND: { senza_mov: 68.15, con_mov: 76.45, dk_4scatti: 76.45, dk_sicurezza: 100.50 }
+    },
+
+    // ==================== POMOLI ====================
+    // Prezzi in Cromo lucido (CR) per coppia (pomoli zancati) o pezzo (fissi)
+    pomoli: {
+        // POMOLI ZANCATI (offset)
+        BLINDO: { codice: 178, coppia: 137.35, fisso: 86.85 },
+        CONCA: { codice: 236, coppia: 152.75, fisso: 90.65 },
+        MELANZANA: { codice: 266, coppia: 155.90, fisso: 98.30 },
+        PLANET: { codice: 195, coppia: 132.00, fisso: 83.30 },
+        PLANET_Q: { codice: 203, coppia: 166.50, fisso: 103.90 },
+        UOVO: { codice: 108, coppia: 138.85, fisso: 87.90 },
+        
+        // POMOLI CENTRALI
+        DIANA_CENTRALE: { codice: 206, coppia: 188.35, fisso: 113.05 }
+    },
+
+    // ==================== BOCCHETTE ====================
+    // Prezzi in Cromo lucido (CR) per coppia
+    bocchette: {
+        // TONDE
+        tonde_patent: { codice: 1151, prezzo: 25.80 },
+        tonde_yale: { codice: 1152, prezzo: 25.80 },
+        tonde_B_patent: { codice: "1501B", prezzo: 35.20 },
+        tonde_B_yale: { codice: "1502B", prezzo: 35.20 },
+        
+        // VERTICALI
+        verticali_patent: { codice: 1154, prezzo: 27.60 },
+        verticali_yale: { codice: 1155, prezzo: 27.60 },
+        verticali_B_patent: { codice: "1511B", prezzo: 37.00 },
+        verticali_B_yale: { codice: "1512B", prezzo: 37.00 },
+        
+        // QUADRATE
+        quadrate_patent: { codice: 1201, prezzo: 32.40 },
+        quadrate_yale: { codice: 1202, prezzo: 32.40 },
+        quadrate_B_patent: { codice: "1521B", prezzo: 41.80 },
+        quadrate_B_yale: { codice: "1522B", prezzo: 41.80 }
+    },
+
+    // ==================== CHIAVISTELLI ====================
+    // Prezzi in Cromo lucido (CR) per pezzo
+    chiavistelli: {
+        H106V6: { descrizione: "Chiavistello rettangolare", prezzo: 38.50 },
+        H106V6B: { descrizione: "Chiavistello rettangolare basso", prezzo: 48.20 },
+        H136V6: { descrizione: "Chiavistello tondo", prezzo: 42.30 },
+        H136V6B: { descrizione: "Chiavistello tondo basso", prezzo: 52.00 },
+        H200V6: { descrizione: "Chiavistello ovale", prezzo: 36.80 },
+        H200V6B: { descrizione: "Chiavistello ovale basso", prezzo: 46.50 },
+        H202V6: { descrizione: "Chiavistello quadrato", prezzo: 44.60 },
+        H202V6B: { descrizione: "Chiavistello quadrato basso", prezzo: 54.30 }
+    },
+
+    // ==================== MANIGLIONI ====================
+    // Prezzi in Cromo lucido (CR) per pezzo
+    maniglioni: {
+        // STANDARD (interasse 300mm)
+        standard_300: {
+            CR: 197.85,
+            CO: 218.55,
+            NS: 257.20,
+            IS: 257.20,
+            RS: 304.35,
+            DS: 304.35,
+            US: 289.00
+        },
+        // STANDARD (interasse 400mm)
+        standard_400: {
+            CR: 227.60,
+            CO: 251.20,
+            NS: 295.85,
+            IS: 295.85,
+            RS: 350.00,
+            DS: 350.00,
+            US: 332.35
+        },
+        // STANDARD (interasse 600mm)
+        standard_600: {
+            CR: 287.10,
+            CO: 316.90,
+            NS: 373.30,
+            IS: 373.30,
+            RS: 441.60,
+            DS: 441.60,
+            US: 419.30
+        }
+    },
+
+    // ==================== FERMAPORTE ====================
+    fermaporte: {
+        a_pavimento: { CR: 29.00, CO: 32.50, NS: 38.50, IS: 38.50 },
+        a_parete: { CR: 24.00, CO: 27.00, NS: 32.00, IS: 32.00 },
+        magnetico: { CR: 45.00, CO: 50.00, NS: 59.00, IS: 59.00 }
+    },
+
+    // ==================== SUPPLEMENTI ====================
+    supplementi: {
+        // Ferro quadro speciale
+        ferro_9mm: 8.50,    // invece di 8mm standard
+        ferro_10mm: 12.00,
+        
+        // Spessori porta non standard
+        porta_63_75mm: 15.00,
+        porta_75_90mm: 25.00,
+        
+        // Rosette/placche alte invece di basse
+        rosette_alte: 12.00,
+        placche_alte: 18.00,
+        
+        // Finiture speciali su richiesta
+        finitura_speciale_min: 150.00  // quantitÃ  minima richiesta
+    }
+};
+
+// ==================== FUNZIONE CALCOLO PREZZO ====================
+function calcolaPrezzoOlivari(modello, tipo_montaggio, finitura, quantita = 1, opzioni = {}) {
+    const info = OLIVARI_2025.info;
+    const maniglia = OLIVARI_2025.maniglie[modello];
+    const fin = OLIVARI_2025.finiture[finitura];
+    
+    if (!maniglia) {
+        return { errore: `Modello ${modello} non trovato` };
+    }
+    
+    if (!fin) {
+        return { errore: `Finitura ${finitura} non trovata` };
+    }
+    
+    // Prezzo base per tipo montaggio
+    let prezzoBase;
+    switch (tipo_montaggio) {
+        case 'rosette':
+            prezzoBase = maniglia.rosette;
+            break;
+        case 'verticali':
+            prezzoBase = maniglia.verticali;
+            break;
+        case 'placca':
+            prezzoBase = maniglia.placca;
+            break;
+        case 'magnetica':
+            prezzoBase = maniglia.magnetica;
+            break;
+        default:
+            prezzoBase = maniglia.rosette;
+    }
+    
+    if (!prezzoBase) {
+        return { errore: `Tipo montaggio ${tipo_montaggio} non disponibile per ${modello}` };
+    }
+    
+    // Applica maggiorazione finitura
+    const prezzoFinitura = prezzoBase * (1 + fin.maggiorazione);
+    
+    // Supplementi
+    let supplementi = 0;
+    if (opzioni.rosette_alte) supplementi += OLIVARI_2025.supplementi.rosette_alte;
+    if (opzioni.ferro_9mm) supplementi += OLIVARI_2025.supplementi.ferro_9mm;
+    if (opzioni.ferro_10mm) supplementi += OLIVARI_2025.supplementi.ferro_10mm;
+    if (opzioni.porta_spessa) {
+        if (opzioni.spessore_porta <= 75) {
+            supplementi += OLIVARI_2025.supplementi.porta_63_75mm;
+        } else {
+            supplementi += OLIVARI_2025.supplementi.porta_75_90mm;
+        }
+    }
+    
+    // Totale listino
+    const prezzoListino = (prezzoFinitura + supplementi) * quantita;
+    
+    // Calcolo sconto (40% + 5%)
+    const prezzoNetto = prezzoListino * (1 - info.sconto_1) * (1 - info.sconto_2);
+    
+    return {
+        modello: modello,
+        codice: maniglia.codice,
+        designer: maniglia.designer,
+        tipo_montaggio: tipo_montaggio,
+        finitura: fin.nome,
+        garanzia_anni: fin.garanzia,
+        quantita: quantita,
+        prezzo_unitario_listino: Math.round((prezzoFinitura + supplementi) * 100) / 100,
+        prezzoListino: Math.round(prezzoListino * 100) / 100,
+        sconto: `${info.sconto_1 * 100}% + ${info.sconto_2 * 100}%`,
+        sconto_effettivo: `${info.sconto_effettivo * 100}%`,
+        prezzoNetto: Math.round(prezzoNetto * 100) / 100,
+        supplementi: supplementi > 0 ? supplementi : null
+    };
+}
+
+// ==================== FUNZIONE LISTA MODELLI ====================
+function listaModelliOlivari() {
+    const modelli = [];
+    for (const [nome, dati] of Object.entries(OLIVARI_2025.maniglie)) {
+        modelli.push({
+            nome: nome,
+            codice: dati.codice,
+            designer: dati.designer,
+            prezzo_base_CR: dati.rosette,
+            disponibile_placca: dati.placca ? true : false,
+            disponibile_magnetica: dati.magnetica ? true : false
+        });
+    }
+    return modelli.sort((a, b) => a.prezzo_base_CR - b.prezzo_base_CR);
+}
+
+// ==================== EXPORT ====================
+
+        console.log('✅ OLIVARI-DATABASE-2025 caricato');
+
+        // ============================================================================
+        // 🚪 FLESSYA PORTE INTERNE 2025 - Listino 2025/26
+        // ============================================================================
+/**
+ * FLESSYA DATABASE 2025
+ * Porte Interne - Listino 2025/26
+ * 
+ * SCONTO INSTALLATORE: 53%
+ * 
+ * Struttura prezzo:
+ * Prezzo porta = Base finitura + Modello + Versione + Telaio/Cornice + Spessore muro + Accessori
+ * 
+ * @version 1.0
+ * @date 11/12/2025
+ */
+
+const FLESSYA_2025 = {
+    
+    // ==================== INFORMAZIONI GENERALI ====================
+    info: {
+        nome: "FLESSYA",
+        anno: "2025/26",
+        sconto: 0.53,
+        tipo: "porte_interne",
+        note: "I prezzi definitivi verranno sempre comunicati tramite conferma d'ordine"
+    },
+
+    // ==================== LINEE PRODOTTO ====================
+    linee: {
+        NIDIO: {
+            codice: "N00",
+            descrizione: "Porte tamburate in legno",
+            spessore_anta: 44,
+            caratteristiche: "Intelaiate massello abete, nido d'ape, MDF 4mm"
+        },
+        NIDIO_INCISE: {
+            codice: "N13",
+            descrizione: "Porte tamburate con incisioni",
+            spessore_anta: 44,
+            caratteristiche: "MDF 5/8mm, lavorazioni incise"
+        },
+        TALEA: {
+            codice: "T00",
+            descrizione: "Porte pantografate",
+            spessore_anta: 44,
+            caratteristiche: "Massello toulipier, MDF 8mm"
+        },
+        CLASSIKA: {
+            codice: "C00",
+            descrizione: "Porte pantografate classiche",
+            spessore_anta: 44,
+            caratteristiche: "Massello toulipier, MDF 5mm rinforzato"
+        },
+        PLENIA: {
+            codice: "P00",
+            descrizione: "Porte massello impiallacciato e laccate",
+            spessore_anta: 44,
+            caratteristiche: "Elementi in legno massellato assemblati"
+        },
+        KIKKA: {
+            codice: "K00",
+            descrizione: "Porte in vetro con bordatura legno",
+            spessore_vetro: 8,
+            caratteristiche: "Vetro sp.8mm o 4+4, bordatura listellare 40x40mm"
+        },
+        VETRA: {
+            codice: "V00",
+            descrizione: "Porte in vetro",
+            caratteristiche: "Porte tutto vetro con telaio"
+        },
+        S_NZIALE_MONO: {
+            codice: "S00-MONO",
+            descrizione: "Porte vetro e alluminio - singola",
+            caratteristiche: "Vetro monolitico 8mm, profilo alluminio"
+        },
+        S_NZIALE_DUO: {
+            codice: "S00-DUO",
+            descrizione: "Porte vetro e alluminio - doppia",
+            caratteristiche: "Doppia lastra vetro 5mm, profilo alluminio"
+        },
+        RASOMURO: {
+            codice: "RMU",
+            descrizione: "Porte rasomuro",
+            caratteristiche: "Sistema rasomuro filo parete"
+        },
+        RECEPTIVA_EI30: {
+            codice: "EI30",
+            descrizione: "Porte REI antincendio EI30",
+            spessore_anta: 44,
+            caratteristiche: "Resistenza fuoco EI30, abbattimento acustico 27dB"
+        },
+        RECEPTIVA_EI60: {
+            codice: "EI60",
+            descrizione: "Porte REI antincendio EI60",
+            spessore_anta: 58,
+            caratteristiche: "Resistenza fuoco EI60, rovere massiccio"
+        },
+        RECEPTIVA_N00_27DB: {
+            codice: "N00-27dB",
+            descrizione: "Porte abbattimento acustico 27dB",
+            caratteristiche: "Certificato abbattimento acustico 27dB"
+        },
+        RECEPTIVA_N00_32DB: {
+            codice: "N00-32dB",
+            descrizione: "Porte abbattimento acustico 32dB",
+            caratteristiche: "Certificato abbattimento acustico 32dB"
+        },
+        RECEPTIVA_N00_40DB: {
+            codice: "N00-40dB",
+            descrizione: "Porte abbattimento acustico 40dB",
+            caratteristiche: "Certificato abbattimento acustico 40dB"
+        },
+        RECEPTIVA_N00_42DB: {
+            codice: "N00-42dB",
+            descrizione: "Porte abbattimento acustico 42dB",
+            caratteristiche: "Certificato abbattimento acustico 42dB"
+        },
+        MADERA: {
+            codice: "M00",
+            descrizione: "Porte in legno massello",
+            caratteristiche: "Porte classiche in legno massello"
+        },
+        ANALOGICA: {
+            codice: "A00",
+            descrizione: "Porte moderne",
+            caratteristiche: "Design moderno lineare"
+        },
+        EMPIRIA: {
+            codice: "EN00",
+            descrizione: "Porte tamburate / PVC / HPL",
+            caratteristiche: "Anta tamburata EN00, PVC ER00, HPL ES00"
+        },
+        LAMINIO: {
+            codice: "LM00",
+            descrizione: "Porte laminato",
+            caratteristiche: "Rivestimento laminato"
+        },
+        LAMINIO_PLUS: {
+            codice: "LMP00",
+            descrizione: "Porte laminato plus",
+            caratteristiche: "Rivestimento laminato premium"
+        },
+        RESINAE: {
+            codice: "RS00",
+            descrizione: "Porte in resina",
+            caratteristiche: "Rivestimento in resina"
+        }
+    },
+
+    // ==================== FINITURE ====================
+    finiture: {
+        // LACCATI STANDARD
+        "0": { nome: "Laccato bianco RAL 9016", categoria: "laccati_standard" },
+        "1": { nome: "Laccato avorio RAL 1013", categoria: "laccati_standard" },
+        "2": { nome: "Laccato bianco crema RAL 9001", categoria: "laccati_standard" },
+        "5": { nome: "Laccato bianco puro RAL 9010", categoria: "laccati_standard" },
+        "9": { nome: "Laccato nero RAL 9005", categoria: "laccati_extra" },
+        
+        // LACCATI BASE
+        "3": { nome: "Laccato base", categoria: "laccati_base" },
+        
+        // LACCATI EXTRA
+        "4": { nome: "Laccato extra", categoria: "laccati_extra" },
+        
+        // LACCATI IDEA
+        "6": { nome: "Laccato colori idea", categoria: "laccati_idea" },
+        
+        // LACCATI SPECIALI
+        "7": { nome: "Laccato corten", categoria: "laccati_speciali" },
+        
+        // LACCATI ULTRA
+        "15": { nome: "Laccato ULTRA standard-idea", categoria: "laccati_ultra" },
+        "16": { nome: "Laccato ULTRA base-extra", categoria: "laccati_ultra" },
+        
+        // GOFFRATI
+        "10": { nome: "Goffrato standard-idea", categoria: "goffrati" },
+        "11": { nome: "Goffrato base-extra", categoria: "goffrati" },
+        
+        // LUCIDI
+        "30": { nome: "Laccato lucido standard-idea", categoria: "lucidi" },
+        "31": { nome: "Laccato lucido base-extra", categoria: "lucidi" },
+        
+        // LACCATI PORO APERTO
+        "39": { nome: "Frassino poro aperto RAL 9016", categoria: "poro_aperto" },
+        "40": { nome: "Frassino poro aperto standard-idea", categoria: "poro_aperto" },
+        "41": { nome: "Frassino poro aperto base-extra", categoria: "poro_aperto" },
+        "50": { nome: "Frassino epoca standard-idea", categoria: "poro_aperto" },
+        "51": { nome: "Frassino epoca base-extra", categoria: "poro_aperto" },
+        "60": { nome: "Pino graffiato standard-idea", categoria: "poro_aperto" },
+        "61": { nome: "Pino graffiato base-extra", categoria: "poro_aperto" },
+        "20": { nome: "Rovere decapÃ¨", categoria: "poro_aperto" },
+        
+        // LEGNI
+        "100": { nome: "Tanganika", categoria: "legni" },
+        "101": { nome: "Tanganika cuoio", categoria: "legni" },
+        "102": { nome: "Tanganika ciliegio", categoria: "legni" },
+        "103": { nome: "Tanganika tabacco", categoria: "legni" },
+        "120": { nome: "Rovere", categoria: "legni" },
+        "121": { nome: "Rovere tabacco", categoria: "legni" },
+        "122": { nome: "Rovere caffÃ¨", categoria: "legni" },
+        "123": { nome: "Rovere sbiancato", categoria: "legni" },
+        "126": { nome: "Rovere grigio", categoria: "legni" },
+        "127": { nome: "Rovere cenere", categoria: "legni" },
+        "128": { nome: "Rovere nodato", categoria: "legni" },
+        "129": { nome: "Rovere crudo", categoria: "legni" },
+        "140": { nome: "Noce nazionale bicolore", categoria: "legni" },
+        "150": { nome: "Ciliegio", categoria: "legni" },
+        
+        // SPECIALI
+        "110": { nome: "Mogano", categoria: "speciali" },
+        "170": { nome: "Noce biondo", categoria: "speciali" },
+        "181": { nome: "Frassino antico", categoria: "speciali" },
+        "183": { nome: "Frassino sbiancato", categoria: "speciali" },
+        "231": { nome: "Pino graffiato rame", categoria: "speciali" },
+        "232": { nome: "Pino graffiato antico", categoria: "speciali" },
+        
+        // GREZZO
+        "G0": { nome: "Grezzo da laccare", categoria: "grezzo" },
+        "F0": { nome: "Fondo levigato-cementite", categoria: "grezzo" }
+    },
+
+    // ==================== PREZZI BASE PER LINEA ====================
+    // Formato: [80x210, 90x210, 120x210, 120x240, 120x288]
+    prezzi_base: {
+        NIDIO: {
+            "0":   [475, 508, 589, 744, 828],    // Bianco 9016
+            "1":   [518, 555, 651, 817, 908],    // Avorio 1013
+            "2":   [518, 555, 651, 817, 908],    // Bianco crema 9001
+            "3":   [623, 660, 756, 922, 1013],   // Base
+            "4":   [738, 775, 852, 1041, 1133],  // Extra
+            "5":   [518, 555, 651, 817, 908],    // Bianco 9010
+            "6":   [570, 607, 704, 869, 961],    // Idea
+            "7":   [886, 923, 998, 1185, 1287],  // Corten
+            "9":   [738, 775, 852, 1041, 1133],  // Nero 9005
+            "15":  [723, 760, 856, 1022, 1113],  // ULTRA standard-idea
+            "16":  [838, 875, 952, 1141, 1233],  // ULTRA base-extra
+            "10":  [655, 692, 787, 954, 1045],   // Goffrato standard
+            "11":  [770, 807, 888, 1089, 1180],  // Goffrato extra
+            "30":  [1165, 1198, 1313, 1507, 1591], // Lucido standard
+            "31":  [1270, 1303, 1418, 1612, 1696], // Lucido extra
+            "40":  [682, 714, 846, 1062, 1146],  // Frassino poro standard
+            "41":  [787, 819, 951, 1167, 1251],  // Frassino poro extra
+            "50":  [682, 714, 846, 1062, 1146],  // Frassino epoca standard
+            "51":  [787, 819, 951, 1167, 1251],  // Frassino epoca extra
+            "60":  [682, 714, 846, 1062, 1146],  // Pino graffiato standard
+            "61":  [787, 819, 951, 1167, 1251],  // Pino graffiato extra
+            "20":  [787, 819, 951, 1167, 1251],  // Rovere decapÃ¨
+            "100": [496, 534, 633, 912, 996],    // Tanganika
+            "101": [496, 534, 633, 912, 996],    // Tanganika cuoio
+            "102": [496, 534, 633, 912, 996],    // Tanganika ciliegio
+            "103": [496, 534, 633, 912, 996],    // Tanganika tabacco
+            "120": [578, 616, 725, 1019, 1103],  // Rovere
+            "121": [578, 616, 725, 1019, 1103],  // Rovere tabacco
+            "122": [682, 714, 846, 1062, 1146],  // Rovere caffÃ¨
+            "123": [682, 714, 846, 1062, 1146],  // Rovere sbiancato
+            "126": [734, 767, 898, 1115, 1199],  // Rovere grigio
+            "127": [734, 767, 898, 1115, 1199],  // Rovere cenere
+            "128": [734, 767, 898, 1115, 1199],  // Rovere nodato
+            "129": [1160, 1218, 1392, 1515, 1645], // Rovere crudo
+            "140": [636, 672, 823, 1054, 1138],  // Noce bicolore
+            "150": [636, 672, 823, 1054, 1138],  // Ciliegio
+            "110": [540, 578, 676, 956, 1040],   // Mogano
+            "170": [786, 818, 1025, 1315, 1399], // Noce biondo
+            "181": [734, 767, 898, 1115, 1199],  // Frassino antico
+            "183": [682, 714, 846, 1062, 1146],  // Frassino sbiancato
+            "231": [734, 767, 898, 1115, 1199],  // Pino rame
+            "232": [734, 767, 898, 1115, 1199],  // Pino antico
+            "G0":  [320, 352, 425, 583, 667],    // Grezzo
+            "F0":  [464, 498, 579, 734, 818]     // Fondo
+        },
+        
+        NIDIO_INCISE: {
+            "0":   [599, 632, 713, 868, 952],
+            "1":   [599, 632, 713, 868, 952],
+            "2":   [599, 632, 713, 868, 952],
+            "3":   [704, 737, 818, 973, 1057],
+            "4":   [819, 852, 914, 1092, 1177],
+            "5":   [599, 632, 713, 868, 952],
+            "6":   [651, 684, 766, 920, 1005],
+            "7":   [967, 1000, 1060, 1236, 1331],
+            "9":   [819, 852, 914, 1092, 1177],
+            "15":  [804, 837, 918, 1073, 1157],
+            "16":  [919, 952, 1014, 1192, 1277],
+            "10":  [779, 816, 911, 1078, 1169],
+            "11":  [894, 931, 1012, 1213, 1304],
+            "30":  [1289, 1322, 1437, 1631, 1715],
+            "31":  [1394, 1427, 1542, 1736, 1820],
+            "40":  [806, 838, 970, 1186, 1270],
+            "41":  [911, 943, 1075, 1291, 1375],
+            "60":  [806, 838, 970, 1186, 1270],
+            "61":  [911, 943, 1075, 1291, 1375],
+            "G0":  [444, 476, 549, 707, 791],
+            "F0":  [588, 622, 703, 858, 942]
+        },
+        
+        TALEA: {
+            "0":   [599, 632, 713, 868, 952],
+            "1":   [599, 632, 713, 868, 952],
+            "2":   [599, 632, 713, 868, 952],
+            "3":   [704, 737, 818, 984, 1068],
+            "4":   [819, 852, 914, 1092, 1177],
+            "5":   [599, 632, 713, 868, 952],
+            "6":   [651, 684, 766, 931, 1015],
+            "7":   [967, 1000, 1060, 1236, 1331],
+            "9":   [819, 852, 914, 1092, 1177],
+            "15":  [804, 837, 918, 1073, 1157],
+            "16":  [919, 952, 1014, 1192, 1277],
+            "10":  [779, 816, 911, 1078, 1169],
+            "11":  [894, 931, 1012, 1213, 1304],
+            "30":  [1289, 1322, 1437, 1631, 1715],
+            "31":  [1394, 1427, 1542, 1736, 1820],
+            "40":  [906, 938, 1070, 1286, 1370],
+            "41":  [1011, 1043, 1175, 1391, 1475],
+            "60":  [906, 938, 1070, 1286, 1370],
+            "61":  [1011, 1043, 1175, 1391, 1475],
+            "G0":  [456, 472, 552, 746, 839],
+            "F0":  [588, 622, 703, 858, 942]
+        },
+        
+        CLASSIKA: {
+            "0":   [861, 895, 1081, 1341, 1425],
+            "1":   [861, 895, 1081, 1341, 1425],
+            "2":   [861, 895, 1081, 1341, 1425],
+            "3":   [966, 1000, 1165, 1446, 1530],
+            "4":   [1071, 1115, 1280, 1565, 1649],
+            "5":   [861, 895, 1081, 1341, 1425],
+            "6":   [914, 947, 1123, 1383, 1572],
+            "7":   [1229, 1273, 1437, 1723, 1807],
+            "9":   [1071, 1115, 1280, 1565, 1649],
+            "15":  [1066, 1100, 1265, 1546, 1630],
+            "16":  [1171, 1215, 1380, 1665, 1749],
+            "10":  [1041, 1078, 1259, 1550, 1641],
+            "11":  [1157, 1193, 1380, 1686, 1777],
+            "30":  [1509, 1543, 1763, 2061, 2145],
+            "31":  [1614, 1648, 1868, 2166, 2250],
+            "G0":  [703, 736, 887, 1098, 1261],
+            "F0":  [851, 884, 1070, 1295, 1414]
+        },
+        
+        // Formato PLENIA: [80x210, 90x210, 120x210, 90x278, 120x278]
+        PLENIA: {
+            "0":   [719, 746, 851, 869, 953],
+            "1":   [733, 763, 876, 894, 982],
+            "2":   [733, 763, 876, 894, 982],
+            "3":   [838, 868, 981, 999, 1087],
+            "4":   [943, 973, 1086, 1104, 1192],
+            "5":   [733, 763, 876, 894, 982],
+            "6":   [765, 797, 903, 926, 999],
+            "7":   [1059, 1089, 1201, 1262, 1318],
+            "9":   [943, 973, 1086, 1104, 1192],
+            "15":  [938, 968, 1081, 1099, 1187],
+            "16":  [1043, 1073, 1186, 1204, 1292],
+            "10":  [870, 900, 1012, 1030, 1119],
+            "11":  [996, 1026, 1138, 1152, 1245],
+            "30":  [1409, 1436, 1569, 1615, 1707],
+            "31":  [1514, 1544, 1682, 1729, 1821],
+            "40":  [877, 909, 1017, 1040, 1126],
+            "41":  [982, 1014, 1122, 1145, 1231],
+            "50":  [877, 909, 1017, 1040, 1126],
+            "51":  [982, 1014, 1122, 1145, 1231],
+            "60":  [877, 909, 1017, 1040, 1126],
+            "61":  [982, 1014, 1122, 1145, 1231],
+            "20":  [982, 1014, 1122, 1145, 1231],
+            "100": [700, 733, 847, 865, 928],
+            "101": [700, 733, 847, 865, 928],
+            "102": [700, 733, 847, 865, 928],
+            "103": [700, 733, 847, 865, 928],
+            "120": [776, 808, 917, 945, 1024],
+            "121": [776, 808, 917, 945, 1024],
+            "122": [877, 909, 1017, 1040, 1126],
+            "123": [877, 909, 1017, 1040, 1126],
+            "126": [930, 961, 1069, 1093, 1178],
+            "127": [930, 961, 1069, 1093, 1178],
+            "140": [846, 877, 986, 1008, 1115],
+            "150": [846, 877, 986, 1008, 1115],
+            "170": [1003, 1034, 1173, 1225, 1305],
+            "181": [930, 961, 1069, 1093, 1178],
+            "183": [877, 909, 1017, 1040, 1126],
+            "231": [930, 961, 1069, 1093, 1178],
+            "232": [930, 961, 1069, 1093, 1178]
+        },
+        
+        // KIKKA: [80x210, 90x210, 120x210, 90x278, 120x278]
+        KIKKA: {
+            "0":   [1778, 1884, 2302, 2345, 2793],
+            "1":   [1792, 1901, 2327, 2370, 2822],
+            "2":   [1792, 1901, 2327, 2370, 2822],
+            "3":   [1897, 2006, 2432, 2475, 2927],
+            "4":   [2002, 2111, 2537, 2580, 3032],
+            "5":   [1792, 1901, 2327, 2370, 2822],
+            "6":   [1824, 1935, 2354, 2402, 2839],
+            "7":   [2118, 2227, 2652, 2696, 3158],
+            "9":   [2002, 2111, 2537, 2580, 3032],
+            "15":  [1997, 2106, 2532, 2575, 3027],
+            "16":  [2102, 2211, 2637, 2680, 3132],
+            "10":  [1929, 2038, 2463, 2517, 2959],
+            "11":  [2055, 2164, 2585, 2626, 3082],
+            "30":  [2468, 2874, 3320, 3391, 3847],
+            "31":  [2573, 2982, 3433, 3505, 3961],
+            "40":  [1936, 2047, 2468, 2516, 2966],
+            "41":  [2041, 2152, 2573, 2621, 3071],
+            "50":  [1936, 2047, 2468, 2516, 2966],
+            "51":  [2041, 2152, 2573, 2621, 3071],
+            "60":  [1936, 2047, 2468, 2516, 2966],
+            "61":  [2041, 2152, 2573, 2621, 3071],
+            "20":  [2041, 2152, 2573, 2621, 3071],
+            "100": [1759, 1871, 2298, 2341, 2768],
+            "101": [1759, 1871, 2298, 2341, 2768],
+            "102": [1759, 1871, 2298, 2341, 2768],
+            "103": [1759, 1871, 2298, 2341, 2768],
+            "120": [1835, 1946, 2368, 2421, 2864],
+            "121": [1835, 1946, 2368, 2421, 2864],
+            "122": [1936, 2047, 2468, 2516, 2966],
+            "123": [1936, 2047, 2468, 2516, 2966],
+            "126": [1989, 2099, 2520, 2569, 3018],
+            "127": [1989, 2099, 2520, 2569, 3018],
+            "128": [1989, 2099, 2520, 2569, 3018],
+            "140": [1905, 2015, 2437, 2484, 2955],
+            "150": [1905, 2015, 2437, 2484, 2955],
+            "170": [2062, 2172, 2624, 2701, 3145],
+            "181": [1989, 2099, 2520, 2569, 3018],
+            "183": [1936, 2047, 2468, 2516, 2966],
+            "231": [1989, 2099, 2520, 2569, 3018],
+            "232": [1989, 2099, 2520, 2569, 3018]
+        },
+        
+        // S-NZIALE MONO Battente: [60x210, 70x210, 80x210, 90x210, 100x210]
+        S_NZIALE_MONO_BATTENTE: {
+            "700": [1548, 1598, 1650, 1701, 1752],  // Trasparente
+            "707": [1624, 1687, 1750, 1814, 1866],  // Extra chiaro
+            "711": [1770, 1827, 1884, 1940, 1997],  // Grigio
+            "712": [1770, 1827, 1884, 1940, 1997],  // Bronzo
+            "725": [1849, 1947, 2047, 2147, 2247],  // Semiriflettente
+            "701": [1616, 1679, 1742, 1804, 1867],  // Acidato
+            "702": [1772, 1858, 1945, 2032, 2046],  // Acidato extra chiaro
+            "721": [1861, 1961, 2061, 2161, 2261],  // Acidato grigio
+            "722": [1861, 1961, 2061, 2161, 2261],  // Acidato bronzo
+            "703": [1758, 1825, 1837, 1895, 1916],  // Sabbiato trasparente
+            "704": [1833, 1885, 1938, 1990, 2045],  // Sabbiato acidato
+            "708": [2155, 2200, 2245, 2289, 2334],  // Scavo
+            "710": [1862, 1963, 2064, 2165, 2267],  // Specchio
+            "715": [2299, 2463, 2627, 2790, 2806],  // Laccato acidato
+            "713": [2096, 2228, 2360, 2493, 2625],  // Laccato lucido
+            "716": [2359, 2517, 2675, 2832, 2990],  // Stampa trasparente
+            "717": [1939, 2029, 2120, 2210, 2300],  // Stampa acidato
+            "718": [2010, 2121, 2232, 2342, 2453],  // Tessuto bianco
+            "719": [2010, 2121, 2232, 2342, 2453],  // Tessuto nero
+            "720": [2010, 2121, 2232, 2342, 2453]   // Tessuto naturale
+        },
+        
+        // S-NZIALE MONO Scorrevole Scomparsa: [60x210, 70x210, 80x210, 90x210, 100x210, 110x210, 120x210]
+        S_NZIALE_MONO_SCOMPARSA: {
+            "700": [1429, 1479, 1531, 1581, 1633, 1684, 1734],
+            "707": [1504, 1568, 1631, 1695, 1746, 1798, 1850],
+            "711": [1651, 1708, 1764, 1821, 1878, 1934, 1991],
+            "712": [1651, 1708, 1764, 1821, 1878, 1934, 1991],
+            "725": [1730, 1828, 1928, 2028, 2128, 2228, 2328],
+            "701": [1497, 1560, 1622, 1685, 1748, 1810, 1873],
+            "702": [1653, 1739, 1826, 1913, 1927, 2014, 2100],
+            "721": [1742, 1842, 1941, 2041, 2141, 2241, 2341],
+            "722": [1742, 1842, 1941, 2041, 2141, 2241, 2341],
+            "703": [1639, 1705, 1718, 1775, 1797, 1852, 1892],
+            "704": [1714, 1766, 1819, 1870, 1926, 1990, 2041],
+            "708": [2035, 2081, 2126, 2170, 2215, 2275, 2322],
+            "710": [1743, 1844, 1945, 2046, 2147, 2248, 2350],
+            "715": [2180, 2344, 2507, 2671, 2687, 2850, 3014],
+            "713": [1976, 2109, 2241, 2374, 2506, 2639, 2771],
+            "716": [2240, 2398, 2555, 2713, 2871, 3029, 3186],
+            "717": [1820, 1910, 2000, 2091, 2181, 2271, 2362],
+            "718": [1891, 2002, 2112, 2223, 2334, 2445, 2555],
+            "719": [1891, 2002, 2112, 2223, 2334, 2445, 2555],
+            "720": [1891, 2002, 2112, 2223, 2334, 2445, 2555]
+        },
+        
+        // S-NZIALE MONO Rasomuro: [60x210, 70x210, 80x210, 90x210, 100x210, 110x210, 120x210]
+        S_NZIALE_MONO_RASOMURO: {
+            "700": [834, 884, 936, 987, 1038, 1089, 1140],
+            "707": [910, 973, 1036, 1100, 1152, 1203, 1255],
+            "711": [1057, 1113, 1170, 1226, 1283, 1339, 1396],
+            "712": [1057, 1113, 1170, 1226, 1283, 1339, 1396],
+            "725": [1135, 1234, 1333, 1433, 1533, 1633, 1733],
+            "701": [902, 965, 1028, 1090, 1153, 1215, 1278],
+            "702": [1058, 1144, 1231, 1318, 1332, 1419, 1506],
+            "721": [1147, 1247, 1347, 1447, 1547, 1646, 1746],
+            "722": [1147, 1247, 1347, 1447, 1547, 1646, 1746],
+            "703": [1044, 1111, 1123, 1181, 1202, 1258, 1297],
+            "704": [1119, 1171, 1224, 1276, 1331, 1395, 1447],
+            "708": [1441, 1486, 1531, 1575, 1620, 1680, 1727],
+            "710": [1148, 1249, 1350, 1451, 1553, 1654, 1755],
+            "715": [1585, 1749, 1913, 2076, 2092, 2256, 2419],
+            "713": [1382, 1514, 1646, 1779, 1911, 2044, 2176],
+            "716": [1645, 1803, 1961, 2118, 2276, 2434, 2592],
+            "717": [1225, 1315, 1406, 1496, 1586, 1677, 1767],
+            "718": [1296, 1407, 1518, 1628, 1739, 1850, 1961],
+            "719": [1296, 1407, 1518, 1628, 1739, 1850, 1961],
+            "720": [1296, 1407, 1518, 1628, 1739, 1850, 1961]
+        },
+        
+        // RECEPTIVA EI30 27dB: [80x210, 90x210, 104x210, 104x240, 94x276]
+        RECEPTIVA_EI30_27DB: {
+            "0":   [1046, 1079, 1160, 1315, 1399],
+            "1":   [1089, 1126, 1222, 1388, 1479],
+            "2":   [1089, 1126, 1222, 1388, 1479],
+            "3":   [1194, 1231, 1327, 1493, 1584],
+            "4":   [1309, 1346, 1423, 1612, 1704],
+            "5":   [1089, 1126, 1222, 1388, 1479],
+            "6":   [1141, 1178, 1275, 1440, 1532],
+            "7":   [1457, 1494, 1569, 1756, 1858],
+            "9":   [1309, 1346, 1423, 1612, 1704],
+            "10":  [1226, 1263, 1358, 1525, 1616],
+            "11":  [1341, 1378, 1459, 1660, 1751],
+            "30":  [1736, 1769, 1884, 2078, 2162],
+            "31":  [1841, 1874, 1989, 2183, 2267]
+        },
+        
+        // RECEPTIVA 32dB: [80x210, 90x210, 104x210, 104x240, 94x276]
+        RECEPTIVA_32DB: {
+            "0":   [1146, 1179, 1260, 1415, 1499],
+            "1":   [1189, 1226, 1322, 1488, 1579],
+            "2":   [1189, 1226, 1322, 1488, 1579],
+            "3":   [1294, 1331, 1427, 1593, 1684],
+            "4":   [1409, 1446, 1523, 1712, 1804],
+            "5":   [1189, 1226, 1322, 1488, 1579],
+            "6":   [1241, 1278, 1375, 1540, 1632],
+            "7":   [1557, 1594, 1669, 1856, 1958],
+            "9":   [1409, 1446, 1523, 1712, 1804],
+            "10":  [1326, 1363, 1458, 1625, 1716],
+            "11":  [1441, 1478, 1559, 1760, 1851],
+            "30":  [1836, 1869, 1984, 2178, 2262],
+            "31":  [1941, 1974, 2089, 2283, 2367]
+        },
+        
+        // RECEPTIVA 40dB
+        RECEPTIVA_40DB: {
+            "0":   [1424, 1457, 1538, 1693, 1777],
+            "1":   [1467, 1504, 1600, 1766, 1857],
+            "2":   [1467, 1504, 1600, 1766, 1857],
+            "3":   [1572, 1609, 1705, 1871, 1962],
+            "4":   [1687, 1724, 1801, 1990, 2082],
+            "5":   [1467, 1504, 1600, 1766, 1857],
+            "6":   [1519, 1556, 1653, 1818, 1910],
+            "7":   [1835, 1872, 1947, 2134, 2236],
+            "9":   [1687, 1724, 1801, 1990, 2082],
+            "10":  [1604, 1641, 1736, 1903, 1994],
+            "11":  [1719, 1756, 1837, 2038, 2129],
+            "30":  [2114, 2147, 2262, 2456, 2540],
+            "31":  [2219, 2252, 2367, 2561, 2645]
+        },
+        
+        // RECEPTIVA 42dB
+        RECEPTIVA_42DB: {
+            "0":   [1729, 1762, 1843, 1998, 2082],
+            "1":   [1772, 1809, 1905, 2071, 2162],
+            "2":   [1772, 1809, 1905, 2071, 2162],
+            "3":   [1877, 1914, 2010, 2176, 2267],
+            "4":   [1992, 2029, 2106, 2295, 2387],
+            "5":   [1772, 1809, 1905, 2071, 2162],
+            "6":   [1824, 1861, 1958, 2123, 2215],
+            "7":   [2140, 2177, 2252, 2439, 2541],
+            "9":   [1992, 2029, 2106, 2295, 2387],
+            "10":  [1909, 1946, 2041, 2208, 2299],
+            "11":  [2024, 2061, 2142, 2343, 2434],
+            "30":  [2419, 2452, 2567, 2761, 2845],
+            "31":  [2524, 2557, 2672, 2866, 2950]
+        }
+    },
+
+    // ==================== SUPPLEMENTI MODELLI ====================
+    supplementi_modelli: {
+        NIDIO: {
+            // Modelli intarsiati
+            "N00": { "90x210": 0, "120x288": 0 },
+            "N05": { "90x210": 38, "120x288": 38 },
+            "N06": { "90x210": 88, "120x288": 88 },
+            "N06H": { "90x210": 88, "120x288": 88 },
+            "N06Z": { "90x210": 150, "120x288": 150 },
+            "N07": { "90x210": 100, "120x288": 100 },
+            "N08": { "90x210": 200, "120x288": 200 },
+            "N09": { "90x210": 150, "120x288": 150 },
+            "N10": { "90x210": 180, "120x288": 180 },
+            "N11": { "90x210": 300, "120x288": 300 },
+            "N12": { "90x210": 300, "120x288": 300 },
+            // Modelli inserti alluminio
+            "N01D": { "90x210": 101, "120x288": 101 },
+            "N01": { "90x210": 63, "120x288": 63 },
+            "N02": { "90x210": 101, "120x288": 101 },
+            "N03": { "90x210": 126, "120x288": 126 },
+            "N04": { "90x210": 126, "120x288": 126 },
+            // Modelli vetro
+            "N50": { "90x210": 90, "120x288": 108 },
+            "N50S": { "90x210": 90, "120x288": 108 },
+            "N51": { "90x210": 280, "120x288": 297 },
+            "N52": { "90x210": 280, "120x288": 297 },
+            "N53": { "90x210": 90, "120x288": 108 },
+            "N54": { "90x210": 208, "120x288": 246 },
+            "N55": { "90x210": 262, "120x288": 308 },
+            "N56": { "90x210": 259, "120x288": 478 },
+            "N57": { "90x210": 551, "120x288": 770 },
+            "N58": { "90x210": 551, "120x288": 770 },
+            // Modelli foderine
+            "N30": { "90x210": 198, "120x288": 276 },
+            "N31": { "90x210": 450, "120x288": 528 },
+            "N32": { "90x210": 450, "120x288": 528 },
+            "N33": { "90x210": 271, "120x288": 380 },
+            "N34": { "90x210": 523, "120x288": 634 },
+            "N35": { "90x210": 523, "120x288": 634 },
+            "N36": { "90x210": 347, "120x288": 486 },
+            "N37": { "90x210": 347, "120x288": 486 },
+            "N38": { "90x210": 420, "120x288": 590 },
+            // Modelli bugne
+            "N40": { "90x210": 254, "120x288": 373 },
+            "N41": { "90x210": 506, "120x288": 624 },
+            "N42": { "90x210": 506, "120x288": 624 },
+            "N43": { "90x210": 402, "120x288": 582 },
+            "N44": { "90x210": 654, "120x288": 833 },
+            "N45": { "90x210": 654, "120x288": 833 },
+            "N46": { "90x210": 530, "120x288": 774 },
+            "N47": { "90x210": 530, "120x288": 774 },
+            "N48": { "90x210": 660, "120x288": 970 }
+        },
+        
+        TALEA: {
+            "T00": { "90x210": 0, "120x288": 0 },
+            "T01": { "90x210": 0, "120x288": 0 },
+            "T02": { "90x210": 0, "120x288": 0 },
+            "T03": { "90x210": 0, "120x288": 0 },
+            "T04": { "90x210": 0, "120x288": 0 },
+            "T20": { "90x210": 0, "120x288": 0 },
+            "T21": { "90x210": 0, "120x288": 0 },
+            "T22": { "90x210": 0, "120x288": 0 },
+            "T23": { "90x210": 0, "120x288": 0 },
+            "T24": { "90x210": 0, "120x288": 0 },
+            // Modelli vetro
+            "T50": { "90x210": 150, "120x288": 150 },
+            "T51": { "90x210": 170, "120x288": 170 },
+            "T52": { "90x210": 170, "120x288": 170 },
+            "T53": { "90x210": 210, "120x288": 210 },
+            "T54": { "90x210": 230, "120x288": 230 },
+            "T60": { "90x210": 100, "120x288": 100 },
+            "T61": { "90x210": 140, "120x288": 140 },
+            "T62": { "90x210": 140, "120x288": 140 },
+            "T63": { "90x210": 170, "120x288": 170 },
+            "T64": { "90x210": 190, "120x288": 190 },
+            "T65": { "90x210": 170, "120x288": 170 },
+            "T66": { "90x210": 320, "120x288": 320 },
+            "T70": { "90x210": 200, "120x288": 200 },
+            "T71": { "90x210": 100, "120x288": 100 },
+            "T72": { "90x210": 170, "120x288": 170 },
+            "T73": { "90x210": 100, "120x288": 100 },
+            "T74": { "90x210": 280, "120x288": 280 },
+            "T80": { "90x210": 230, "120x288": 230 },
+            "T81": { "90x210": 200, "120x288": 200 },
+            "T82": { "90x210": 250, "120x288": 250 },
+            "T83": { "90x210": 380, "120x288": 380 },
+            // Modelli inglese
+            "T10": { "90x210": 100, "120x288": 100 },
+            "T11": { "90x210": 130, "120x288": 130 },
+            "T12": { "90x210": 130, "120x288": 130 },
+            "T13": { "90x210": 160, "120x288": 160 },
+            "T14": { "90x210": 280, "120x288": 280 },
+            "T15": { "90x210": 200, "120x288": 200 },
+            "T16": { "90x210": 150, "120x288": 150 },
+            "T17": { "90x210": 100, "120x288": 100 },
+            "T90": { "90x210": 100, "120x288": 100 },
+            "T91": { "90x210": 130, "120x288": 130 },
+            "T92": { "90x210": 130, "120x288": 130 },
+            "T93": { "90x210": 160, "120x288": 160 },
+            "T94": { "90x210": 280, "120x288": 280 },
+            "T95": { "90x210": 160, "120x288": 160 },
+            "T96": { "90x210": 100, "120x288": 100 },
+            "T97": { "90x210": 200, "120x288": 200 }
+        },
+        
+        CLASSIKA: {
+            "C00": { "90x210": 0, "120x288": 0 },
+            "C01": { "90x210": 0, "120x288": 0 },
+            "C02": { "90x210": 0, "120x288": 0 },
+            "C03": { "90x210": 0, "120x288": 0 },
+            "C04": { "90x210": 0, "120x288": 0 },
+            "C20": { "90x210": 0, "120x288": 0 },
+            "C21": { "90x210": 0, "120x288": 0 },
+            "C22": { "90x210": 0, "120x288": 0 },
+            "C23": { "90x210": 0, "120x288": 0 },
+            "C24": { "90x210": 0, "120x288": 0 },
+            "C25": { "90x210": 0, "120x288": 0 },
+            "C30": { "90x210": 0, "120x288": 0 },
+            "C31": { "90x210": 0, "120x288": 0 },
+            "C32": { "90x210": 0, "120x288": 0 },
+            "C35": { "90x210": 0, "120x288": 0 },
+            // Modelli vetro
+            "C50": { "90x210": 150, "120x288": 150 },
+            "C51": { "90x210": 170, "120x288": 170 },
+            "C53": { "90x210": 210, "120x288": 210 },
+            "C60": { "90x210": 100, "120x288": 100 },
+            "C61": { "90x210": 140, "120x288": 140 },
+            "C63": { "90x210": 170, "120x288": 170 },
+            "C65": { "90x210": 170, "120x288": 170 },
+            "C70": { "90x210": 200, "120x288": 200 },
+            "C71": { "90x210": 100, "120x288": 100 },
+            "C72": { "90x210": 170, "120x288": 170 },
+            // Inglese
+            "C10": { "90x210": 100, "120x288": 100 },
+            "C11": { "90x210": 130, "120x288": 130 },
+            "C13": { "90x210": 160, "120x288": 160 },
+            "C15": { "90x210": 200, "120x288": 200 },
+            "C16": { "90x210": 150, "120x288": 150 },
+            "C17": { "90x210": 100, "120x288": 100 },
+            "C90": { "90x210": 100, "120x288": 100 },
+            "C91": { "90x210": 130, "120x288": 130 },
+            "C93": { "90x210": 160, "120x288": 160 },
+            "C95": { "90x210": 160, "120x288": 160 }
+        }
+    },
+
+    // ==================== SUPPLEMENTI VERSIONI (APERTURE) ====================
+    versioni: {
+        // Battente
+        BT: { nome: "Battente", "1anta": 0, "2ante": 0, "1anta_sopraluce": 0, "2ante_sopraluce": 0 },
+        CS: { nome: "Cerniere a scomparsa", "1anta_h210": 100, "1anta_oltre": 150, "2ante_h210": 200, "2ante_oltre": 250 },
+        FL: { nome: "Fuori luce", "1anta": 50, "2ante": 60, "1anta_sopraluce": 100, "2ante_sopraluce": 120 },
+        FLB: { nome: "Fuori luce con battuta", "1anta": 150, "2ante": 160, "1anta_sopraluce": 200, "2ante_sopraluce": 220 },
+        FLBCS: { nome: "Fuori luce battuta + cerniere scomparsa", "1anta": 250, "2ante": 400, "1anta_sopraluce": 250, "2ante_sopraluce": 400 },
+        PY: { nome: "Portoncino (serratura yale)", "1anta": 50, "2ante": 50, "1anta_sopraluce": 50, "2ante_sopraluce": 50 },
+        IL: { nome: "Inlinea", "1anta": 320, "2ante": 470, "1anta_sopraluce": 380, "2ante_sopraluce": 540 },
+        ILT: { nome: "Inlinea a tirare", "1anta": 320, "2ante": 470, "1anta_sopraluce": 380, "2ante_sopraluce": 540 },
+        TR: { nome: "Trapezio", "1anta": 225, "2ante": 412, "1anta_sopraluce": 225, "2ante_sopraluce": 412 },
+        VV: { nome: "Va e vieni", "1anta": 165, "2ante": 313, "1anta_sopraluce": 222, "2ante_sopraluce": 336 },
+        L13: { nome: "Libro 1/3 - 2/3", "1anta": 620, "2ante": 1240, "1anta_sopraluce": 620, "2ante_sopraluce": 1240 },
+        L12: { nome: "Libro 1/2 - 1/2", "1anta": 670, "2ante": 1340, "1anta_sopraluce": 670, "2ante_sopraluce": 1340 },
+        LT: { nome: "Libro traslante", "1anta": 780, "2ante": 1560, "1anta_sopraluce": 780, "2ante_sopraluce": 1560 },
+        RT: { nome: "Rototraslante", "1anta": 520, "2ante": 1040 },
+        PV: { nome: "Pivot", "1anta": 300, "2ante": 600 },
+        
+        // Scorrevoli
+        SS90: { nome: "Scorrevole scomparsa 9cm", "1anta": 150, "2ante": 200 },
+        SS100: { nome: "Scorrevole scomparsa 10cm", "1anta": 150, "2ante": 200 },
+        SS105: { nome: "Scorrevole scomparsa 10.5cm", "1anta": 100, "2ante": 150 },
+        SS115: { nome: "Scorrevole scomparsa 11.5cm", "1anta": 150, "2ante": 200 },
+        SS125: { nome: "Scorrevole scomparsa 12.5cm", "1anta": 150, "2ante": 200 },
+        SS145: { nome: "Scorrevole scomparsa 14.5cm", "1anta": 150, "2ante": 200 },
+        SAR: { nome: "Armonico", "1anta": 180, "2ante": 280 },
+        SAP: { nome: "Applauso", "1anta": 180, "2ante": 280 },
+        SES: { nome: "Rasomuro", "1anta": 0, "2ante": 0 },
+        SGL: { nome: "Gran luce", "2ante": 320 },
+        SPR: { nome: "Pratico", "2ante": 600 }
+    },
+
+    // ==================== TELAI E CORNICI ====================
+    telai_cornici: {
+        "Lineo + Recta": 0,       // Standard
+        "Lineo + Plana": 15,
+        "Lineo + Curva": 30,
+        "Lineo + Sagoma": 80,
+        "Lineo + Ampia": 30,
+        "Lineo + Barocca": 220,
+        "Lineo + Nove": 15,
+        "Lineo + Mini": 50,       // Solo laccati lisci
+        "Lineo + Design": 70,    // Solo laccati lisci
+        "Radius + Recta": 0,
+        "Radius + Curva": 30,
+        "Radius + Sagoma": 80,
+        "Radius + Barocca": 220
+    },
+
+    // ==================== SUPPLEMENTI FERRAMENTA ====================
+    ferramenta: {
+        finiture: {
+            "cromo_satinata": 0,  // Standard
+            "cromo_lucida": 10,
+            "bronzata": 10,
+            "ottone_lucida": 10,
+            "magnetica_bianca": 20,
+            "magnetica_nera": 20
+        },
+        serratura: {
+            "patent": 0,         // Standard
+            "libero_occupato": 10,
+            "yale": 30,
+            "magnetica": 10      // Maggiorazione
+        },
+        maniglie_S_NZIALE: {
+            "a_L_h14": 0,
+            "a_L_h20": 10,
+            "a_L_h40": 20,
+            "a_L_h50": 25,
+            "a_L_h100": 110,
+            "quadrata_inox_64": 80,
+            "rettangolare_inox_150": 90
+        }
+    },
+
+    // ==================== SUPPLEMENTI ALLUMINIO S-NZIALE ====================
+    supplementi_alluminio: {
+        argento: 0,
+        laccati_serie: 340,
+        laccati_fuori_serie: 580,
+        ferramenta_laccata: 40,
+        telaio_minimale: -200
+    },
+
+    // ==================== SUPPLEMENTI EXTRA ALTEZZA ====================
+    extra_altezza: {
+        "fino_220": 0.05,  // +5%
+        "fino_240": 0.10,  // +10%
+        "fino_270": 0.20,  // +20%
+        "fino_300": 0.30   // +30%
+    },
+
+    // ==================== LAVORAZIONI ====================
+    lavorazioni: {
+        ante: {
+            "LA01": { desc: "Anta sollevata/ribassata", prezzo: 15 },
+            "LA03": { desc: "Rinforzo MDF 8mm", prezzo: 65 },
+            "LA04": { desc: "Rinforzo MDF 5mm", prezzo: 35 },
+            "LA09": { desc: "Anta spessore 38mm", prezzo: 50 },
+            "LA11": { desc: "Predisposizione griglie aerazione", prezzo: 40 },
+            "LA12": { desc: "Specchiatura a rombo", prezzo: 30 },
+            "LA13": { desc: "Specchiatura triangolare", prezzo: 80 },
+            "LA14": { desc: "Specchio complanare", prezzo: 570 },
+            "LA15": { desc: "Predisposizione maniglie incasso", prezzo: 30 },
+            "LA16": { desc: "Predisposizione kit chiusura", prezzo: 50 },
+            "LA18": { desc: "Impiallacciatura a telaio", prezzo: 45 },
+            "LA19": { desc: "Anta inferiore 26cm", prezzo: 45 },
+            "LA20": { desc: "Predisposizione chiudiporta aereo", prezzo: 35 },
+            "LA21": { desc: "Predisposizione maniglione antipanico", prezzo: 35 },
+            "LA30": { desc: "Fermavetro ribassato", prezzo: 38 },
+            "LA31": { desc: "Fermavetri complanari inglesi (cad)", prezzo: 25 },
+            "LA32": { desc: "Fermavetri complanari 1 lato (cad)", prezzo: 200 },
+            "LA33": { desc: "Fermavetro complanare", prezzo: 80 },
+            "LA38": { desc: "Predisposizione vetro 6-19mm", prezzo: 20 },
+            "LA53": { desc: "Anta mobile su semifissa (scomparsa)", prezzo: 100 },
+            "LA55": { desc: "Anta mobile su semifissa (anuba)", prezzo: 150 },
+            "LA70": { desc: "Raddrizza ante", prezzo: 150 }
+        },
+        verniciatura: {
+            "LV01": { desc: "2 colori (interno/esterno)", prezzo: 200 },
+            "LV02": { desc: "2 essenze (interno/esterno)", prezzo: 150 },
+            "LV03": { desc: "Anta diversa da telaio", prezzo: 25 },
+            "LV04": { desc: "1 lato essenza + 1 lato laccato", prezzo: 200 },
+            "LV06": { desc: "Lucida trasparente spazzolata", prezzo: 400 },
+            "LV10": { desc: "Finitura anticato", prezzo: 400 },
+            "LV13": { desc: "Finitura lusso", prezzo: 400 }
+        },
+        telai: {
+            "LT01": { desc: "Telaio senza traverso", prezzo: 15 }
+        }
+    },
+
+    // ==================== VETRI ====================
+    vetri: {
+        tipologie: {
+            trasparente: 0,
+            acidato: 0,
+            extra_chiaro: 200,
+            grigio: 100,
+            bronzo: 100,
+            semiriflettente: 100
+        },
+        speciali_kikka: {
+            sabbiati_flessya: 500,
+            sabbia: 500,
+            scavo: 750,
+            stampati: 500,
+            stampa_digitale: 1350,
+            laccato_lucido: 1050,
+            laccato_acidato: 1340,
+            tessuto: 1000,
+            materia: 1000
+        },
+        maggiorazioni_120x288: {
+            extra_chiaro: 300,
+            grigio: 150,
+            bronzo: 150,
+            sabbiati: 700,
+            scavo: 950,
+            stampati: 1000,
+            stampa_digitale: 1570,
+            laccato_lucido: 1250,
+            laccato_acidato: 1540,
+            tessuto: 1300,
+            materia: 1300
+        }
+    },
+
+    // ==================== ACCESSORI ====================
+    accessori: {
+        capitelli: {
+            "A-B-C": { "1anta": 150, "2ante": 200 }
+        },
+        cornici_unghiate: 120,
+        basette_20x10: 60,
+        stampa_digitale: {
+            "anta_90x210": 350,
+            "anta_cornici_90x210": 450,
+            "anta_oltre_90x210": 550,
+            "anta_cornici_oltre": 700,
+            "personalizzata_90x210": 450,
+            "personalizzata_oltre": 650
+        },
+        effetto_essenza: 128,
+        tinta_campione_fino_3: 250,
+        tinta_campione_oltre_3: 180,
+        tranciato_orizzontale: 38
+    },
+
+    // ==================== FUNZIONI CALCOLO ====================
+    
+    /**
+     * Calcola il prezzo di una porta FLESSYA
+     */
+    calcolaPrezzo: function(params) {
+        const {
+            linea,
+            finitura,
+            dimensione,       // es: "80x210", "90x210", etc
+            modello,
+            versione,
+            telaio_cornice,
+            spessore_muro,
+            accessori = []
+        } = params;
+        
+        let prezzoTotale = 0;
+        let dettaglio = [];
+        
+        // 1. Prezzo base
+        const prezziLinea = this.prezzi_base[linea];
+        if (!prezziLinea || !prezziLinea[finitura]) {
+            return { errore: "Linea o finitura non trovata" };
+        }
+        
+        const indice = this.getIndiceDimensione(linea, dimensione);
+        const prezzoBase = prezziLinea[finitura][indice];
+        prezzoTotale += prezzoBase;
+        dettaglio.push({ voce: "Prezzo base", importo: prezzoBase });
+        
+        // 2. Supplemento modello
+        if (modello && this.supplementi_modelli[linea]) {
+            const suppModello = this.supplementi_modelli[linea][modello];
+            if (suppModello) {
+                const chiave = dimensione.includes("120") ? "120x288" : "90x210";
+                const importoModello = suppModello[chiave] || 0;
+                prezzoTotale += importoModello;
+                if (importoModello > 0) {
+                    dettaglio.push({ voce: `Modello ${modello}`, importo: importoModello });
+                }
+            }
+        }
+        
+        // 3. Supplemento versione
+        if (versione && this.versioni[versione]) {
+            const suppVersione = this.versioni[versione]["1anta"] || 0;
+            prezzoTotale += suppVersione;
+            if (suppVersione > 0) {
+                dettaglio.push({ voce: `Versione ${versione}`, importo: suppVersione });
+            }
+        }
+        
+        // 4. Supplemento telaio/cornice
+        if (telaio_cornice && this.telai_cornici[telaio_cornice]) {
+            const suppTelaio = this.telai_cornici[telaio_cornice];
+            prezzoTotale += suppTelaio;
+            if (suppTelaio > 0) {
+                dettaglio.push({ voce: telaio_cornice, importo: suppTelaio });
+            }
+        }
+        
+        // 5. Accessori
+        accessori.forEach(acc => {
+            if (acc.prezzo) {
+                prezzoTotale += acc.prezzo;
+                dettaglio.push({ voce: acc.nome, importo: acc.prezzo });
+            }
+        });
+        
+        return {
+            prezzoListino: prezzoTotale,
+            prezzoNetto: Math.round(prezzoTotale * (1 - this.info.sconto)),
+            sconto: this.info.sconto,
+            dettaglio: dettaglio
+        };
+    },
+    
+    /**
+     * Ottiene l'indice della dimensione nell'array prezzi
+     */
+    getIndiceDimensione: function(linea, dimensione) {
+        // Dimensioni standard: [80x210, 90x210, 120x210, 120x240, 120x288]
+        // PLENIA/KIKKA: [80x210, 90x210, 120x210, 90x278, 120x278]
+        const mappa = {
+            "60x210": 0,
+            "70x210": 1,
+            "80x210": 0,
+            "90x210": 1,
+            "100x210": 2,
+            "110x210": 3,
+            "120x210": 2,
+            "104x210": 2,
+            "90x278": 3,
+            "120x240": 3,
+            "104x240": 3,
+            "120x278": 4,
+            "94x276": 4,
+            "120x288": 4
+        };
+        return mappa[dimensione] || 1;
+    }
+};
+
+// Export per Node.js
+
+        console.log('✅ FLESSYA-DATABASE-2025 caricato');
+
+
         // ============================================================================
         // 🚪 LISTINO FIN-DOOR PORTONCINI FINSTRAL - EUR 2025/3
         // ============================================================================
@@ -18061,6 +20445,8 @@ if (typeof module !== 'undefined' && module.exports) {
                 'FLESSYA':        53.00,
                 'OIKOS':          46.00,  // 40% + 10% composto
                 'PLASTICINO':     45.00,  // Tapparelle/Avvolgibili
+                'OLIVARI':        43.00,  // 40% + 5% composto - Maniglie
+                'COLOMBO DESIGN': 40.00,  // Maniglie
             },
             
             // Alias per normalizzazione nomi
@@ -18075,6 +20461,9 @@ if (typeof module !== 'undefined' && module.exports) {
                 'flessya': 'FLESSYA',
                 'oikos': 'OIKOS',
                 'plasticino': 'PLASTICINO',
+                'olivari': 'OLIVARI',
+                'colombo': 'COLOMBO DESIGN',
+                'colombo design': 'COLOMBO DESIGN',
             },
             
             // Normalizza nome azienda
@@ -18129,7 +20518,7 @@ if (typeof module !== 'undefined' && module.exports) {
             }
         };
         
-        console.log('✅ SCONTI_FORNITORI v8.14 - Sistema sconti attivo (7 fornitori configurati)');
+        console.log('✅ SCONTI_FORNITORI v8.23 - Sistema sconti attivo (10 fornitori configurati)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 PLASTICINO AVVOLGIBILI 2025 - Database Tapparelle
