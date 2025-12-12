@@ -11,9 +11,9 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.27 - CHANGELOG
+    DASHBOARD RILIEVI v8.29 - CHANGELOG
     
-    🔧 AGGIORNAMENTI v8.27 (12 DIC 2025):
+    🔧 AGGIORNAMENTI v8.29 (12 DIC 2025):
     - 🆕 STAMPA DOCUMENTI CLIENTE: Preventivo e Conferma Ordine
       - Modal inserimento dati cliente
       - Generazione documento HTML professionale
@@ -1380,12 +1380,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.27 - Ricarico 50%, ENEA Ecobonus</title>
+    <title>Dashboard Rilievi v8.29 - Ricarico 50%, ENEA Ecobonus</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.27";
+        const DASHBOARD_VERSION = "8.29";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11732,7 +11732,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             </div>
                         </div>
                         
-                        <!-- 🆕 v8.27: RIGA STAMPA DOCUMENTI -->
+                        <!-- 🆕 v8.29: RIGA STAMPA DOCUMENTI -->
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                             <span style="font-weight: 700; color: #374151;">📄 Documenti Cliente:</span>
                             
@@ -11852,7 +11852,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-value" id="totaleComponentiNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
                                         <td class="excel-value" id="totaleComponentiCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
-                                    <!-- ENEA ECOBONUS v8.27 -->
+                                    <!-- ENEA ECOBONUS v8.29 -->
                                     <tr class="excel-row" id="rowENEA" style="background: #f0fdf4;">
                                         <td colspan="13" style="text-align: right; font-weight: 600;">📄 Elaborazione ENEA:</td>
                                         <td style="text-align: center;">
@@ -23060,13 +23060,13 @@ const FLESSYA_2025 = {
             let dettaglioBeniSignif = [];
             let dettaglioPartiAutonome = [];
             
-            // 🐛 v8.27 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
+            // 🐛 v8.29 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
             // const moltiplicatore = 1 + (ricaricoPct / 100);
             
-            console.log('📊 calcolaIVAMista v8.27 - Analisi righe:', righe.length, '| ENEA:', enea);
+            console.log('📊 calcolaIVAMista v8.29 - Analisi righe:', righe.length, '| ENEA:', enea);
             
             righe.forEach(riga => {
-                // 🐛 v8.27 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
+                // 🐛 v8.29 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
                 // Prima usava: totaleListino * moltiplicatore (SBAGLIATO - mancava sconto!)
                 const totaleCliente = parseFloat(riga._totaleCliente) || 0;
                 const classificazione = classificaProdottoFiscale(riga.tipo, true);
@@ -23166,11 +23166,11 @@ const FLESSYA_2025 = {
             const smaltimento = parseFloat(document.getElementById('inputSmaltimento')?.value || 0);
             const componenti = parseFloat(document.getElementById('inputComponenti')?.value || 0);
             
-            // ENEA Ecobonus (v8.27)
+            // ENEA Ecobonus (v8.29)
             const eneaChecked = document.getElementById('checkENEA')?.checked || false;
             const eneaValore = eneaChecked ? parseFloat(document.getElementById('inputENEA')?.value || 0) : 0;
             
-            // Costi lavoro: netto = cliente = SENZA ricarico (v8.27)
+            // Costi lavoro: netto = cliente = SENZA ricarico (v8.29)
             const posaNetto = posa;
             const posaCliente = posa;
             const smontaggioNetto = smontaggio;
@@ -23213,7 +23213,7 @@ const FLESSYA_2025 = {
             document.getElementById('totaleComponentiNetto').textContent = `€ ${componentiNetto.toFixed(2)}`;
             document.getElementById('totaleComponentiCliente').textContent = `€ ${componentiCliente.toFixed(2)}`;
             
-            // ENEA (v8.27)
+            // ENEA (v8.29)
             document.getElementById('totaleENEAListino').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEANetto').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEACliente').textContent = `€ ${eneaValore.toFixed(2)}`;
@@ -23271,7 +23271,7 @@ const FLESSYA_2025 = {
                 // Usa le righe del preventivo salvate
                 const righe = window.righePreventivo || [];
                 
-                // Calcola IVA mista (v8.27: ENEA al 22%)
+                // Calcola IVA mista (v8.29: ENEA al 22%)
                 const calcolo = calcolaIVAMista(righe, {
                     posa: posaCliente,
                     smontaggio: smontaggioCliente,
@@ -23315,7 +23315,7 @@ const FLESSYA_2025 = {
                 
             } else if (configIVA.aliquotaUnica > 0) {
                 // ═══════════════════════════════════════════════════════════════
-                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.27: ENEA sempre al 22%
+                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.29: ENEA sempre al 22%
                 // ═══════════════════════════════════════════════════════════════
                 const aliquota = configIVA.aliquotaUnica;
                 if (labelTipoIVA) labelTipoIVA.textContent = `IVA ${aliquota}%`;
@@ -23325,7 +23325,7 @@ const FLESSYA_2025 = {
                 if (rowIVA) rowIVA.style.display = 'table-row';
                 document.getElementById('ivaPercent').textContent = aliquota;
                 
-                // v8.27: ENEA sempre al 22%, resto all'aliquota selezionata
+                // v8.29: ENEA sempre al 22%, resto all'aliquota selezionata
                 const baseCliente = subtotaleCliente - eneaValore;
                 const baseListino = subtotaleListino - eneaValore;
                 const baseNetto = subtotaleNetto - eneaValore;
@@ -23351,7 +23351,7 @@ const FLESSYA_2025 = {
             document.getElementById('grandTotalNetto').textContent = `€ ${grandTotalNetto.toFixed(2)}`;
             document.getElementById('grandTotalCliente').textContent = `€ ${grandTotalCliente.toFixed(2)}`;
             
-            console.log(`💰 Ricalcolo v8.27: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
+            console.log(`💰 Ricalcolo v8.29: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -30260,7 +30260,7 @@ const FLESSYA_2025 = {
         console.log('✅ Sistema Preventivazione initialized');
 
         // ═══════════════════════════════════════════════════════════════════════════════
-        // 📄 MODULO STAMPA DOCUMENTI CLIENTE - v8.27
+        // 📄 MODULO STAMPA DOCUMENTI CLIENTE - v8.29
         // ═══════════════════════════════════════════════════════════════════════════════
         
         /**
@@ -32429,13 +32429,13 @@ const FLESSYA_2025 = {
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-    <!-- 📄 MODAL DATI CLIENTE - v8.27 -->
+    <!-- 📄 MODAL DATI CLIENTE - v8.29 -->
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-    <div id="modalDatiCliente" class="preventivo-modal" style="display: none;">
-        <div class="preventivo-modal-content" style="max-width: 600px;">
-            <div class="preventivo-modal-header" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                <h3 id="titoloModalDocumento">📄 Genera Preventivo</h3>
-                <button class="preventivo-modal-close" onclick="chiudiModalDatiCliente()">×</button>
+    <div id="modalDatiCliente" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99999; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 16px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 1.5rem; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="titoloModalDocumento" style="margin: 0; font-size: 1.3rem;">📄 Genera Preventivo</h3>
+                <button onclick="window.chiudiModalDatiCliente()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1;">×</button>
             </div>
             
             <div class="preventivo-modal-body" style="padding: 1.5rem;">
@@ -32529,12 +32529,11 @@ const FLESSYA_2025 = {
                 </div>
             </div>
             
-            <div class="preventivo-modal-actions" style="padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb;">
-                <button class="btn-preventivo btn-secondary" onclick="chiudiModalDatiCliente()">
+            <div style="padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button onclick="window.chiudiModalDatiCliente()" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                     Annulla
                 </button>
-                <button class="btn-preventivo btn-primary" onclick="generaDocumentoFinale()" 
-                        style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <button onclick="window.generaDocumentoFinale()" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                     📄 Genera Documento
                 </button>
             </div>
@@ -32542,7 +32541,7 @@ const FLESSYA_2025 = {
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-    <!-- 📄 SCRIPT STAMPA DOCUMENTI - GLOBALE v8.27 -->
+    <!-- 📄 SCRIPT STAMPA DOCUMENTI - GLOBALE v8.29 -->
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
     <script>
     (function() {
