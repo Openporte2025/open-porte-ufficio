@@ -18,7 +18,6 @@
     - 🔧 LAVORI SENZA RICARICO: Posa, Smontaggio, Smaltimento, Componenti non ricaricati
     - 📄 ENEA ECOBONUS: Nuova voce €250 (modificabile) con checkbox per escludere
     - 📊 IVA ENEA: Elaborazione ENEA sempre al 22% (servizio, non bene)
-    - 🔧 FIX CALCOLO: Totale finale corretto con nuova logica
     
     🔧 AGGIORNAMENTI v8.24 (11 DIC 2025):
     - 🔧 COLOMBO-DATABASE-2025: Maniglie (42 modelli, prezzi Venerota)
@@ -1373,7 +1372,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.25 - Ricarico 50%, Lavori senza ricarico, ENEA</title>
+    <title>Dashboard Rilievi v8.25 - Ricarico 50%, ENEA Ecobonus</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -11849,19 +11848,15 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-value" id="totaleComponentiNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
                                         <td class="excel-value" id="totaleComponentiCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
-                                    <!-- ENEA ECOBONUS -->
+                                    <!-- ENEA ECOBONUS v8.25 -->
                                     <tr class="excel-row" id="rowENEA" style="background: #f0fdf4;">
                                         <td colspan="13" style="text-align: right; font-weight: 600;">📄 Elaborazione ENEA:</td>
                                         <td style="text-align: center;">
-                                            <input type="checkbox" id="checkENEA" checked 
-                                                   onchange="ricalcolaTotaliPreventivo()" 
-                                                   style="width: 18px; height: 18px; cursor: pointer;">
+                                            <input type="checkbox" id="checkENEA" checked onchange="ricalcolaTotaliPreventivo()" style="width: 18px; height: 18px; cursor: pointer;">
                                         </td>
                                         <td style="text-align: right; font-size: 0.75rem; color: #6b7280;">(IVA 22%)</td>
                                         <td colspan="2" style="text-align: right;">
-                                            <input type="number" id="inputENEA" value="250" min="0" step="10" 
-                                                   onchange="ricalcolaTotaliPreventivo()" 
-                                                   style="width: 80px; padding: 4px; border: 1px solid #10b981; border-radius: 4px; text-align: right; background: #f0fdf4;">
+                                            <input type="number" id="inputENEA" value="250" min="0" step="10" onchange="ricalcolaTotaliPreventivo()" style="width: 80px; padding: 4px; border: 1px solid #10b981; border-radius: 4px; text-align: right; background: #f0fdf4;">
                                             <span style="color: #065f46; font-size: 0.8rem;"> €</span>
                                         </td>
                                         <td class="excel-value" id="totaleENEAListino" style="background: #f0fdf4;">€ 0.00</td>
@@ -20812,7 +20807,7 @@ const FLESSYA_2025 = {
             }
         };
         
-        console.log('✅ SCONTI_FORNITORI v8.25 - Sistema sconti attivo (10 fornitori configurati)');
+        console.log('✅ SCONTI_FORNITORI v8.24 - Sistema sconti attivo (10 fornitori configurati)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 PLASTICINO AVVOLGIBILI 2025 - Database Tapparelle
@@ -23122,7 +23117,7 @@ const FLESSYA_2025 = {
                 totaleIntervento, valorePrestazione,
                 imponibile10, imponibile22,
                 iva10, iva22, ivaTotale, totaleConIVA,
-                haIVAMista: imponibile22 > 0  // v8.25: true anche se solo ENEA
+                haIVAMista: imponibile22 > 0
             };
         }
         
@@ -23146,7 +23141,7 @@ const FLESSYA_2025 = {
             }
         }
         
-        console.log('📊 Modulo IVA Mista caricato - v8.25 (ENEA 22%, lavori senza ricarico)');
+        console.log('📊 Modulo IVA Mista caricato - v8.17');
         
         // ═══════════════════════════════════════════════════════════════════════════════
         // FINE MODULO IVA MISTA
@@ -23169,17 +23164,17 @@ const FLESSYA_2025 = {
             const eneaChecked = document.getElementById('checkENEA')?.checked || false;
             const eneaValore = eneaChecked ? parseFloat(document.getElementById('inputENEA')?.value || 0) : 0;
             
-            // Costi lavoro: netto = costo vivo, cliente = SENZA ricarico (v8.25)
+            // Costi lavoro: netto = cliente = SENZA ricarico (v8.25)
             const posaNetto = posa;
-            const posaCliente = posa;  // NO ricarico sui lavori
+            const posaCliente = posa;
             const smontaggioNetto = smontaggio;
-            const smontaggioCliente = smontaggio;  // NO ricarico sui lavori
+            const smontaggioCliente = smontaggio;
             const smaltimentoNetto = smaltimento;
-            const smaltimentoCliente = smaltimento;  // NO ricarico sui lavori
+            const smaltimentoCliente = smaltimento;
             const componentiNetto = componenti;
-            const componentiCliente = componenti;  // NO ricarico sui lavori
+            const componentiCliente = componenti;
             
-            // Totale lavori (SENZA ENEA - ENEA ha IVA separata)
+            // Totale lavori
             const lavoriListino = posa + smontaggio + smaltimento + componenti;
             const lavoriNetto = posaNetto + smontaggioNetto + smaltimentoNetto + componentiNetto;
             const lavoriCliente = posaCliente + smontaggioCliente + smaltimentoCliente + componentiCliente;
@@ -23216,7 +23211,6 @@ const FLESSYA_2025 = {
             document.getElementById('totaleENEAListino').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEANetto').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEACliente').textContent = `€ ${eneaValore.toFixed(2)}`;
-            // Disabilita input se checkbox non selezionato
             const inputENEA = document.getElementById('inputENEA');
             if (inputENEA) inputENEA.disabled = !eneaChecked;
             
@@ -23271,7 +23265,7 @@ const FLESSYA_2025 = {
                 // Usa le righe del preventivo salvate
                 const righe = window.righePreventivo || [];
                 
-                // Calcola IVA mista (v8.25: lavori senza ricarico, ENEA separato)
+                // Calcola IVA mista (v8.25: ENEA al 22%)
                 const calcolo = calcolaIVAMista(righe, {
                     posa: posaCliente,
                     smontaggio: smontaggioCliente,
@@ -23315,8 +23309,7 @@ const FLESSYA_2025 = {
                 
             } else if (configIVA.aliquotaUnica > 0) {
                 // ═══════════════════════════════════════════════════════════════
-                // IVA ALIQUOTA UNICA (4%, 10%, 22%)
-                // v8.25: ENEA sempre al 22% separato
+                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.25: ENEA sempre al 22%
                 // ═══════════════════════════════════════════════════════════════
                 const aliquota = configIVA.aliquotaUnica;
                 if (labelTipoIVA) labelTipoIVA.textContent = `IVA ${aliquota}%`;
@@ -23326,17 +23319,17 @@ const FLESSYA_2025 = {
                 if (rowIVA) rowIVA.style.display = 'table-row';
                 document.getElementById('ivaPercent').textContent = aliquota;
                 
-                // v8.25: Separa ENEA (sempre 22%) dal resto
-                const subtotaleNoEnea = subtotaleCliente - eneaValore;
-                const subtotaleNoEneaListino = subtotaleListino - eneaValore;
-                const subtotaleNoEneaNetto = subtotaleNetto - eneaValore;
+                // v8.25: ENEA sempre al 22%, resto all'aliquota selezionata
+                const baseCliente = subtotaleCliente - eneaValore;
+                const baseListino = subtotaleListino - eneaValore;
+                const baseNetto = subtotaleNetto - eneaValore;
                 
-                const ivaBase = subtotaleNoEnea * aliquota / 100;
-                const ivaEnea = eneaValore * 0.22;  // ENEA sempre 22%
-                const ivaCliente = ivaBase + ivaEnea;
+                const ivaBaseCliente = baseCliente * aliquota / 100;
+                const ivaEnea = eneaValore * 0.22;
+                const ivaCliente = ivaBaseCliente + ivaEnea;
                 
-                const ivaListino = subtotaleNoEneaListino * aliquota / 100 + ivaEnea;
-                const ivaNetto = subtotaleNoEneaNetto * aliquota / 100 + ivaEnea;
+                const ivaListino = baseListino * aliquota / 100 + ivaEnea;
+                const ivaNetto = baseNetto * aliquota / 100 + ivaEnea;
                 
                 document.getElementById('totaleIVAListino').textContent = `€ ${ivaListino.toFixed(2)}`;
                 document.getElementById('totaleIVANetto').textContent = `€ ${ivaNetto.toFixed(2)}`;
@@ -23345,11 +23338,6 @@ const FLESSYA_2025 = {
                 grandTotalCliente = subtotaleCliente + ivaCliente;
                 grandTotalListino = subtotaleListino + ivaListino;
                 grandTotalNetto = subtotaleNetto + ivaNetto;
-                
-                // Log per debug
-                if (eneaValore > 0 && aliquota !== 22) {
-                    console.log(`📊 v8.25: ENEA €${eneaValore} al 22% (IVA €${ivaEnea.toFixed(2)}) + resto al ${aliquota}% (IVA €${ivaBase.toFixed(2)})`);
-                }
             }
             
             // Aggiorna totali finali
