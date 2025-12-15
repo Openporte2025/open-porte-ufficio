@@ -11,7 +11,14 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.40 - CHANGELOG
+    DASHBOARD RILIEVI v8.41 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.41 (15 DIC 2025):
+    - 🪟 INTEGRAZIONE GIBUS: Click Zip + Tende a Bracci
+      - SCONTI_FORNITORI: Aggiunto GIBUS 48%
+      - Mapping dati: clickZip e tendaBracci dalle posizioni
+      - Calcolo automatico: Listino → Netto con sconto 48%
+      - Supporto max 2 tende a bracci per posizione
     
     🔧 AGGIORNAMENTI v8.40 (15 DIC 2025):
     - 🔗 FIX URL APP POSA: Collegamento a GitHub Pages
@@ -1479,12 +1486,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.40 - Ricarico 50%, ENEA Ecobonus</title>
+    <title>Dashboard Rilievi v8.42 - GIBUS Click Zip + Tende</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.40";
+        const DASHBOARD_VERSION = "8.41";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -8741,6 +8748,75 @@ if (typeof module !== 'undefined' && module.exports) {
                                 }
                             }
                         }
+                        
+                        // 🪟 v8.41: CLICK ZIP GIBUS
+                        if (pos.clickZip && pos.clickZip.prezzoListino) {
+                            const prezzoListino = parseFloat(pos.clickZip.prezzoListino) || 0;
+                            const prezzoNetto = prezzoListino * 0.52; // Sconto 48%
+                            
+                            risultati.prodotti.push({
+                                posizione: pos.nome || `Posizione ${idx + 1}`,
+                                successo: true,
+                                prodotto: "Click Zip GIBUS",
+                                modello: pos.clickZip.modello || 'N/D',
+                                tipologia: 'Schermatura solare',
+                                misure: {
+                                    larghezza: pos.clickZip.larghezza || 0,
+                                    altezza: pos.clickZip.altezza || 0
+                                },
+                                dettaglio: {
+                                    tessuto: pos.clickZip.tessuto || '',
+                                    colore_struttura: pos.clickZip.coloreStruttura || '',
+                                    prezzo_listino: prezzoListino.toFixed(2),
+                                    sconto: '48%',
+                                    note: pos.clickZip.note || ''
+                                },
+                                prezzi: {
+                                    totale: prezzoNetto.toFixed(2),
+                                    iva: (prezzoNetto * 0.22).toFixed(2),
+                                    totale_iva: (prezzoNetto * 1.22).toFixed(2)
+                                }
+                            });
+                            risultati.totale += prezzoNetto;
+                            risultati.totale_iva += prezzoNetto * 1.22;
+                            console.log(`✅ Click Zip ${idx + 1}: Listino €${prezzoListino.toFixed(2)} → Netto €${prezzoNetto.toFixed(2)}`);
+                        }
+                        
+                        // ☀️ v8.41: TENDE A BRACCI GIBUS
+                        if (pos.tendaBracci && pos.tendaBracci.tende && pos.tendaBracci.tende.length > 0) {
+                            pos.tendaBracci.tende.forEach((tenda, tendaIdx) => {
+                                if (tenda.prezzoListino) {
+                                    const prezzoListino = parseFloat(tenda.prezzoListino) || 0;
+                                    const prezzoNetto = prezzoListino * 0.52; // Sconto 48%
+                                    
+                                    risultati.prodotti.push({
+                                        posizione: pos.nome || `Posizione ${idx + 1}`,
+                                        successo: true,
+                                        prodotto: `Tenda a Bracci GIBUS #${tendaIdx + 1}`,
+                                        modello: tenda.modello || 'N/D',
+                                        tipologia: 'Tenda da sole',
+                                        misure: {
+                                            larghezza: tenda.larghezza || 0,
+                                            sporgenza: tenda.sporgenza || 0
+                                        },
+                                        dettaglio: {
+                                            tessuto: tenda.tessuto || '',
+                                            colore: tenda.colore || '',
+                                            prezzo_listino: prezzoListino.toFixed(2),
+                                            sconto: '48%'
+                                        },
+                                        prezzi: {
+                                            totale: prezzoNetto.toFixed(2),
+                                            iva: (prezzoNetto * 0.22).toFixed(2),
+                                            totale_iva: (prezzoNetto * 1.22).toFixed(2)
+                                        }
+                                    });
+                                    risultati.totale += prezzoNetto;
+                                    risultati.totale_iva += prezzoNetto * 1.22;
+                                    console.log(`✅ Tenda Bracci ${idx + 1}.${tendaIdx + 1}: Listino €${prezzoListino.toFixed(2)} → Netto €${prezzoNetto.toFixed(2)}`);
+                                }
+                            });
+                        }
                     });
                 }
                 
@@ -12435,6 +12511,31 @@ if (typeof module !== 'undefined' && module.exports) {
                             
                             zanzariera: pos.zanzariera && pos.zanzariera.qta ? {
                                 quantita: pos.zanzariera.qta || 1
+                            } : null,
+                            
+                            // 🪟 v8.41: CLICK ZIP GIBUS (schermature solari)
+                            clickZip: pos.clickZip ? {
+                                azienda: 'GIBUS',
+                                modello: pos.clickZip.modello || '',
+                                larghezza: parseInt(pos.clickZip.larghezza) || 0,
+                                altezza: parseInt(pos.clickZip.altezza) || 0,
+                                tessuto: pos.clickZip.tessuto || '',
+                                coloreStruttura: pos.clickZip.coloreStruttura || '',
+                                prezzoListino: parseFloat(pos.clickZip.prezzoListino) || 0,
+                                note: pos.clickZip.note || ''
+                            } : null,
+                            
+                            // ☀️ v8.41: TENDE A BRACCI GIBUS (max 2 per posizione)
+                            tendaBracci: pos.tendaBracci?.tende?.length > 0 ? {
+                                azienda: 'GIBUS',
+                                tende: (pos.tendaBracci.tende || []).map(t => ({
+                                    modello: t.modello || '',
+                                    larghezza: parseInt(t.larghezza) || 0,
+                                    sporgenza: parseInt(t.sporgenza) || 0,
+                                    tessuto: t.tessuto || '',
+                                    colore: t.colore || '',
+                                    prezzoListino: parseFloat(t.prezzoListino) || 0
+                                }))
                             } : null,
                             
                             // 🔐 v7.98_04: INGRESSO (Porte Blindate/Portoncini)
@@ -20836,6 +20937,7 @@ const FLESSYA_2025 = {
                 'PLASTICINO':     45.00,  // Tapparelle/Avvolgibili
                 'OLIVARI':        43.00,  // 40% + 5% composto - Maniglie
                 'COLOMBO DESIGN': 40.00,  // Maniglie
+                'GIBUS':          48.00,  // Click Zip, Tende da Sole
             },
             
             // Alias per normalizzazione nomi
@@ -20853,6 +20955,9 @@ const FLESSYA_2025 = {
                 'olivari': 'OLIVARI',
                 'colombo': 'COLOMBO DESIGN',
                 'colombo design': 'COLOMBO DESIGN',
+                'gibus': 'GIBUS',
+                'click zip': 'GIBUS',
+                'clickzip': 'GIBUS',
             },
             
             // Normalizza nome azienda
@@ -20907,7 +21012,7 @@ const FLESSYA_2025 = {
             }
         };
         
-        console.log('✅ SCONTI_FORNITORI v8.24 - Sistema sconti attivo (10 fornitori configurati)');
+        console.log('✅ SCONTI_FORNITORI v8.41 - Sistema sconti attivo (11 fornitori + GIBUS)');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 🔧 PLASTICINO AVVOLGIBILI 2025 - Database Tapparelle
