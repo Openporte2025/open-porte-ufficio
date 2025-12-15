@@ -11,7 +11,14 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.30 - CHANGELOG
+    DASHBOARD RILIEVI v8.31 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.31 (15 DIC 2025):
+    - 🆕 PRECOMPILAZIONE AUTOMATICA: Dati cliente estratti da JSON
+      - Nome, telefono, email, indirizzo, CF da progetto caricato
+      - Cerca in cliente, clientData, client (tutte le strutture)
+      - Oggetto lavori precompilato
+      - Zero inserimento manuale
     
     🔧 AGGIORNAMENTI v8.30 (15 DIC 2025):
     - 🆕 GENERA DOCUMENTO: Pulsante unico con 3 opzioni
@@ -1394,12 +1401,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.30 - Ricarico 50%, ENEA Ecobonus</title>
+    <title>Dashboard Rilievi v8.31 - Ricarico 50%, ENEA Ecobonus</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.30";
+        const DASHBOARD_VERSION = "8.31";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11746,7 +11753,7 @@ if (typeof module !== 'undefined' && module.exports) {
                             </div>
                         </div>
                         
-                        <!-- 🆕 v8.30: PULSANTE UNICO GENERA DOCUMENTO -->
+                        <!-- 🆕 v8.31: PULSANTE UNICO GENERA DOCUMENTO -->
                         <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
                             <span style="font-weight: 700; color: #374151;">📄 Documenti Cliente:</span>
                             
@@ -11862,7 +11869,7 @@ if (typeof module !== 'undefined' && module.exports) {
                                         <td class="excel-value" id="totaleComponentiNetto" style="color: #059669; background: #fffbeb;">€ 0.00</td>
                                         <td class="excel-value" id="totaleComponentiCliente" style="color: #1d4ed8; background: #fffbeb;">€ 0.00</td>
                                     </tr>
-                                    <!-- ENEA ECOBONUS v8.30 -->
+                                    <!-- ENEA ECOBONUS v8.31 -->
                                     <tr class="excel-row" id="rowENEA" style="background: #f0fdf4;">
                                         <td colspan="13" style="text-align: right; font-weight: 600;">📄 Elaborazione ENEA:</td>
                                         <td style="text-align: center;">
@@ -16713,7 +16720,7 @@ const OLIVARI_2025 = {
         FLAMINIA: { codice: 159, designer: "Studio Olivari", rosette: 107.40, verticali: 107.40, placca: 167.25 },
         FLUTE: { codice: 270, designer: "Studio Olivari", rosette: 116.95, verticali: 132.25, placca: 187.45, magnetica: 138.00 },
         FUTURA: { codice: 172, designer: "Studio Olivari", rosette: 121.05, verticali: 136.35, placca: 191.55, magnetica: 142.10 },
-        GARDA: { codice: 105, designer: "Studio Olivari", rosette: 77.80, verticali: 93.10, placca: 148.30, magnetica: 98.85 },
+        GARDA: { codice: 105, designer: "Studio Olivari", rosette: 77.80, verticali: 93.10, placca: 148.31, magnetica: 98.85 },
         GLORIA: { codice: 268, designer: "Studio Olivari", rosette: 141.45, verticali: 141.45, placca: 201.45 },
         GLORIA_Q: { codice: 269, designer: "Studio Olivari", rosette: 146.05, verticali: 146.05, placca: 206.05 },
         GOLIA: { codice: 160, designer: "Studio Olivari", rosette: 112.00, verticali: 112.00, placca: 171.85 },
@@ -16797,7 +16804,7 @@ const OLIVARI_2025 = {
         // POMOLI ZANCATI (offset)
         BLINDO: { codice: 178, coppia: 137.35, fisso: 86.85 },
         CONCA: { codice: 236, coppia: 152.75, fisso: 90.65 },
-        MELANZANA: { codice: 266, coppia: 155.90, fisso: 98.30 },
+        MELANZANA: { codice: 266, coppia: 155.90, fisso: 98.31 },
         PLANET: { codice: 195, coppia: 132.00, fisso: 83.30 },
         PLANET_Q: { codice: 203, coppia: 166.50, fisso: 103.90 },
         UOVO: { codice: 108, coppia: 138.85, fisso: 87.90 },
@@ -17062,7 +17069,7 @@ const COLOMBO_2025 = {
         ROBOCINQUE_S: {
             nome: "Robocinque S",
             rosetta_quadra: { listino: 56.50, netto: 33.90 },
-            rosetta_stretta: { listino: 80.50, netto: 48.30 }
+            rosetta_stretta: { listino: 80.50, netto: 48.31 }
         },
 
         // === SERIE DESIGN ===
@@ -20852,7 +20859,7 @@ const FLESSYA_2025 = {
                 A01: { codice: "A01", nome: "ANTIGRANDINE 14x50", materiale: "PVC", sezione: "14x50", prezzi: { base: 46.20, speciali: 0.80 }, max_l: 2500 },
                 A10: { codice: "A10", nome: "PESANTE 14x50", materiale: "PVC", sezione: "14x50", prezzi: { base: 39.70, speciali: 0.80 }, max_l: 2500 },
                 A16: { codice: "A16", nome: "MINI 10 11x32", materiale: "PVC", sezione: "11x32", prezzi: { base: 54.40, speciali: 0.80 }, max_l: 2000 },
-                A15: { codice: "A15", nome: "MINI 8 8x33", materiale: "PVC", sezione: "8x33", prezzi: { base: 48.30, speciali: 0.80 }, max_l: 1500 },
+                A15: { codice: "A15", nome: "MINI 8 8x33", materiale: "PVC", sezione: "8x33", prezzi: { base: 48.31, speciali: 0.80 }, max_l: 1500 },
                 
                 // Alluminio Estruso Sicurezza
                 TA10: { codice: "TA10", nome: "ALUBLIND 13x45", materiale: "Alluminio Sicurezza", sezione: "13x45", prezzi: { ral: 230.00, decoral: 306.00 }, max_l: 4000 },
@@ -23070,13 +23077,13 @@ const FLESSYA_2025 = {
             let dettaglioBeniSignif = [];
             let dettaglioPartiAutonome = [];
             
-            // 🐛 v8.30 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
+            // 🐛 v8.31 FIX: Non serviva moltiplicatore - usiamo _totaleCliente già calcolato
             // const moltiplicatore = 1 + (ricaricoPct / 100);
             
-            console.log('📊 calcolaIVAMista v8.30 - Analisi righe:', righe.length, '| ENEA:', enea);
+            console.log('📊 calcolaIVAMista v8.31 - Analisi righe:', righe.length, '| ENEA:', enea);
             
             righe.forEach(riga => {
-                // 🐛 v8.30 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
+                // 🐛 v8.31 FIX: Usa prezzo CLIENTE già calcolato (con sconto + ricarico)
                 // Prima usava: totaleListino * moltiplicatore (SBAGLIATO - mancava sconto!)
                 const totaleCliente = parseFloat(riga._totaleCliente) || 0;
                 const classificazione = classificaProdottoFiscale(riga.tipo, true);
@@ -23176,11 +23183,11 @@ const FLESSYA_2025 = {
             const smaltimento = parseFloat(document.getElementById('inputSmaltimento')?.value || 0);
             const componenti = parseFloat(document.getElementById('inputComponenti')?.value || 0);
             
-            // ENEA Ecobonus (v8.30)
+            // ENEA Ecobonus (v8.31)
             const eneaChecked = document.getElementById('checkENEA')?.checked || false;
             const eneaValore = eneaChecked ? parseFloat(document.getElementById('inputENEA')?.value || 0) : 0;
             
-            // Costi lavoro: netto = cliente = SENZA ricarico (v8.30)
+            // Costi lavoro: netto = cliente = SENZA ricarico (v8.31)
             const posaNetto = posa;
             const posaCliente = posa;
             const smontaggioNetto = smontaggio;
@@ -23223,7 +23230,7 @@ const FLESSYA_2025 = {
             document.getElementById('totaleComponentiNetto').textContent = `€ ${componentiNetto.toFixed(2)}`;
             document.getElementById('totaleComponentiCliente').textContent = `€ ${componentiCliente.toFixed(2)}`;
             
-            // ENEA (v8.30)
+            // ENEA (v8.31)
             document.getElementById('totaleENEAListino').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEANetto').textContent = `€ ${eneaValore.toFixed(2)}`;
             document.getElementById('totaleENEACliente').textContent = `€ ${eneaValore.toFixed(2)}`;
@@ -23281,7 +23288,7 @@ const FLESSYA_2025 = {
                 // Usa le righe del preventivo salvate
                 const righe = window.righePreventivo || [];
                 
-                // Calcola IVA mista (v8.30: ENEA al 22%)
+                // Calcola IVA mista (v8.31: ENEA al 22%)
                 const calcolo = calcolaIVAMista(righe, {
                     posa: posaCliente,
                     smontaggio: smontaggioCliente,
@@ -23325,7 +23332,7 @@ const FLESSYA_2025 = {
                 
             } else if (configIVA.aliquotaUnica > 0) {
                 // ═══════════════════════════════════════════════════════════════
-                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.30: ENEA sempre al 22%
+                // IVA ALIQUOTA UNICA (4%, 10%, 22%) - v8.31: ENEA sempre al 22%
                 // ═══════════════════════════════════════════════════════════════
                 const aliquota = configIVA.aliquotaUnica;
                 if (labelTipoIVA) labelTipoIVA.textContent = `IVA ${aliquota}%`;
@@ -23335,7 +23342,7 @@ const FLESSYA_2025 = {
                 if (rowIVA) rowIVA.style.display = 'table-row';
                 document.getElementById('ivaPercent').textContent = aliquota;
                 
-                // v8.30: ENEA sempre al 22%, resto all'aliquota selezionata
+                // v8.31: ENEA sempre al 22%, resto all'aliquota selezionata
                 const baseCliente = subtotaleCliente - eneaValore;
                 const baseListino = subtotaleListino - eneaValore;
                 const baseNetto = subtotaleNetto - eneaValore;
@@ -23361,7 +23368,7 @@ const FLESSYA_2025 = {
             document.getElementById('grandTotalNetto').textContent = `€ ${grandTotalNetto.toFixed(2)}`;
             document.getElementById('grandTotalCliente').textContent = `€ ${grandTotalCliente.toFixed(2)}`;
             
-            console.log(`💰 Ricalcolo v8.30: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
+            console.log(`💰 Ricalcolo v8.31: Tipo=${tipoIntervento} | Subtot €${subtotaleCliente.toFixed(2)} | ENEA €${eneaValore.toFixed(2)} | Tot €${grandTotalCliente.toFixed(2)}`);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -30270,7 +30277,7 @@ const FLESSYA_2025 = {
         console.log('✅ Sistema Preventivazione initialized');
 
         // ═══════════════════════════════════════════════════════════════════════════════
-        // 📄 MODULO STAMPA DOCUMENTI CLIENTE - v8.30
+        // 📄 MODULO STAMPA DOCUMENTI CLIENTE - v8.31
         // ═══════════════════════════════════════════════════════════════════════════════
         
         /**
@@ -32439,7 +32446,7 @@ const FLESSYA_2025 = {
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-    <!-- 📄 MODAL SCELTA DOCUMENTO + DATI CLIENTE - v8.30 -->
+    <!-- 📄 MODAL SCELTA DOCUMENTO + DATI CLIENTE - v8.31 -->
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
     <div id="modalDatiCliente" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99999; justify-content: center; align-items: center;">
         <div style="background: white; border-radius: 16px; max-width: 700px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
@@ -32599,15 +32606,15 @@ const FLESSYA_2025 = {
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-    <!-- 📄 SCRIPT STAMPA DOCUMENTI - GLOBALE v8.30 -->
+    <!-- 📄 SCRIPT STAMPA DOCUMENTI - GLOBALE v8.31 -->
     <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
     <script>
     (function() {
         'use strict';
         
-        // 🆕 v8.30: Apre modal scelta documento
+        // 🆕 v8.31: Apre modal scelta documento
         window.apriSceltaDocumento = function() {
-            console.log('📄 apriSceltaDocumento v8.30');
+            console.log('📄 apriSceltaDocumento v8.31');
             
             if (!window.currentData) {
                 alert('⚠️ Nessun progetto caricato. Carica prima un rilievo.');
@@ -32628,7 +32635,7 @@ const FLESSYA_2025 = {
             }
         };
         
-        // 🆕 v8.30: Seleziona tipo e passa a Step 2
+        // 🆕 v8.31: Seleziona tipo e passa a Step 2
         window.selezionaTipoDocumento = function(tipo) {
             console.log('📄 Tipo selezionato:', tipo);
             
@@ -32665,7 +32672,7 @@ const FLESSYA_2025 = {
             precompilaFormDatiCliente(tipo);
         };
         
-        // 🆕 v8.30: Torna a Step 1
+        // 🆕 v8.31: Torna a Step 1
         window.tornaSceltaTipo = function() {
             document.getElementById('stepSceltaTipo').style.display = 'block';
             document.getElementById('stepDatiCliente').style.display = 'none';
@@ -32675,6 +32682,47 @@ const FLESSYA_2025 = {
         
         // Precompila form
         function precompilaFormDatiCliente(tipo) {
+            var progetto = window.currentData || window.projectData;
+            if (!progetto) return;
+            
+            console.log('📋 Precompila dati da JSON:', progetto);
+            
+            // ═══ ESTRAI DATI CLIENTE DA TUTTE LE POSSIBILI POSIZIONI ═══
+            var cliente = progetto.cliente || progetto.clientData || {};
+            var clienteNome = cliente.nome || progetto.client || progetto.name || '';
+            var clienteCognome = cliente.cognome || '';
+            var nomeCompleto = clienteCognome ? clienteNome + ' ' + clienteCognome : clienteNome;
+            
+            var telefono = cliente.telefono || cliente.phone || '';
+            var email = cliente.email || '';
+            var cf = cliente.cf || cliente.codiceFiscale || cliente.piva || '';
+            
+            // Indirizzo: cerca in più posti
+            var indirizzo = cliente.indirizzo || cliente.via || progetto.indirizzo || progetto.address || '';
+            var citta = cliente.citta || cliente.città || progetto.citta || '';
+            var cap = cliente.cap || '';
+            if (citta && indirizzo && indirizzo.indexOf(citta) < 0) {
+                indirizzo = indirizzo + (cap ? ', ' + cap : '') + ' ' + citta;
+            }
+            
+            // Oggetto lavori
+            var oggetto = progetto.oggetto || progetto.descrizione || cliente.progetto || 'Fornitura e posa serramenti';
+            
+            // ═══ COMPILA I CAMPI ═══
+            var campi = {
+                'clienteNome': nomeCompleto,
+                'clienteTelefono': telefono,
+                'clienteEmail': email,
+                'clienteIndirizzo': indirizzo,
+                'clienteCF': cf,
+                'docOggetto': oggetto
+            };
+            
+            Object.keys(campi).forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && campi[id]) el.value = campi[id];
+            });
+            
             // Data odierna
             var oggi = new Date().toISOString().split('T')[0];
             var dataInput = document.getElementById('docData');
@@ -32689,31 +32737,14 @@ const FLESSYA_2025 = {
             };
             var numSuggerito = (prefissi[tipo] || 'DOC-') + anno + '/';
             var numInput = document.getElementById('docNumero');
-            if (numInput && !numInput.value) numInput.value = numSuggerito;
+            if (numInput) numInput.value = numSuggerito;
             
-            // Precompila da progetto
-            var progetto = window.currentData;
-            if (progetto) {
-                if (progetto.cliente) {
-                    var nomeInput = document.getElementById('clienteNome');
-                    if (nomeInput && !nomeInput.value && progetto.cliente.nome) nomeInput.value = progetto.cliente.nome;
-                    var telInput = document.getElementById('clienteTelefono');
-                    if (telInput && !telInput.value && progetto.cliente.telefono) telInput.value = progetto.cliente.telefono;
-                    var emailInput = document.getElementById('clienteEmail');
-                    if (emailInput && !emailInput.value && progetto.cliente.email) emailInput.value = progetto.cliente.email;
-                }
-                if (progetto.indirizzo) {
-                    var indInput = document.getElementById('clienteIndirizzo');
-                    if (indInput && !indInput.value) indInput.value = progetto.indirizzo;
-                }
-            }
+            console.log('✅ Campi precompilati:', campi);
         }
         
         window.chiudiModalDatiCliente = function() {
             var modal = document.getElementById('modalDatiCliente');
             if (modal) modal.style.display = 'none';
-            // Reset campi per prossima apertura
-            resetFormDatiCliente();
         };
         
         function resetFormDatiCliente() {
@@ -32785,7 +32816,7 @@ const FLESSYA_2025 = {
         };
         
         // ═══════════════════════════════════════════════════════════════════════════
-        // 🆕 v8.30: GENERATORE DOCUMENTO PREMIUM
+        // 🆕 v8.31: GENERATORE DOCUMENTO PREMIUM
         // ═══════════════════════════════════════════════════════════════════════════
         function generaDocumentoPremium(tipo, cliente, doc, righe, totali) {
             var isConferma = tipo === 'conferma_premium';
