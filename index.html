@@ -16,8 +16,13 @@
     🔧 AGGIORNAMENTI v8.45 (16 DIC 2025):
     - 🆕 FINSTRAL_FERRAMENTA_PREZZI: Database prezzi ferramenta (411, 409, 211, 99, ecc.)
     - 🆕 FINSTRAL_ACCESSORI_PREZZI: Database prezzi accessori (cod.70, 454, 46-S)
-    - 💰 calcolaPrezzoFinstral() ora include supplementoFerramenta e supplementoAccessori
-    - 📊 Calcoli più precisi basati su conferme ordine reali
+    - ✅ FIX CRITICO: Supplemento rivestimento Z62N ora calcolato correttamente
+      • Prima: telaio "Z62N" → cercava "Z62NN" → NON TROVATO → €0
+      • Ora: telaio "Z62N" → cerca "Z62N" → TROVATO
+    - 📊 Valori aggiornati da listino EUR 2025/10:
+      • Rivestimenti telaio: Z62N PVC-ALU = €20.9/ml (era €18)
+      • Profilo anta Nova-line: €5.62/ml (era €5.51)
+    - 💰 calcolaPrezzoFinstral() include supplementoFerramenta e supplementoAccessori
     
     🔧 AGGIORNAMENTI v8.43 (15 DIC 2025):
     - ☀️ GIBUS DATABASE v3.0 COMPLETO:
@@ -1511,7 +1516,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.43";
+        const DASHBOARD_VERSION = "8.45";
         const DASHBOARD_DATE = "05 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11537,7 +11542,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.15</span>
+                <span class="logo-version" id="version-badge">v8.45</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -19648,18 +19653,20 @@ const FLESSYA_2025 = {
             // ✅ v8.10: RIVESTIMENTO TELAIO ALLUMINIO (€/ml) - Listino EUR 2025/3 pag.10-11
             // Questo è il supplemento per il RIVESTIMENTO esterno in alluminio
             // Si applica INVECE di supplementiTelaio quando finituraEst = alluminio
+            // ✅ v8.45 CORRETTO: Rivestimenti telaio alluminio da listino EUR 2025/10
+            // Valori: PVC-PVC / PVC-ALU (€/ml)
             rivestimentiTelaiAlluminio: {
-                // Codice telaio + tipo rivestimento: { gruppoA (bianco), gruppoB (scuri/legno) }
-                "961N":  { gruppoA: 17.2, gruppoB: 20.4 },   // Standard
-                "961N5": { gruppoA: 18.0, gruppoB: 19.3 },   // Sottile
-                "961X":  { gruppoA: 23.6, gruppoB: 25.4 },   // Speciale (solo laterali/superiore)
-                "962N":  { gruppoA: 17.2, gruppoB: 22.4 },
-                "962N5": { gruppoA: 18.0, gruppoB: 19.3 },
-                "963N":  { gruppoA: 18.0, gruppoB: 24.9 },
-                "963N5": { gruppoA: 18.0, gruppoB: 19.3 },
-                "967N":  { gruppoA: 20.4, gruppoB: 24.0 },   // Forma Z
-                "Z62N":  { gruppoA: 18.0, gruppoB: 22.0 },
-                "Z91N":  { gruppoA: 22.0, gruppoB: 26.0 }
+                // Codice telaio: { pvcPvc: valore PVC-PVC, pvcAlu: valore PVC-ALU }
+                "961N":  { pvcPvc: 17.5, pvcAlu: 20.9 },   // Standard
+                "961N5": { pvcPvc: 18.3, pvcAlu: 19.7 },   // Sottile
+                "961X":  { pvcPvc: 24.1, pvcAlu: 26.0 },   // Speciale (solo laterali/superiore)
+                "962N":  { pvcPvc: 17.5, pvcAlu: 22.9 },
+                "962N5": { pvcPvc: 18.3, pvcAlu: 19.7 },
+                "963N":  { pvcPvc: 18.0, pvcAlu: 24.9 },
+                "963N5": { pvcPvc: 18.0, pvcAlu: 19.3 },
+                "967N":  { pvcPvc: 20.4, pvcAlu: 24.0 },   // Forma Z
+                "Z62N":  { pvcPvc: 18.3, pvcAlu: 20.9 },   // ✅ v8.45: Corretto da listino
+                "Z91N":  { pvcPvc: 18.3, pvcAlu: 22.0 }
             },
 
             // ✅ v8.10: Colori alluminio gruppo B (scuri/legno verniciato)
@@ -19700,9 +19707,9 @@ const FLESSYA_2025 = {
                 "classic-line": { pvc: 0, alluminio: 10.50 },      // codice973K
                 "step-line": { pvc: 0, alluminio: 17.13 },         // codice974N - configuratore calcola 17.13€/ml
                 "slim-line": { pvc: 1.94, alluminio: 12.40 },
-                "nova-line": { pvc: 5.51, alluminio: 0 },          // Nova-line ha vetro esterno
-                "nova-line-30": { pvc: 5.51, alluminio: 0 },       // Nova-line 30mm
-                "nova-line-40": { pvc: 5.51, alluminio: 0 },       // Nova-line 40mm
+                "nova-line": { pvc: 5.62, alluminio: 0 },          // Nova-line ha vetro esterno - listino EUR 2025/10
+                "nova-line-30": { pvc: 5.62, alluminio: 0 },       // Nova-line 30mm
+                "nova-line-40": { pvc: 5.62, alluminio: 0 },       // Nova-line 40mm
                 "nova-line-plus": { pvc: 23.10, alluminio: 0 }     // codice941 pag.93
             },
 
@@ -20305,6 +20312,7 @@ const FLESSYA_2025 = {
             
             const risultato = { config, dettaglio: {}, totale: 0, errore: null };
             
+            // Prezzo base da griglia standard
             const prezzoBase = trovaPrezzoBaseFinstral(tipo, larghezza, altezza);
             console.log(`🔬 trovaPrezzoBaseFinstral(tipo=${tipo}, L=${larghezza}, H=${altezza}) = ${prezzoBase}`);
             if (prezzoBase === null) {
@@ -20332,24 +20340,26 @@ const FLESSYA_2025 = {
             const antaNorm = tipoAnta.toLowerCase().replace(/\s+/g, '-');
             
             // ✅ v8.10: Supplemento telaio CON RIVESTIMENTO ALLUMINIO
-            // Se finitura esterna = alluminio, usa tabella rivestimenti (961N, etc.)
-            // altrimenti usa supplemento base telaio
+            // 🆕 v8.45 FIX: Gestisce correttamente telaio con/senza "N" finale
             if (materiale === 'alluminio' && coloreAlluminio) {
-                // Determina codice rivestimento (es. 961 → 961N)
-                const codiceRiv = telaio + "N";
+                // 🆕 v8.45 FIX: Determina codice rivestimento senza raddoppiare "N"
+                // Se telaio = "Z62N" → cerca "Z62N" (non "Z62NN")
+                // Se telaio = "961" → cerca "961N"
+                let codiceRiv = telaio;
+                if (!telaio.toUpperCase().endsWith('N')) {
+                    codiceRiv = telaio + "N";
+                }
                 const rivData = FINSTRAL_PREZZI.rivestimentiTelaiAlluminio?.[codiceRiv];
+                console.log(`🔬 v8.45: telaio="${telaio}" → codiceRiv="${codiceRiv}" → rivData=${rivData ? 'trovato' : 'NON trovato'}`);
+                
                 
                 if (rivData) {
-                    // Determina gruppo colore: A (chiari) o B (scuri/legno)
-                    const colUpper = String(coloreAlluminio).toUpperCase();
-                    const isGruppoB = colUpper.startsWith('L') || 
-                                      FINSTRAL_PREZZI.coloriAlluminioGruppoB?.some(c => colUpper.includes(c));
-                    const valoreRiv = isGruppoB ? rivData.gruppoB : rivData.gruppoA;
+                    // ✅ v8.45: Usa valore pvcAlu per rivestimento alluminio esterno
+                    const valoreRiv = rivData.pvcAlu || rivData.pvcPvc || 20.9;  // Fallback a 20.9
                     
-                    console.log(`🔬 Rivestimento ${codiceRiv}: colore ${coloreAlluminio} → gruppo ${isGruppoB ? 'B' : 'A'} = €${valoreRiv}/ml × ${perimetro.toFixed(2)}ml`);
+                    console.log(`🔬 Rivestimento ${codiceRiv}: €${valoreRiv}/ml × ${perimetro.toFixed(2)}ml`);
                     risultato.dettaglio.supplementoTelaio = Math.round(valoreRiv * perimetro * 100) / 100;
                     risultato.dettaglio.codiceRivestimento = codiceRiv;
-                    risultato.dettaglio.gruppoColoreTelaio = isGruppoB ? 'B' : 'A';
                     console.log(`🔬 → supplementoTelaio (rivestimento) = €${risultato.dettaglio.supplementoTelaio}`);
                 } else {
                     // Fallback a supplemento base se rivestimento non trovato
