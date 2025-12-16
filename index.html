@@ -11,7 +11,7 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.43 - CHANGELOG
+    DASHBOARD RILIEVI v8.44 - CHANGELOG
     
     🔧 AGGIORNAMENTI v8.43 (15 DIC 2025):
     - ☀️ GIBUS DATABASE v3.0 COMPLETO:
@@ -1500,7 +1500,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.43 - GIBUS Click Zip + Tende</title>
+    <title>Dashboard Rilievi v8.44 - GIBUS Click Zip + Tende</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -20016,6 +20016,244 @@ const FLESSYA_2025 = {
             }
         };
 
+        // ============================================================================
+        // 🆕 v8.44: DATABASE FINSTRAL OTTOBRE 2025
+        // ============================================================================
+        
+        // BANCALI INTERNI (listino 10/2025 pag. 140)
+        const FINSTRAL_BANCALI_INTERNI = {
+            'PVC': {
+                codice: '25000',
+                desc: 'MDF pellicolato 25mm',
+                note: 'Lunghezza max 4400mm. Oltre 3200mm: 2 pezzi con giunzione',
+                profondita: [120, 150, 180, 200, 240, 280, 320, 360, 400],
+                lunghezze: [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400],
+                prezzi: [
+                    [22.2, 24.6, 26.6, 29.1, 31.8, 34.4, 36.4, 39.1, 41.6, 67.9, 70.6, 73.5, 76.2, 78.7, 83.4, 87.9, 90.5, 93.2, 95.4, 100],
+                    [24.5, 27.2, 29.1, 32.0, 34.5, 37.4, 39.6, 42.4, 45.7, 75.9, 78.8, 82.1, 84.9, 88.4, 93.9, 98.3, 102, 105, 108, 112],
+                    [29.2, 32.5, 35.1, 37.9, 40.8, 43.9, 47.1, 50.2, 53.8, 89.7, 93.0, 96.7, 100, 104, 110, 115, 119, 123, 127, 131],
+                    [31.5, 35.2, 37.8, 40.8, 44.0, 47.2, 50.8, 54.2, 57.9, 96.9, 100, 104, 108, 113, 119, 125, 129, 134, 138, 143],
+                    [38.7, 42.8, 46.0, 50.2, 54.3, 58.1, 62.9, 66.6, 71.1, 119, 123, 128, 133, 139, 147, 154, 159, 165, 170, 177],
+                    [43.1, 47.9, 51.7, 56.2, 60.4, 65.2, 70.1, 74.8, 79.7, 133, 138, 144, 149, 155, 163, 172, 178, 185, 191, 197],
+                    [50.5, 55.7, 60.3, 73.0, 76.8, 82.1, 91.3, 96.4, 100, 141, 146, 150, 155, 161, 171, 184, 188, 191, 196, 203],
+                    [55.5, 61.7, 66.9, 80.6, 85.1, 91.1, 101, 107, 111, 157, 162, 167, 173, 179, 190, 204, 209, 213, 218, 226],
+                    [60.3, 67.8, 76.8, 90.0, 96.4, 105, 120, 125, 134, 179, 186, 193, 202, 211, 222, 236, 245, 253, 261, 268]
+                ]
+            },
+            'LEGNO_95000': {
+                codice: '95000',
+                desc: 'Legno 19mm profilo 39mm',
+                note: 'Lunghezza max 3200mm',
+                profondita: [120, 150, 180, 200, 240, 280, 320, 360, 400],
+                lunghezze: [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200],
+                prezzi: [
+                    [42.8, 48.7, 54.5, 60.3, 66.2, 72.0, 77.8, 83.7, 89.5, 95.4, 101, 107, 113, 119],
+                    [45.9, 52.3, 58.6, 65.0, 71.4, 77.7, 84.1, 90.4, 96.8, 103, 110, 116, 122, 129],
+                    [49.0, 55.8, 62.7, 69.6, 76.5, 83.4, 90.3, 97.2, 104, 111, 118, 125, 132, 139],
+                    [50.5, 57.6, 64.7, 71.9, 79.0, 86.1, 93.3, 100, 108, 115, 122, 129, 136, 143],
+                    [53.6, 61.2, 68.8, 76.5, 84.1, 91.7, 99.4, 107, 115, 122, 130, 137, 145, 153],
+                    [56.7, 64.8, 72.9, 81.1, 89.2, 97.4, 106, 114, 122, 130, 138, 146, 154, 163],
+                    [59.7, 68.4, 77.0, 85.7, 94.3, 103, 112, 120, 129, 138, 146, 155, 164, 172],
+                    [62.8, 72.0, 81.1, 90.3, 99.4, 109, 118, 127, 136, 146, 155, 164, 173, 182],
+                    [65.9, 75.5, 85.2, 94.8, 104, 114, 124, 133, 143, 153, 163, 172, 182, 192]
+                ]
+            },
+            'LEGNO_96000': {
+                codice: '96000',
+                desc: 'Legno 19mm profilo 69mm',
+                note: 'Lunghezza max 4400mm. Oltre 3200mm: 2 pezzi con giunzione',
+                profondita: [120, 150, 180, 200, 240, 280, 320, 360, 400],
+                lunghezze: [600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400],
+                prezzi: [
+                    [53.9, 61.7, 69.4, 77.2, 85.0, 92.8, 101, 108, 116, 124, 132, 139, 147, 155, 163, 170, 178, 186, 194, 201],
+                    [57.9, 66.3, 74.7, 83.2, 91.6, 100, 108, 117, 125, 134, 142, 151, 159, 167, 176, 184, 193, 201, 209, 218],
+                    [61.9, 71.0, 80.1, 89.1, 98.2, 107, 116, 125, 134, 143, 153, 162, 171, 180, 189, 198, 207, 217, 226, 235],
+                    [63.9, 73.3, 82.7, 92.2, 102, 111, 120, 130, 139, 149, 158, 168, 177, 186, 196, 205, 215, 224, 234, 243],
+                    [67.9, 78.0, 88.1, 98.2, 108, 118, 129, 139, 149, 159, 169, 179, 190, 200, 210, 220, 230, 240, 250, 260],
+                    [71.9, 82.6, 93.4, 104, 115, 126, 137, 147, 158, 169, 180, 191, 202, 213, 224, 234, 245, 256, 267, 278],
+                    [75.9, 87.3, 98.7, 110, 122, 133, 145, 156, 168, 179, 191, 202, 214, 226, 237, 249, 260, 272, 284, 295],
+                    [79.9, 92.0, 104, 116, 128, 141, 153, 165, 177, 189, 202, 214, 226, 238, 251, 263, 275, 288, 300, 312],
+                    [83.9, 96.6, 109, 122, 135, 148, 161, 174, 187, 200, 213, 225, 238, 251, 264, 277, 290, 303, 316, 329]
+                ]
+            }
+        };
+        
+        // ANTA TWIN - Veneziana e Plissettata (listino 10/2025 pag. 146-147)
+        const FINSTRAL_ANTA_TWIN = {
+            tipiAnta: {
+                'SLIM_TWIN': { cod: 'C788', desc: 'Slim-line Twin 77mm', codVeneziana: 'WS25' },
+                'SLIM_TWIN_90': { cod: 'C988', desc: 'Slim-line Twin 90/124mm', codVeneziana: 'WS25' },
+                'SLIM_CRISTAL_TWIN': { cod: 'C779', desc: 'Slim-line Cristal Twin', codVeneziana: 'WSC25' },
+                'SLIM_CRISTAL_TWIN_90': { cod: 'C979', desc: 'Slim-line Cristal Twin 90/124', codVeneziana: 'WSC25' },
+                'NOVA_TWIN': { cod: 'N989', desc: 'Nova-line Twin', codVeneziana: 'WN25' },
+                'NOVA_CRISTAL_TWIN': { cod: 'N979', desc: 'Nova-line Cristal Twin', codVeneziana: 'WNC25' }
+            },
+            coloriVeneziana: {
+                '0717': { nome: 'Silver', gtot: 0.09, classe: 4, riflessione: 64, trasmissione: 4, assorbimento: 32 },
+                '0716': { nome: 'Dark silver', gtot: 0.13, classe: 3, riflessione: 51, trasmissione: 2, assorbimento: 47 },
+                '0710': { nome: 'White', gtot: 0.26, classe: 2, riflessione: 63, trasmissione: 17, assorbimento: 20 },
+                '0711': { nome: 'Cream', gtot: 0.28, classe: 2, riflessione: 57, trasmissione: 17, assorbimento: 26 },
+                '0715': { nome: 'Grey', gtot: 0.18, classe: 2, riflessione: 39, trasmissione: 4, assorbimento: 57 },
+                '0703': { nome: 'Brown', gtot: 0.21, classe: 2, riflessione: 26, trasmissione: 4, assorbimento: 70 },
+                '0750': { nome: 'Black', gtot: 0.20, classe: 2, riflessione: 6, trasmissione: 2, assorbimento: 92 },
+                '0719': { nome: 'Gold mink', gtot: 0.19, classe: 2, riflessione: 38, trasmissione: 6, assorbimento: 56 },
+                '0620': { nome: 'Silver (lamella larga)', gtot: 0.10, classe: 4, riflessione: 65, trasmissione: 5, assorbimento: 30 }
+            },
+            coloriPlissettata: {
+                '7460': { nome: 'White', gtot: 0.07, classe: 4, riflessione: 70, trasmissione: 0, assorbimento: 30 },
+                '7461': { nome: 'Cream', gtot: 0.07, classe: 4, riflessione: 70, trasmissione: 0, assorbimento: 30 },
+                '7466': { nome: 'Grey', gtot: 0.07, classe: 4, riflessione: 70, trasmissione: 0, assorbimento: 30 },
+                '7467': { nome: 'Grigio scuro', gtot: 0.07, classe: 4, riflessione: 70, trasmissione: 0, assorbimento: 30 }
+            },
+            comandi: {
+                '27': { desc: 'Catenella', supplemento: 0 },
+                '30': { desc: 'Motore 2.5m', supplemento: 345 },
+                '30-1': { desc: 'Motore 10m', supplemento: 356 }
+            },
+            // Prezzi veneziana (larghezze x altezze)
+            prezziVeneziana: {
+                larghezze: [400, 500, 600, 700, 800, 900, 1000, 1100],
+                altezze: [600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300],
+                prezzi: [
+                    [141, 150, 159, 168, 177, 186, 195, 205],
+                    [148, 158, 168, 178, 188, 198, 209, 219],
+                    [155, 166, 177, 188, 199, 211, 222, 233],
+                    [162, 174, 186, 198, 210, 223, 235, 248],
+                    [169, 182, 195, 208, 221, 235, 248, 262],
+                    [176, 190, 204, 218, 232, 247, 261, 276],
+                    [183, 198, 213, 228, 243, 259, 274, 290],
+                    [190, 206, 222, 238, 255, 271, 288, 304],
+                    [197, 214, 231, 248, 266, 283, 301, 319],
+                    [205, 223, 241, 259, 277, 296, 314, 333],
+                    [212, 231, 250, 269, 288, 308, 327, 347],
+                    [219, 239, 259, 279, 299, 320, 341, 361],
+                    [226, 247, 268, 289, 310, 332, 354, 376],
+                    [233, 255, 277, 299, 322, 344, 367, 390],
+                    [240, 263, 286, 309, 333, 357, 380, 404],
+                    [248, 272, 296, 320, 344, 369, 394, 419],
+                    [255, 280, 305, 330, 355, 381, 407, 433],
+                    [262, 288, 314, 340, 366, 393, 420, 447]
+                ]
+            },
+            // Prezzi plissettata
+            prezziPlissettata: {
+                larghezze: [400, 500, 600, 700, 800, 900, 1000, 1100],
+                altezze: [600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200, 2300],
+                prezzi: [
+                    [155, 165, 175, 185, 195, 205, 215, 225],
+                    [163, 174, 185, 196, 207, 218, 229, 241],
+                    [171, 183, 195, 207, 219, 232, 244, 257],
+                    [179, 192, 205, 218, 232, 245, 259, 273],
+                    [187, 201, 215, 229, 244, 259, 273, 288],
+                    [195, 210, 225, 240, 256, 272, 288, 304],
+                    [203, 219, 235, 251, 268, 285, 302, 320],
+                    [211, 228, 245, 262, 281, 299, 317, 336],
+                    [219, 237, 255, 274, 293, 312, 332, 352],
+                    [227, 246, 265, 285, 305, 326, 346, 368],
+                    [235, 255, 276, 296, 318, 339, 361, 383],
+                    [243, 264, 286, 307, 330, 352, 375, 399],
+                    [251, 274, 296, 319, 342, 366, 390, 415],
+                    [259, 283, 306, 330, 355, 379, 405, 431],
+                    [267, 292, 316, 341, 367, 393, 419, 446],
+                    [275, 301, 326, 352, 379, 406, 434, 462],
+                    [283, 310, 337, 364, 391, 420, 448, 478],
+                    [291, 319, 347, 375, 404, 433, 463, 493]
+                ]
+            }
+        };
+        
+        // PROFILI ALLARGAMENTO (listino 10/2025 pag. 64-82)
+        const FINSTRAL_ALLARGAMENTI = {
+            'PVC_77': {
+                codSenzaRinforzo: '1Q1',
+                codConRinforzo: '1QX1',
+                desc: 'Allargamento 77mm PVC-PVC',
+                misure: {
+                    30: { senzaRinf: 19.1, conRinf: 25.9, raggio: 400 },
+                    50: { senzaRinf: 21.5, conRinf: 28.3, raggio: 450 },
+                    80: { senzaRinf: 45.6 },
+                    100: { senzaRinf: 45.6 },
+                    150: { senzaRinf: 45.6 },
+                    200: { senzaRinf: 67.1 },
+                    250: { senzaRinf: 91.2 },
+                    300: { senzaRinf: 91.2 }
+                }
+            },
+            'PVC_LEGNO_77': {
+                codice: '4GAC',
+                desc: 'Allargamento 77mm PVC-Legno',
+                note: 'Prezzi variano per gruppo colore PVC e legno',
+                misure: {
+                    30: { gruppoA_legno1: 65.2, gruppoB_legno1: 66.9 },
+                    50: { gruppoA_legno1: 70.3, gruppoB_legno1: 72.9 },
+                    80: { gruppoA_legno1: 135, gruppoB_legno1: 140 },
+                    100: { gruppoA_legno1: 141, gruppoB_legno1: 146 },
+                    150: { gruppoA_legno1: 211, gruppoB_legno1: 219 }
+                }
+            },
+            'PVC_ALU_77': {
+                codice: '2GAC',
+                desc: 'Allargamento 77mm PVC-Alluminio',
+                misure: {
+                    30: { gruppoA: 60.4, gruppoB: 62.1 },
+                    50: { gruppoA: 66.2, gruppoB: 68.9 },
+                    80: { gruppoA: 109, gruppoB: 114 },
+                    100: { gruppoA: 115, gruppoB: 121 },
+                    150: { gruppoA: 164, gruppoB: 172 }
+                }
+            }
+        };
+        
+        // Funzione calcolo prezzo bancale interno
+        function calcolaPrezzoBancaleInterno(tipo, profondita, lunghezza) {
+            const bancale = FINSTRAL_BANCALI_INTERNI[tipo];
+            if (!bancale) return 0;
+            
+            // Trova indice profondità
+            let idxP = 0;
+            for (let i = 0; i < bancale.profondita.length; i++) {
+                if (profondita <= bancale.profondita[i]) { idxP = i; break; }
+                idxP = i;
+            }
+            
+            // Trova indice lunghezza
+            let idxL = 0;
+            for (let i = 0; i < bancale.lunghezze.length; i++) {
+                if (lunghezza <= bancale.lunghezze[i]) { idxL = i; break; }
+                idxL = i;
+            }
+            
+            return bancale.prezzi[idxP]?.[idxL] || 0;
+        }
+        
+        // Funzione calcolo prezzo anta twin
+        function calcolaPrezzoAntaTwin(tipoOscurante, larghezza, altezza, comando = '27') {
+            const tabella = tipoOscurante === 'veneziana' ? 
+                FINSTRAL_ANTA_TWIN.prezziVeneziana : 
+                FINSTRAL_ANTA_TWIN.prezziPlissettata;
+            
+            // Trova indice larghezza
+            let idxL = 0;
+            for (let i = 0; i < tabella.larghezze.length; i++) {
+                if (larghezza <= tabella.larghezze[i]) { idxL = i; break; }
+                idxL = i;
+            }
+            
+            // Trova indice altezza
+            let idxA = 0;
+            for (let i = 0; i < tabella.altezze.length; i++) {
+                if (altezza <= tabella.altezze[i]) { idxA = i; break; }
+                idxA = i;
+            }
+            
+            let prezzo = tabella.prezzi[idxA]?.[idxL] || 0;
+            
+            // Aggiungi supplemento comando
+            const supplComando = FINSTRAL_ANTA_TWIN.comandi[comando]?.supplemento || 0;
+            
+            return prezzo + supplComando;
+        }
+
         // FUNZIONI CALCOLO FINSTRAL
         function trovaPrezzoBaseFinstral(tipo, larghezza, altezza) {
             const tabella = FINSTRAL_PREZZI["tipo" + tipo];
@@ -20245,8 +20483,33 @@ const FLESSYA_2025 = {
             const supplVetro = FINSTRAL_PREZZI.supplementiVetro[vetro] || 0;
             risultato.dettaglio.supplementoVetro = Math.round(supplVetro * superficieVetro * 100) / 100;
             
+            // 🆕 v8.44: Bancale Interno (se configurato)
+            if (config.bancaleTipo && config.bancaleProfondita) {
+                const lunghezzaBancale = config.bancaleLunghezza || larghezza;
+                risultato.dettaglio.bancale = {
+                    tipo: config.bancaleTipo,
+                    profondita: config.bancaleProfondita,
+                    lunghezza: lunghezzaBancale,
+                    prezzo: calcolaPrezzoBancaleInterno(config.bancaleTipo, config.bancaleProfondita, lunghezzaBancale)
+                };
+                console.log(`🪟 Bancale ${config.bancaleTipo}: P=${config.bancaleProfondita}mm L=${lunghezzaBancale}mm → €${risultato.dettaglio.bancale.prezzo}`);
+            }
+            
+            // 🆕 v8.44: Anta Twin - Veneziana/Plissettata (se configurato)
+            if (config.antaTwinTipo && (config.antaTwinTipo === 'veneziana' || config.antaTwinTipo === 'plissettata')) {
+                risultato.dettaglio.antaTwin = {
+                    tipo: config.antaTwinTipo,
+                    modello: config.antaTwinModello,
+                    colore: config.antaTwinColore,
+                    comando: config.antaTwinComando || '27',
+                    prezzo: calcolaPrezzoAntaTwin(config.antaTwinTipo, larghezza, altezza, config.antaTwinComando || '27')
+                };
+                console.log(`🎚️ Anta Twin ${config.antaTwinTipo}: L=${larghezza} H=${altezza} → €${risultato.dettaglio.antaTwin.prezzo}`);
+            }
+            
             // TOTALE (escluso costo preparazione colore che è una tantum)
             // ✅ v7.73: Aggiunto supplementoProfiloAnta e supplementoMontante
+            // ✅ v8.44: Aggiunto bancale e anta twin
             risultato.totale = Math.round((
                 risultato.dettaglio.prezzoBase +
                 risultato.dettaglio.supplementoTelaio +
@@ -20254,7 +20517,9 @@ const FLESSYA_2025 = {
                 (risultato.dettaglio.supplementoMontante || 0) +
                 (risultato.dettaglio.supplementoColorePVC || 0) +
                 (risultato.dettaglio.supplementoColoreAlluminio || 0) +
-                risultato.dettaglio.supplementoVetro
+                risultato.dettaglio.supplementoVetro +
+                (risultato.dettaglio.bancale?.prezzo || 0) +
+                (risultato.dettaglio.antaTwin?.prezzo || 0)
             ) * 100) / 100;
             
             return risultato;
