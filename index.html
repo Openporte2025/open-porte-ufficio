@@ -11,7 +11,13 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.44 - CHANGELOG
+    DASHBOARD RILIEVI v8.45 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.45 (16 DIC 2025):
+    - 🆕 FINSTRAL_FERRAMENTA_PREZZI: Database prezzi ferramenta (411, 409, 211, 99, ecc.)
+    - 🆕 FINSTRAL_ACCESSORI_PREZZI: Database prezzi accessori (cod.70, 454, 46-S)
+    - 💰 calcolaPrezzoFinstral() ora include supplementoFerramenta e supplementoAccessori
+    - 📊 Calcoli più precisi basati su conferme ordine reali
     
     🔧 AGGIORNAMENTI v8.43 (15 DIC 2025):
     - ☀️ GIBUS DATABASE v3.0 COMPLETO:
@@ -1500,7 +1506,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.44 - GIBUS Click Zip + Tende</title>
+    <title>Dashboard Rilievi v8.45 - GIBUS Click Zip + Tende</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -20507,9 +20513,44 @@ const FLESSYA_2025 = {
                 console.log(`🎚️ Anta Twin ${config.antaTwinTipo}: L=${larghezza} H=${altezza} → €${risultato.dettaglio.antaTwin.prezzo}`);
             }
             
+            // 🆕 v8.45: Supplemento Ferramenta (se configurato)
+            if (config.ferramenta1) {
+                const ferrData = FINSTRAL_FERRAMENTA_PREZZI[config.ferramenta1];
+                if (ferrData) {
+                    risultato.dettaglio.supplementoFerramenta = ferrData.prezzo || 0;
+                    risultato.dettaglio.ferramentaCodice = config.ferramenta1;
+                    risultato.dettaglio.ferramentaDescrizione = ferrData.descrizione;
+                    console.log(`🔧 Ferramenta ${config.ferramenta1}: €${risultato.dettaglio.supplementoFerramenta}`);
+                } else {
+                    risultato.dettaglio.supplementoFerramenta = 0;
+                }
+            } else {
+                risultato.dettaglio.supplementoFerramenta = 0;
+            }
+            
+            // 🆕 v8.45: Supplemento Accessori (se configurato)
+            risultato.dettaglio.supplementoAccessori = 0;
+            risultato.dettaglio.accessoriDettaglio = [];
+            if (config.accessori && Array.isArray(config.accessori)) {
+                config.accessori.forEach(codAcc => {
+                    const accData = FINSTRAL_ACCESSORI_PREZZI[codAcc];
+                    if (accData) {
+                        const prezzoAcc = accData.prezzo || 0;
+                        risultato.dettaglio.supplementoAccessori += prezzoAcc;
+                        risultato.dettaglio.accessoriDettaglio.push({
+                            codice: codAcc,
+                            descrizione: accData.descrizione,
+                            prezzo: prezzoAcc
+                        });
+                    }
+                });
+                console.log(`🔩 Accessori totale: €${risultato.dettaglio.supplementoAccessori}`);
+            }
+            
             // TOTALE (escluso costo preparazione colore che è una tantum)
             // ✅ v7.73: Aggiunto supplementoProfiloAnta e supplementoMontante
             // ✅ v8.44: Aggiunto bancale e anta twin
+            // ✅ v8.45: Aggiunto ferramenta e accessori
             risultato.totale = Math.round((
                 risultato.dettaglio.prezzoBase +
                 risultato.dettaglio.supplementoTelaio +
@@ -20519,13 +20560,53 @@ const FLESSYA_2025 = {
                 (risultato.dettaglio.supplementoColoreAlluminio || 0) +
                 risultato.dettaglio.supplementoVetro +
                 (risultato.dettaglio.bancale?.prezzo || 0) +
-                (risultato.dettaglio.antaTwin?.prezzo || 0)
+                (risultato.dettaglio.antaTwin?.prezzo || 0) +
+                (risultato.dettaglio.supplementoFerramenta || 0) +
+                (risultato.dettaglio.supplementoAccessori || 0)
             ) * 100) / 100;
             
             return risultato;
         }
 
         console.log('✅ FINSTRAL_PREZZI caricato - Listino EUR 2025/3 + Colori + Ferramenta/Cerniere');
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🆕 v8.45: DATABASE FERRAMENTA FINSTRAL (da conferme ordine reali)
+        // ═══════════════════════════════════════════════════════════════════════════
+        const FINSTRAL_FERRAMENTA_PREZZI = {
+            // ANTA/RIBALTA (cerniere a vista - serie 4xx)
+            '411': { descrizione: 'Anta/ribalta', prezzo: 11.90, cerniere: 'a-vista' },
+            '409': { descrizione: 'Solo anta', prezzo: 9.50, cerniere: 'a-vista' },
+            '430': { descrizione: 'Anta con uscita sicurezza', prezzo: 14.20, cerniere: 'a-vista' },
+            '453': { descrizione: 'Anta/ribalta porta', prezzo: 13.50, cerniere: 'a-vista' },
+            '425': { descrizione: 'Anta doppia', prezzo: 18.90, cerniere: 'a-vista' },
+            '475': { descrizione: 'Scorrevole parallelo', prezzo: 45.00, cerniere: null },
+            
+            // ANTA/RIBALTA (cerniere a scomparsa - serie 2xx)
+            '211': { descrizione: 'Anta/ribalta (a scomparsa)', prezzo: 15.20, cerniere: 'a-scomparsa' },
+            '209': { descrizione: 'Solo anta (a scomparsa)', prezzo: 12.80, cerniere: 'a-scomparsa' },
+            '230': { descrizione: 'Anta sicurezza (a scomparsa)', prezzo: 17.50, cerniere: 'a-scomparsa' },
+            '225': { descrizione: 'Anta doppia (a scomparsa)', prezzo: 22.30, cerniere: 'a-scomparsa' },
+            
+            // FISSO
+            '99': { descrizione: 'Elemento fisso', prezzo: 0, cerniere: null },
+            
+            // SCORREVOLI (serie 7xx)
+            '711': { descrizione: 'Scorrevole alzante', prezzo: 85.00, cerniere: null },
+            '721': { descrizione: 'Scorrevole traslante', prezzo: 65.00, cerniere: null }
+        };
+
+        // ═══════════════════════════════════════════════════════════════════════════
+        // 🆕 v8.45: DATABASE ACCESSORI FINSTRAL (da conferme ordine reali)
+        // ═══════════════════════════════════════════════════════════════════════════
+        const FINSTRAL_ACCESSORI_PREZZI = {
+            '70': { descrizione: 'Protezione antiperforazione', prezzo: 4.50 },
+            '454': { descrizione: 'Maniglietta/barra esterna', prezzo: 39.10, note: 'Per porte-finestre' },
+            '46-S': { descrizione: 'Profilo aggiuntivo complanare', prezzoMl: 17.18 },
+            '21': { descrizione: 'Fori di fissaggio 6mm', prezzo: 0, note: 'Compreso' }
+        };
+
+        console.log('✅ v8.45: FINSTRAL_FERRAMENTA_PREZZI e FINSTRAL_ACCESSORI_PREZZI caricati');
 
         // ═══════════════════════════════════════════════════════════════════════════
         // 📦 FINSTRAL CASSONETTI PREZZI - Listino EUR 2025/3 (pag. 141-146)
