@@ -11,7 +11,18 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.463 - CHANGELOG
+    DASHBOARD RILIEVI v8.464 - CHANGELOG
+    
+    🔧 FIX v8.464 (17 DIC 2025) - FATTORE H>2200 per TIPO:
+    - ❌ BUG: Tutti i tipi H>2200 usavano fattore 1.27
+    - ✅ FIX: Fattore DIVERSO per tipo:
+      • Tipo 101 (finestre 1 anta) H>2200: ×1.27 (+27%)
+      • Tipo 401/420/421 (porte-finestre) H>2200: ×1.22 (+22%)
+    
+    📊 VERIFICA Pos.1 (tipo 401, 1290×2284):
+      • Tabella: €1008
+      • PRIMA: €1008 × 1.27 = €1280.16 ❌
+      • ORA: €1008 × 1.22 = €1229.76 ✅ (Finstral: €1227.98)
     
     🔧 FIX v8.463 (17 DIC 2025) - DA LISTINO EUR 2025/10:
     - ❌ BUG 1: Step-line alluminio usava €17.13/ml invece di €10.7/ml
@@ -1574,12 +1585,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.463 - FIX Step-line + Colore</title>
+    <title>Dashboard Rilievi v8.464 - FIX Fattore H>2200 per tipo</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.463";
+        const DASHBOARD_VERSION = "8.464";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11605,7 +11616,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.463</span>
+                <span class="logo-version" id="version-badge">v8.464</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -19572,39 +19583,49 @@ const FLESSYA_2025 = {
         
         const FINSTRAL_PREZZI = {
             // ═══════════════════════════════════════════════════════════════
-            // ✅ v8.462: AGGIORNAMENTO LISTINO EUR 2025/10
+            // ✅ v8.464: AGGIORNAMENTO LISTINO EUR 2025/10
             // Le tabelle base sono EUR 2025/3, applico fattore correzione
             // 
-            // IMPORTANTE: Il listino EUR 2025/10 ha aumenti NON uniformi!
-            // PER TIPO:
-            // - Tipo 102 (FISSO): +33.6% (verificato da conferma Alberto Papa)
-            // - Altri tipi: variabile per altezza (vedi sotto)
+            // IMPORTANTE: Fattori DIVERSI per TIPO e ALTEZZA!
             // 
-            // PER ALTEZZA (tipi 101, 401, 420, 421):
+            // PER TIPO:
+            // - Tipo 102 (FISSO): +33.6%
+            // - Tipo 101 H>2200: +27% (solo finestre 1 anta alte)
+            // - Tipo 401/420/421 H>2200: +22% (porte-finestre alte)
+            // 
+            // PER ALTEZZA (H normale):
             // - H <= 1600: +20.75%
             // - 1600 < H <= 2200: +22%
-            // - H > 2200: +27%
             //
-            // Fattori calcolati da conferme ordine Finstral reali:
+            // Fattori verificati da conferme ordine Finstral:
             // - Pos.5 (1290x1400 tipo401): €822.14 / €681 = 1.2073 → H normale
-            // - Pos.8 (954x1400 tipo401): €740.36 / €613 = 1.2078 → H normale
+            // - Pos.1 (1290x2284 tipo401): €1227.98 / €1008 = 1.218 → H grande tipo401
+            // - Pos.2 (740x2285 tipo101): €690.62 / €542 = 1.2742 → H grande tipo101
             // - Pos.8 (645x1317 tipo102): €392.68 / €294 = 1.3356 → FISSO
             // ═══════════════════════════════════════════════════════════════
             versione: "EUR 2025/10",
             dataAggiornamento: "2025-12-17",
-            // ✅ v8.462: Funzione per fattore correzione basato su TIPO e ALTEZZA
+            // ✅ v8.464: Funzione per fattore correzione basato su TIPO e ALTEZZA
             getFattoreCorrezione: function(altezza, tipo = null) {
                 // TIPO 102 (FISSO): fattore specifico +33.6%
                 if (tipo === "102") {
                     return 1.336;
                 }
-                // Altri tipi: fattore basato su altezza
+                
+                // Altezze normali: stesso fattore per tutti i tipi
                 if (altezza <= 1600) {
-                    return 1.2075;  // Altezze normali
+                    return 1.2075;
                 } else if (altezza <= 2200) {
-                    return 1.22;    // Altezze medie
+                    return 1.22;
+                }
+                
+                // H > 2200: fattore DIVERSO per tipo!
+                // Tipo 101 (finestre 1 anta): +27%
+                // Tipo 401/420/421 (porte-finestre): +22%
+                if (tipo === "101") {
+                    return 1.27;  // Solo finestre 1 anta alte
                 } else {
-                    return 1.27;    // Altezze grandi
+                    return 1.22;  // Porte-finestre alte (401, 420, 421)
                 }
             },
             fattoreCorrezione: 1.2075,  // Default per retrocompatibilità
