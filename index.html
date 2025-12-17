@@ -11,7 +11,18 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.46 - CHANGELOG
+    DASHBOARD RILIEVI v8.461 - CHANGELOG
+    
+    🔧 FIX v8.461 (17 DIC 2025):
+    - ❌ BUG: Tipo F3 (3 ante) veniva calcolato come tipo 101 (1 anta)!
+    - ✅ FIX: Usa numAnteInfisso come PRIORITÀ 2 per determinare tipoFinstral:
+      • codiceModello (se presente) → priorità 1
+      • numAnte >= 3 → tipo 420 (montante mobile)
+      • numAnte === 2 → tipo 401 (montante mobile)
+      • fisso/f0 → tipo 102
+      • default → tipo 101
+    - 📊 Funzione estraiNumeroAnte() già esistente: estrae cifra da F1/F2/F3/PF2
+    - 📍 Corretto calcolo principale + fallback infissi Finstral
     
     🔧 AGGIORNAMENTI v8.46 (17 DIC 2025) - SISTEMA PREZZI FINSTRAL:
     - ⚠️ PROBLEMA: Listino EUR 2025/3 obsoleto, prezzi errati fino al 40%
@@ -1536,7 +1547,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.46 - PREZZI EUR 2025/10 + Tipo 420</title>
+    <title>Dashboard Rilievi v8.461 - FIX F3 → tipo 420</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -22918,15 +22929,30 @@ const FLESSYA_2025 = {
                         // ✅ v7.73: Estrai tipo anta per calcolo colore
                         const tipoAnta = infisso.tipoAnta || data.configInfissi?.tipoAnta || 'step-line';
                         
-                        // ✅ v7.63: CALCOLO FINSTRAL - Mappa tipo infisso a tipo Finstral
+                        // ✅ v8.461: CALCOLO FINSTRAL - Usa codiceModello se disponibile!
+                        // Il codiceModello è il codice ufficiale Finstral (101, 102, 401, 420, 421, ecc.)
                         const apertura = infisso.apertura || infisso.tipo || 'battente';
                         const tipoInfisso = (infisso.tipo || '').toLowerCase();
+                        const codiceModello = infisso.codiceModello || '';
                         
                         let tipoFinstral = "101"; // Default: 1 anta
-                        if (tipoInfisso.includes('fisso') || tipoInfisso.includes('f0') || apertura.includes('fisso')) {
+                        
+                        // ✅ PRIORITÀ 1: Usa codiceModello se è un codice Finstral valido
+                        if (codiceModello && /^\d{3}$/.test(codiceModello)) {
+                            tipoFinstral = codiceModello;
+                            console.log(`📌 Pos ${index+1}: Uso codiceModello="${codiceModello}" per calcolo prezzo`);
+                        }
+                        // ✅ PRIORITÀ 2: Usa numero ante estratto dal tipo (più robusto!)
+                        else if (numAnteInfisso >= 3) {
+                            tipoFinstral = "420";  // 3+ ante con montante mobile
+                            console.log(`📌 Pos ${index+1}: ${numAnteInfisso} ante → tipo 420 (montante mobile)`);
+                        } else if (numAnteInfisso === 2) {
+                            tipoFinstral = "401";  // 2 ante con montante mobile
+                            console.log(`📌 Pos ${index+1}: 2 ante → tipo 401 (montante mobile)`);
+                        }
+                        // PRIORITÀ 3: Deduci da stringa tipo infisso
+                        else if (tipoInfisso.includes('fisso') || tipoInfisso.includes('f0') || apertura.includes('fisso')) {
                             tipoFinstral = "102";
-                        } else if (tipoInfisso.includes('2') || apertura.includes('2') || tipoInfisso.includes('p2')) {
-                            tipoFinstral = "401";
                         }
                         
                         // Determina materiale
@@ -26184,10 +26210,21 @@ const FLESSYA_2025 = {
                                     let L_mm = parseInt(pos.misure?.LVT) || parseInt(prodotto.BRM_L) || parseInt(prodotto.brm?.L) || parseInt(prodotto.larghezza) || 0;
                                     let H_mm = parseInt(pos.misure?.HVT) || parseInt(prodotto.BRM_H) || parseInt(prodotto.brm?.H) || parseInt(prodotto.altezza) || 0;
                                     if (L_mm > 0 && H_mm > 0) {
+                                        // ✅ v8.461: Usa codiceModello o numero ante
                                         let tipoFinstral = "101";
                                         const tipoInfisso = (prodotto.tipo || '').toLowerCase();
-                                        if (tipoInfisso.includes('fisso') || tipoInfisso.includes('f0')) tipoFinstral = "102";
-                                        else if (tipoInfisso.includes('2')) tipoFinstral = "401";
+                                        const codiceModello = prodotto.codiceModello || '';
+                                        const numAnte = estraiNumeroAnte(prodotto.tipo);
+                                        
+                                        if (codiceModello && /^\d{3}$/.test(codiceModello)) {
+                                            tipoFinstral = codiceModello;
+                                        } else if (numAnte >= 3) {
+                                            tipoFinstral = "420";
+                                        } else if (numAnte === 2) {
+                                            tipoFinstral = "401";
+                                        } else if (tipoInfisso.includes('fisso') || tipoInfisso.includes('f0')) {
+                                            tipoFinstral = "102";
+                                        }
                                         
                                         const calcolo = calcolaPrezzoFinstral({
                                             tipo: tipoFinstral,
