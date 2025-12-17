@@ -11,7 +11,20 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.461 - CHANGELOG
+    DASHBOARD RILIEVI v8.462 - CHANGELOG
+    
+    🔧 FIX v8.462 (17 DIC 2025):
+    - ❌ BUG 1: Tipo 102 (FISSO) calcolava supplemento anta €22 (doveva essere €0!)
+    - ✅ FIX: numAnteDaTipo = 0 per tipo 102 → supplementoProfiloAnta = €0
+    
+    - ❌ BUG 2: Tipo 102 usava fattore +20.75% invece di +33.6%
+    - ✅ FIX: getFattoreCorrezione(altezza, tipo) ora considera anche il tipo
+      • Tipo 102 (FISSO): ×1.336 (+33.6%) - verificato da Alberto Papa
+      • Altri tipi: fattore variabile per altezza
+    
+    📊 VERIFICA Pos.8 CUC (FISSO 645×1317):
+      • Prima: €355 base + €22 anta = €377 ❌
+      • Ora: €392,68 base + €0 anta = €392,68 ✅ (match Finstral!)
     
     🔧 FIX v8.461 (17 DIC 2025):
     - ❌ BUG: Tipo F3 (3 ante) veniva calcolato come tipo 101 (1 anta)!
@@ -1547,13 +1560,13 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.461 - FIX F3 → tipo 420</title>
+    <title>Dashboard Rilievi v8.462 - FIX FISSO tipo 102</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.45";
-        const DASHBOARD_DATE = "05 DIC 2025";
+        const DASHBOARD_VERSION = "8.462";
+        const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
         // 🔄 FUNZIONE AGGIORNAMENTO VERSIONE AUTOMATICO
@@ -11578,7 +11591,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.45</span>
+                <span class="logo-version" id="version-badge">v8.462</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -19545,30 +19558,39 @@ const FLESSYA_2025 = {
         
         const FINSTRAL_PREZZI = {
             // ═══════════════════════════════════════════════════════════════
-            // ✅ v8.46: AGGIORNAMENTO LISTINO EUR 2025/10
+            // ✅ v8.462: AGGIORNAMENTO LISTINO EUR 2025/10
             // Le tabelle base sono EUR 2025/3, applico fattore correzione
             // 
             // IMPORTANTE: Il listino EUR 2025/10 ha aumenti NON uniformi!
-            // - Altezze normali (H <= 1600): +20.75%
-            // - Altezze medie (1600 < H <= 2200): +22%
-            // - Altezze grandi (H > 2200): +27%
+            // PER TIPO:
+            // - Tipo 102 (FISSO): +33.6% (verificato da conferma Alberto Papa)
+            // - Altri tipi: variabile per altezza (vedi sotto)
+            // 
+            // PER ALTEZZA (tipi 101, 401, 420, 421):
+            // - H <= 1600: +20.75%
+            // - 1600 < H <= 2200: +22%
+            // - H > 2200: +27%
             //
             // Fattori calcolati da conferme ordine Finstral reali:
-            // - Pos.5 (1290x1400): €822.14 / €681 = 1.2073 → H normale
-            // - Pos.8 (954x1400): €740.36 / €613 = 1.2078 → H normale
-            // - Pos.1 (1290x2284): €1227.98 / €1008 = 1.2182 → H grande
-            // - Pos.2 (740x2285): €690.62 / €542 = 1.2742 → H grande
+            // - Pos.5 (1290x1400 tipo401): €822.14 / €681 = 1.2073 → H normale
+            // - Pos.8 (954x1400 tipo401): €740.36 / €613 = 1.2078 → H normale
+            // - Pos.8 (645x1317 tipo102): €392.68 / €294 = 1.3356 → FISSO
             // ═══════════════════════════════════════════════════════════════
             versione: "EUR 2025/10",
             dataAggiornamento: "2025-12-17",
-            // Funzione per ottenere fattore correzione basato sull'altezza
-            getFattoreCorrezione: function(altezza) {
+            // ✅ v8.462: Funzione per fattore correzione basato su TIPO e ALTEZZA
+            getFattoreCorrezione: function(altezza, tipo = null) {
+                // TIPO 102 (FISSO): fattore specifico +33.6%
+                if (tipo === "102") {
+                    return 1.336;
+                }
+                // Altri tipi: fattore basato su altezza
                 if (altezza <= 1600) {
                     return 1.2075;  // Altezze normali
                 } else if (altezza <= 2200) {
-                    return 1.22;    // Altezze medie (interpolato)
+                    return 1.22;    // Altezze medie
                 } else {
-                    return 1.27;    // Altezze grandi (porte-finestre)
+                    return 1.27;    // Altezze grandi
                 }
             },
             fattoreCorrezione: 1.2075,  // Default per retrocompatibilità
@@ -20396,9 +20418,11 @@ const FLESSYA_2025 = {
             // - H > 2200: +27%
             // ═══════════════════════════════════════════════════════════════════
             
-            // Usa fattore variabile basato sull'altezza
+            // ✅ v8.462: Fattore variabile basato su TIPO e ALTEZZA
+            // Per tipo 102 (fisso): fattore specifico +33.6%
+            // Per altri tipi: fattore basato su altezza
             const fattore = FINSTRAL_PREZZI.getFattoreCorrezione ? 
-                            FINSTRAL_PREZZI.getFattoreCorrezione(altezza) : 
+                            FINSTRAL_PREZZI.getFattoreCorrezione(altezza, tipo) : 
                             (FINSTRAL_PREZZI.fattoreCorrezione || 1.0);
             
             // TIPI COMPOSITI - Calcolo per somma campi
@@ -20473,13 +20497,22 @@ const FLESSYA_2025 = {
             const perimetro = ((larghezza * 2) + (altezza * 2)) / 1000;
             risultato.dettaglio.perimetroM = perimetro;
             
-            // ✅ v7.79 FIX CRITICO: Calcolo PERIMETRO BATTENTI per supplemento profilo anta
+            // ✅ v8.462 FIX: Calcolo PERIMETRO BATTENTI per supplemento profilo anta
             // Il supplemento profilo anta va calcolato sul perimetro delle ANTE, non della finestra!
-            // tipo 101/102 = 1 anta, tipo 401 = 2 ante
-            const numAnteDaTipo = (tipo === "401" || tipo === "301") ? 2 : 1;
-            const larghezzaAnta_m = (larghezza / numAnteDaTipo) / 1000;  // in metri
-            const altezzaAnta_m = altezza / 1000;  // in metri
-            const perimetroSingolaAnta = 2 * (larghezzaAnta_m + altezzaAnta_m);
+            // ⚠️ TIPO 102 (FISSO) NON HA ANTE! → numAnte = 0, nessun supplemento anta
+            let numAnteDaTipo = 1;  // Default 1 anta
+            if (tipo === "102") {
+                numAnteDaTipo = 0;  // ✅ FISSO: 0 ante
+            } else if (tipo === "401" || tipo === "301") {
+                numAnteDaTipo = 2;  // 2 ante con montante mobile
+            } else if (tipo === "420" || tipo === "421") {
+                numAnteDaTipo = 3;  // 3 ante (composito)
+            }
+            
+            // Se fisso (0 ante), non calcolare perimetro battenti
+            const larghezzaAnta_m = numAnteDaTipo > 0 ? (larghezza / numAnteDaTipo) / 1000 : 0;
+            const altezzaAnta_m = altezza / 1000;
+            const perimetroSingolaAnta = numAnteDaTipo > 0 ? 2 * (larghezzaAnta_m + altezzaAnta_m) : 0;
             const perimetroBattenti = perimetroSingolaAnta * numAnteDaTipo;
             risultato.dettaglio.perimetroBattentiM = perimetroBattenti;
             risultato.dettaglio.numAnte = numAnteDaTipo;
@@ -20533,9 +20566,15 @@ const FLESSYA_2025 = {
                 }
             }
             
-            // ✅ v7.79 FIX: Supplemento PROFILO ANTA su PERIMETRO BATTENTI (non finestra!)
-            // Prima controlla se esiste tabella dimensionale per questo tipo anta
-            const suppTabellaAnta = getSupplementoAntaDimensionale(antaNorm, altezza, larghezza / numAnteDaTipo);
+            // ✅ v8.462 FIX: Supplemento PROFILO ANTA su PERIMETRO BATTENTI (non finestra!)
+            // ⚠️ FISSO (tipo 102): NON ha ante, quindi supplementoProfiloAnta = 0
+            if (numAnteDaTipo === 0) {
+                console.log(`🔬 Tipo ${tipo} (FISSO): 0 ante → supplementoProfiloAnta = €0`);
+                risultato.dettaglio.supplementoProfiloAnta = 0;
+                risultato.dettaglio.tipoCalcoloAnta = "fisso";
+            } else {
+                // Prima controlla se esiste tabella dimensionale per questo tipo anta
+                const suppTabellaAnta = getSupplementoAntaDimensionale(antaNorm, altezza, larghezza / numAnteDaTipo);
             if (suppTabellaAnta !== null && suppTabellaAnta > 0) {
                 // Ante speciali (Cristal, Twin): prezzo €/pezzo × numAnte
                 risultato.dettaglio.supplementoProfiloAnta = Math.round(suppTabellaAnta * numAnteDaTipo * 100) / 100;
@@ -20560,6 +20599,7 @@ const FLESSYA_2025 = {
                     risultato.dettaglio.supplementoProfiloAnta = 0;
                 }
             }
+            }  // ✅ v8.462: Fine blocco else per fisso
             
             // ✅ v7.79 FIX: Supplemento MONTANTE MOBILE per tipo 401 (2 ante)
             // Usa nodo specifico per tipo anta (Nova-line usa NL45, Twin usa C45, ecc.)
