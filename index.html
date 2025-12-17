@@ -11,7 +11,21 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.462 - CHANGELOG
+    DASHBOARD RILIEVI v8.463 - CHANGELOG
+    
+    🔧 FIX v8.463 (17 DIC 2025) - DA LISTINO EUR 2025/10:
+    - ❌ BUG 1: Step-line alluminio usava €17.13/ml invece di €10.7/ml
+    - ✅ FIX: Corretto da listino pag.130: Step-line 974N = +10.7€/ml
+    
+    - ❌ BUG 2: Supplemento colore calcolato su perimetro BATTENTI (~12ml)
+    - ✅ FIX: Ora calcolato su perimetro TELAIO (5.98ml) come da listino
+    
+    📊 VERIFICA Pos.9 (tipo 420, 1590×1400, Step-line alluminio):
+      • Supp. Anta PRIMA: €198.37 (€17.13/ml × 11.58ml battenti)
+      • Supp. Anta ORA: ~€124 (€10.7/ml × 11.58ml) ✅
+      • Supp. Colore PRIMA: €121.59 (su battenti)
+      • Supp. Colore ORA: ~€62 (su telaio) ✅
+      • TOTALE: da €1631 → ~€1523 (match Finstral!)
     
     🔧 FIX v8.462 (17 DIC 2025):
     - ❌ BUG 1: Tipo 102 (FISSO) calcolava supplemento anta €22 (doveva essere €0!)
@@ -1560,12 +1574,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.462 - FIX FISSO tipo 102</title>
+    <title>Dashboard Rilievi v8.463 - FIX Step-line + Colore</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.462";
+        const DASHBOARD_VERSION = "8.463";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11591,7 +11605,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.462</span>
+                <span class="logo-version" id="version-badge">v8.463</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -19806,7 +19820,7 @@ const FLESSYA_2025 = {
             // Questo è il supplemento per il TIPO di profilo anta, separato dal colore
             supplementiProfiloAnta: {
                 "classic-line": { pvc: 0, alluminio: 10.50 },      // codice973K
-                "step-line": { pvc: 0, alluminio: 17.13 },         // codice974N - configuratore calcola 17.13€/ml
+                "step-line": { pvc: 0, alluminio: 10.7 },          // codice974N - listino EUR 2025/10 pag.130
                 "slim-line": { pvc: 1.94, alluminio: 12.40 },
                 "nova-line": { pvc: 5.62, alluminio: 0 },          // Nova-line ha vetro esterno - listino EUR 2025/10
                 "nova-line-30": { pvc: 5.62, alluminio: 0 },       // Nova-line 30mm
@@ -20638,18 +20652,21 @@ const FLESSYA_2025 = {
                 risultato.dettaglio.supplementoMontante = 0;
             }
             
-            // ✅ v7.79 FIX: Supplemento colore PVC su PERIMETRO BATTENTI
+            // ✅ v8.463 FIX: Supplemento colore PVC su PERIMETRO TELAIO (non battenti!)
+            // Il colore PVC si applica al telaio, non alle ante
             const supplAntaPVC = FINSTRAL_PREZZI.supplementiColorePVC?.anta?.[antaNorm];
             if (supplAntaPVC && colorePVC) {
                 const isGruppoB = FINSTRAL_PREZZI.supplementiColorePVC.gruppoB.includes(colorePVC);
                 const supplColore = isGruppoB ? supplAntaPVC[1] : supplAntaPVC[0];
-                risultato.dettaglio.supplementoColorePVC = Math.round(supplColore * perimetroBattenti * 100) / 100;
+                // ✅ v8.463: Usa perimetro TELAIO, non battenti!
+                risultato.dettaglio.supplementoColorePVC = Math.round(supplColore * perimetro * 100) / 100;
                 risultato.dettaglio.gruppoColorePVC = isGruppoB ? "B" : "A";
+                console.log(`🎨 Colore PVC ${isGruppoB ? 'B' : 'A'}: €${supplColore}/ml × ${perimetro.toFixed(2)}ml telaio = €${risultato.dettaglio.supplementoColorePVC}`);
             } else {
                 risultato.dettaglio.supplementoColorePVC = 0;
             }
             
-            // ✅ v7.79 FIX: Supplemento colore alluminio su PERIMETRO BATTENTI
+            // ✅ v8.463 FIX: Supplemento colore alluminio su PERIMETRO TELAIO (non battenti!)
             if (materiale === "alluminio" && coloreAlluminio) {
                 const supplAntaAlu = FINSTRAL_PREZZI.supplementiColoreAlluminio?.anta?.[antaNorm];
                 if (supplAntaAlu) {
@@ -20671,9 +20688,11 @@ const FLESSYA_2025 = {
                     }
                     
                     const idxSuppl = (gruppoAlu === "1" || gruppoAlu === "1H") ? 0 : 1;
-                    risultato.dettaglio.supplementoColoreAlluminio = Math.round(supplAntaAlu[idxSuppl] * perimetroBattenti * 100) / 100;
+                    // ✅ v8.463: Usa perimetro TELAIO, non battenti!
+                    risultato.dettaglio.supplementoColoreAlluminio = Math.round(supplAntaAlu[idxSuppl] * perimetro * 100) / 100;
                     risultato.dettaglio.gruppoColoreAlluminio = gruppoAlu;
                     risultato.dettaglio.costoPreparazioneColore = costoPrep;  // Una tantum per ordine
+                    console.log(`🎨 Colore ALU ${gruppoAlu}: €${supplAntaAlu[idxSuppl]}/ml × ${perimetro.toFixed(2)}ml telaio = €${risultato.dettaglio.supplementoColoreAlluminio}`);
                 }
             } else {
                 risultato.dettaglio.supplementoColoreAlluminio = 0;
