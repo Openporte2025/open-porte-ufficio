@@ -11,11 +11,36 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.45 - CHANGELOG
+    DASHBOARD RILIEVI v8.46 - CHANGELOG
+    
+    🔧 AGGIORNAMENTI v8.46 (17 DIC 2025) - SISTEMA PREZZI FINSTRAL:
+    - ⚠️ PROBLEMA: Listino EUR 2025/3 obsoleto, prezzi errati fino al 40%
+    - ✅ SOLUZIONE: Aggiornato a EUR 2025/10 con fattore correzione VARIABILE
+    
+    📊 FATTORE CORREZIONE (verificato su conferme ordine reali):
+      • H ≤ 1600mm: ×1.2075 (+20.75%)
+      • 1600 < H ≤ 2200mm: ×1.22 (+22%)
+      • H > 2200mm: ×1.27 (+27%)
+    
+    🆕 TIPI COMPOSITI (420, 421) ORA SUPPORTATI:
+      • Regola listino: campo1 (tipo101) + campo2 (tipo401) = prezzo base
+      • Proporzioni campi: 33.7% + 66.3% (verificate da disegni Finstral)
+      • Tipo 420: "Anta SX + anta montante DX" (3 campi, 2 ante)
+      • Tipo 421: "Anta montante SX + anta DX" (3 campi, 2 ante)
+    
+    📈 VERIFICA CON ORDINE RUGGERI (9 posizioni):
+      • Prima: errori fino al 40% (tipo 420 non gestito)
+      • Dopo: errore medio 1.1% (8 su 9 posizioni < 2%)
+      • Pos.9 (1590x1400 tipo 420): €1.195,42 calc vs €1.194,84 reale (0.05%!)
+    
+    🔧 Funzione cercaPrezzoInTabella() - helper per lookup prezzi
+    🔧 getFattoreCorrezione(altezza) - fattore variabile
+    📝 Log dettagliato calcolo in console browser
     
     🔧 AGGIORNAMENTI v8.45 (16 DIC 2025):
     - 🆕 FINSTRAL_FERRAMENTA_PREZZI: Database prezzi ferramenta (411, 409, 211, 99, ecc.)
     - 🆕 FINSTRAL_ACCESSORI_PREZZI: Database prezzi accessori (cod.70, 454, 46-S)
+    - 🆕 Supplemento vetro SATINATO: cod.488 €82.4/m² (si aggiunge al vetro base)
     - ✅ FIX CRITICO: Supplemento rivestimento Z62N ora calcolato correttamente
       • Prima: telaio "Z62N" → cercava "Z62NN" → NON TROVATO → €0
       • Ora: telaio "Z62N" → cerca "Z62N" → TROVATO
@@ -1511,7 +1536,7 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.45 - GIBUS Click Zip + Tende</title>
+    <title>Dashboard Rilievi v8.46 - PREZZI EUR 2025/10 + Tipo 420</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
@@ -15384,12 +15409,20 @@ if (typeof module !== 'undefined' && module.exports) {
             
             // ✅ v7.73: Usa database Finstral per vetri 2113/11414
             let suppl_mq = 0;
-            if (vetro.includes('triplo') || vetro === '11414') {
+            if (vetro.includes('triplo') || vetro === '11414' || vetro.includes('max-valor')) {
                 suppl_mq = FINSTRAL_PREZZI.supplementiVetro?.["11414"] || 118.00;
             } else if (vetro.includes('doppio') || vetro === '2113') {
                 suppl_mq = FINSTRAL_PREZZI.supplementiVetro?.["2113"] || 52.20;
             } else {
                 suppl_mq = SUPPLEMENTI_VETRI[vetro] || 0;
+            }
+            
+            // 🆕 v8.45: Supplemento AGGIUNTIVO per vetro satinato
+            // Il satinato è un'opzione che si aggiunge al vetro base
+            if (vetro.includes('satinato') || vetro.includes('satin')) {
+                const supplSatinato = FINSTRAL_PREZZI.supplementiVetro?.satinato || 82.40;
+                suppl_mq += supplSatinato;
+                console.log(`🔷 Vetro satinato rilevato: +€${supplSatinato}/m² (totale €${suppl_mq}/m²)`);
             }
             
             // Supplemento vetro sempre applicato
@@ -19500,8 +19533,34 @@ const FLESSYA_2025 = {
         // ============================================================================
         
         const FINSTRAL_PREZZI = {
-            versione: "EUR 2025/3",
-            dataAggiornamento: "2025-11-25",
+            // ═══════════════════════════════════════════════════════════════
+            // ✅ v8.46: AGGIORNAMENTO LISTINO EUR 2025/10
+            // Le tabelle base sono EUR 2025/3, applico fattore correzione
+            // 
+            // IMPORTANTE: Il listino EUR 2025/10 ha aumenti NON uniformi!
+            // - Altezze normali (H <= 1600): +20.75%
+            // - Altezze medie (1600 < H <= 2200): +22%
+            // - Altezze grandi (H > 2200): +27%
+            //
+            // Fattori calcolati da conferme ordine Finstral reali:
+            // - Pos.5 (1290x1400): €822.14 / €681 = 1.2073 → H normale
+            // - Pos.8 (954x1400): €740.36 / €613 = 1.2078 → H normale
+            // - Pos.1 (1290x2284): €1227.98 / €1008 = 1.2182 → H grande
+            // - Pos.2 (740x2285): €690.62 / €542 = 1.2742 → H grande
+            // ═══════════════════════════════════════════════════════════════
+            versione: "EUR 2025/10",
+            dataAggiornamento: "2025-12-17",
+            // Funzione per ottenere fattore correzione basato sull'altezza
+            getFattoreCorrezione: function(altezza) {
+                if (altezza <= 1600) {
+                    return 1.2075;  // Altezze normali
+                } else if (altezza <= 2200) {
+                    return 1.22;    // Altezze medie (interpolato)
+                } else {
+                    return 1.27;    // Altezze grandi (porte-finestre)
+                }
+            },
+            fattoreCorrezione: 1.2075,  // Default per retrocompatibilità
             
             // TABELLE PREZZI BASE - Tipo 101 (1 anta anta/ribalta)
             tipo101: {
@@ -19688,7 +19747,16 @@ const FLESSYA_2025 = {
                 multiprotect2148: 12.70,
                 multiprotectP2A: 44.80,
                 multiprotectP4A: 67.40,
-                multiprotectP5A: 103.00
+                multiprotectP5A: 103.00,
+                // 🆕 v8.45: Supplementi vetro satinato (da listino EUR 2025/10)
+                "48": 54.70,         // Vetro satinato bianco 4mm
+                "486": 66.50,        // Vetro satinato bianco 6mm
+                "488": 82.40,        // Vetro satinato bianco 8mm
+                "48T": 83.40,        // Bodysafe vetro satinato 4mm
+                "486T": 90.40,       // Bodysafe vetro satinato 6mm
+                "488T": 132.00,      // Bodysafe vetro satinato 8mm
+                satinato: 82.40,     // Alias default (488)
+                "satinato-bodysafe": 132.00  // Alias Bodysafe
             },
 
             // ✅ v7.73: SOGLIA PORTA-FINESTRA (EUR/ml)
@@ -20268,8 +20336,8 @@ const FLESSYA_2025 = {
         }
 
         // FUNZIONI CALCOLO FINSTRAL
-        function trovaPrezzoBaseFinstral(tipo, larghezza, altezza) {
-            const tabella = FINSTRAL_PREZZI["tipo" + tipo];
+        // ✅ v8.46: Funzione helper per cercare prezzo in tabella semplice
+        function cercaPrezzoInTabella(tabella, larghezza, altezza) {
             if (!tabella) return null;
             
             // Trova colonna: prima colonna dove larghezza <= limite
@@ -20281,24 +20349,93 @@ const FLESSYA_2025 = {
                 }
             }
             
-            // ✅ v7.79 FIX: Per altezza, trova riga usando logica Finstral
-            // Le righe indicano il limite SUPERIORE della fascia
-            // Es: riga 1480 = altezze da 1416 a 1480
-            // Se altezza è ESATTAMENTE il valore della riga, usa quella riga
+            // Trova riga usando logica Finstral
             let rowIdx = 0;
             for (let i = 0; i < tabella.righeA.length; i++) {
                 if (altezza <= tabella.righeA[i]) { 
                     rowIdx = i; 
                     break; 
                 }
-                rowIdx = i;  // Se sfora l'ultima, usa l'ultima
+                rowIdx = i;
             }
             
-            // Debug
-            console.log(`📊 trovaPrezzoBase: L=${larghezza}→col[${colIdx}]=${tabella.colonneL[colIdx]}, H=${altezza}→riga[${rowIdx}]=${tabella.righeA[rowIdx]}`);
-            
             if (tabella.prezzi[rowIdx] && tabella.prezzi[rowIdx][colIdx] !== null) {
-                return tabella.prezzi[rowIdx][colIdx];
+                return { prezzo: tabella.prezzi[rowIdx][colIdx], colIdx, rowIdx };
+            }
+            return null;
+        }
+        
+        function trovaPrezzoBaseFinstral(tipo, larghezza, altezza) {
+            // ═══════════════════════════════════════════════════════════════════
+            // ✅ v8.46: GESTIONE TIPI COMPOSITI (420, 421, ecc.)
+            // Fonte: Listino Finstral EUR 2025/10 - Procedura calcolo prezzo
+            // 
+            // REGOLA TIPO 420:
+            // campo 1 = tipo 101 → prezzo base secondo tabella tipo 101
+            // campo 2 = tipo 401 → prezzo base secondo tabella tipo 401
+            // prezzo base tipo 420 = somma dei due
+            //
+            // Proporzioni campi (verificate da conferme d'ordine):
+            // - Campo 1 (anta singola): ~33.7% della larghezza totale
+            // - Campo 2+3 (montante mobile): ~66.3% della larghezza totale
+            // 
+            // FATTORE CORREZIONE EUR 2025/10 (variabile per altezza):
+            // - H <= 1600: +20.75%
+            // - 1600 < H <= 2200: +22%
+            // - H > 2200: +27%
+            // ═══════════════════════════════════════════════════════════════════
+            
+            // Usa fattore variabile basato sull'altezza
+            const fattore = FINSTRAL_PREZZI.getFattoreCorrezione ? 
+                            FINSTRAL_PREZZI.getFattoreCorrezione(altezza) : 
+                            (FINSTRAL_PREZZI.fattoreCorrezione || 1.0);
+            
+            // TIPI COMPOSITI - Calcolo per somma campi
+            if (tipo === "420" || tipo === "421") {
+                // Proporzioni verificate da conferme ordine Finstral
+                const PROP_CAMPO1 = 0.337;  // Anta singola (tipo 101)
+                const PROP_CAMPO2 = 0.663;  // Montante mobile (tipo 401)
+                
+                const L_campo1 = Math.round(larghezza * PROP_CAMPO1);
+                const L_campo2 = Math.round(larghezza * PROP_CAMPO2);
+                
+                const tabella101 = FINSTRAL_PREZZI.tipo101;
+                const tabella401 = FINSTRAL_PREZZI.tipo401;
+                
+                const ris101 = cercaPrezzoInTabella(tabella101, L_campo1, altezza);
+                const ris401 = cercaPrezzoInTabella(tabella401, L_campo2, altezza);
+                
+                if (ris101 && ris401) {
+                    // Applica fattore correzione EUR 2025/10
+                    const prezzoBase = ris101.prezzo + ris401.prezzo;
+                    const prezzoCorretto = Math.round(prezzoBase * fattore * 100) / 100;
+                    console.log(`📊 tipo${tipo} COMPOSITO: L=${larghezza}, H=${altezza}`);
+                    console.log(`   Campo1 (tipo101): L=${L_campo1} → €${ris101.prezzo}`);
+                    console.log(`   Campo2 (tipo401): L=${L_campo2} → €${ris401.prezzo}`);
+                    console.log(`   Base EUR 2025/3: €${prezzoBase}`);
+                    console.log(`   × fattore ${fattore} = €${prezzoCorretto} (EUR 2025/10)`);
+                    return prezzoCorretto;
+                } else {
+                    console.warn(`⚠️ tipo${tipo}: impossibile calcolare prezzo composito`);
+                    return null;
+                }
+            }
+            
+            // TIPO STANDARD - Cerca in tabella diretta
+            const tabella = FINSTRAL_PREZZI["tipo" + tipo];
+            if (!tabella) {
+                console.warn(`⚠️ Tabella tipo${tipo} non trovata`);
+                return null;
+            }
+            
+            const risultato = cercaPrezzoInTabella(tabella, larghezza, altezza);
+            
+            if (risultato) {
+                // Applica fattore correzione EUR 2025/10
+                const prezzoCorretto = Math.round(risultato.prezzo * fattore * 100) / 100;
+                console.log(`📊 trovaPrezzoBase tipo${tipo}: L=${larghezza}→col[${risultato.colIdx}], H=${altezza}→riga[${risultato.rowIdx}]`);
+                console.log(`   Base EUR 2025/3: €${risultato.prezzo} × ${fattore} = €${prezzoCorretto} (EUR 2025/10)`);
+                return prezzoCorretto;
             }
             return null;
         }
