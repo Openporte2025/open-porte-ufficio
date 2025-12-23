@@ -11,7 +11,22 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.466 - CHANGELOG
+    DASHBOARD RILIEVI v8.467 - CHANGELOG
+    
+    🆕 v8.467 (23 DIC 2025) - RICONOSCIMENTO TIPO CENTRALIZZATO:
+    - ✅ Nuova funzione determinaTipoInfisso() centralizzata
+    - ✅ Riconoscimento scorrevoli da codiceModello (500-514) o ferramenta (710-722)
+    - ✅ Tipo visualizzato corretto: "Scorrevole 500" invece di "F2"
+    - ✅ Popup con icona 🚪 per scorrevoli, 🪟 per finestre
+    - ✅ Footer popup mostra tipoFinstral (es. "500", "101", "401")
+    - ✅ Header popup con colore blu per scorrevoli
+    
+    📊 RICONOSCIMENTO TIPO:
+    PRIORITÀ:
+    1. codiceModello in [500-514] → Scorrevole
+    2. ferramenta1 in [710-722] → Scorrevole 
+    3. codiceModello (altri) → Tipo diretto
+    4. tipo/tipoInfissoAssociato → F1/F2/PF1/PF2
     
     🆕 v8.466 (23 DIC 2025) - SUPPORTO SCORREVOLI FINSTRAL:
     - ✅ Riconoscimento scorrevoli da codiceModello (500-514) o ferramenta (710-722)
@@ -1630,12 +1645,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.466 - Supporto Scorrevoli Finstral</title>
+    <title>Dashboard Rilievi v8.467 - Riconoscimento Tipo Centralizzato</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.466";
+        const DASHBOARD_VERSION = "8.467";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11661,7 +11676,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.466</span>
+                <span class="logo-version" id="version-badge">v8.467</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -20487,6 +20502,119 @@ const FLESSYA_2025 = {
             return prezzo + supplComando;
         }
 
+        // ═══════════════════════════════════════════════════════════════════
+        // ✅ v8.467: FUNZIONE CENTRALIZZATA DETERMINAZIONE TIPO INFISSO
+        // Questa funzione determina il tipo corretto dell'infisso basandosi su:
+        // 1. codiceModello (500-514 = scorrevoli)
+        // 2. ferramenta1 (710-722 = scorrevoli)
+        // 3. tipoInfissoAssociato (F, PF)
+        // 4. tipo (F1, F2, PF1, PF2, etc.)
+        // ═══════════════════════════════════════════════════════════════════
+        function determinaTipoInfisso(infisso, configInfissi = null) {
+            const codiceModello = infisso?.codiceModello || '';
+            const ferramenta1 = infisso?.ferramenta1 || '';
+            const tipoInfissoAssociato = infisso?.tipoInfissoAssociato || '';
+            const tipo = infisso?.tipo || '';
+            
+            // Liste scorrevoli
+            const codiciScorrevoli = ["500", "501", "503", "504", "505", "510", "511", "513", "514"];
+            const ferramentaScorrevole = ["710", "711", "720", "721", "722"];
+            
+            let risultato = {
+                tipoVisualizzato: '',      // Es: "Scorrevole 503", "F1", "PF2"
+                tipoFinstral: '101',       // Es: "503", "101", "401"
+                isScorrevole: false,
+                isPortaFinestra: false,
+                numAnte: 1
+            };
+            
+            // PRIORITÀ 1: Scorrevoli da codiceModello
+            if (codiciScorrevoli.includes(codiceModello)) {
+                risultato.tipoVisualizzato = `Scorrevole ${codiceModello}`;
+                risultato.tipoFinstral = codiceModello;
+                risultato.isScorrevole = true;
+                risultato.isPortaFinestra = true;  // Scorrevoli sono sempre porte
+                risultato.numAnte = 2;
+                console.log(`🚪 determinaTipoInfisso: codiceModello="${codiceModello}" → Scorrevole`);
+                return risultato;
+            }
+            
+            // PRIORITÀ 2: Scorrevoli da ferramenta
+            if (ferramentaScorrevole.some(f => ferramenta1.startsWith(f))) {
+                // Default tipo 503 se ha ferramenta scorrevole ma codiceModello non specifico
+                const tipoScorr = codiceModello || "503";
+                risultato.tipoVisualizzato = `Scorrevole ${tipoScorr}`;
+                risultato.tipoFinstral = tipoScorr;
+                risultato.isScorrevole = true;
+                risultato.isPortaFinestra = true;
+                risultato.numAnte = 2;
+                console.log(`🚪 determinaTipoInfisso: ferramenta1="${ferramenta1}" → Scorrevole ${tipoScorr}`);
+                return risultato;
+            }
+            
+            // PRIORITÀ 3: Usa codiceModello se è codice Finstral valido (non scorrevole)
+            if (codiceModello && /^\d{3}$/.test(codiceModello)) {
+                risultato.tipoFinstral = codiceModello;
+                // Determina tipo visualizzato da codiceModello
+                if (codiceModello.startsWith('1')) {
+                    risultato.tipoVisualizzato = tipo || `F${codiceModello === '102' ? '0' : '1'}`;
+                    risultato.isPortaFinestra = false;
+                    risultato.numAnte = codiceModello === '102' ? 0 : 1;
+                } else if (codiceModello.startsWith('4')) {
+                    risultato.tipoVisualizzato = tipo || `PF${codiceModello === '401' ? '2' : ''}`;
+                    risultato.isPortaFinestra = true;
+                    risultato.numAnte = 2;
+                }
+                console.log(`📌 determinaTipoInfisso: codiceModello="${codiceModello}" → ${risultato.tipoVisualizzato}`);
+                return risultato;
+            }
+            
+            // PRIORITÀ 4: Usa tipoInfissoAssociato + tipo
+            if (tipo) {
+                risultato.tipoVisualizzato = tipo;
+                // Estrai numero ante dal tipo
+                const numAnte = estraiNumeroAnte(tipo);
+                risultato.numAnte = numAnte;
+                risultato.isPortaFinestra = tipo.toUpperCase().startsWith('PF') || tipoInfissoAssociato === 'PF';
+                
+                // Determina tipoFinstral
+                if (tipo.toUpperCase().includes('F0') || tipo.toLowerCase().includes('fisso')) {
+                    risultato.tipoFinstral = '102';
+                    risultato.numAnte = 0;
+                } else if (numAnte >= 3) {
+                    risultato.tipoFinstral = '420';
+                } else if (numAnte === 2 || risultato.isPortaFinestra) {
+                    risultato.tipoFinstral = '401';
+                } else {
+                    risultato.tipoFinstral = '101';
+                }
+                console.log(`📋 determinaTipoInfisso: tipo="${tipo}" → ${risultato.tipoFinstral}`);
+                return risultato;
+            }
+            
+            // PRIORITÀ 5: Solo tipoInfissoAssociato (F o PF)
+            if (tipoInfissoAssociato) {
+                risultato.isPortaFinestra = tipoInfissoAssociato === 'PF';
+                if (risultato.isPortaFinestra) {
+                    risultato.tipoVisualizzato = 'PF2';
+                    risultato.tipoFinstral = '401';
+                    risultato.numAnte = 2;
+                } else {
+                    risultato.tipoVisualizzato = 'F1';
+                    risultato.tipoFinstral = '101';
+                    risultato.numAnte = 1;
+                }
+                console.log(`📋 determinaTipoInfisso: tipoInfissoAssociato="${tipoInfissoAssociato}" → ${risultato.tipoVisualizzato}`);
+                return risultato;
+            }
+            
+            // DEFAULT
+            risultato.tipoVisualizzato = 'F1';
+            risultato.tipoFinstral = '101';
+            console.log(`⚠️ determinaTipoInfisso: DEFAULT → F1/101`);
+            return risultato;
+        }
+
         // FUNZIONI CALCOLO FINSTRAL
         // ✅ v8.46: Funzione helper per cercare prezzo in tabella semplice
         function cercaPrezzoInTabella(tabella, larghezza, altezza) {
@@ -23169,50 +23297,14 @@ const FLESSYA_2025 = {
                         // ✅ v7.73: Estrai tipo anta per calcolo colore
                         const tipoAnta = infisso.tipoAnta || data.configInfissi?.tipoAnta || 'step-line';
                         
-                        // ✅ v8.461: CALCOLO FINSTRAL - Usa codiceModello se disponibile!
-                        // Il codiceModello è il codice ufficiale Finstral (101, 102, 401, 420, 421, ecc.)
-                        const apertura = infisso.apertura || infisso.tipo || 'battente';
-                        const tipoInfisso = (infisso.tipo || '').toLowerCase();
-                        const codiceModello = infisso.codiceModello || '';
+                        // ✅ v8.467: USA FUNZIONE CENTRALIZZATA PER DETERMINARE TIPO
+                        const tipoInfo = determinaTipoInfisso(infisso, data.configInfissi);
+                        const tipoFinstral = tipoInfo.tipoFinstral;
+                        const isScorrevole = tipoInfo.isScorrevole;
+                        const tipoVisualizzato = tipoInfo.tipoVisualizzato;
                         const ferramenta1 = infisso.ferramenta1 || '';
                         
-                        let tipoFinstral = "101"; // Default: 1 anta
-                        let isScorrevole = false;
-                        
-                        // ✅ v8.466: RICONOSCIMENTO SCORREVOLI
-                        // Codici scorrevoli: 500, 501, 503, 504, 505, 510, 511, 513, 514
-                        // Ferramenta scorrevole: 710, 711, 720, 721, 722
-                        const codiciScorrevoli = ["500", "501", "503", "504", "505", "510", "511", "513", "514"];
-                        const ferramentaScorrevole = ["710", "711", "720", "721", "722"];
-                        
-                        if (codiciScorrevoli.includes(codiceModello)) {
-                            tipoFinstral = codiceModello;
-                            isScorrevole = true;
-                            console.log(`🚪 Pos ${index+1}: SCORREVOLE riconosciuto da codiceModello="${codiceModello}"`);
-                        } else if (ferramentaScorrevole.some(f => ferramenta1.startsWith(f))) {
-                            // Determina tipo scorrevole dalla ferramenta
-                            // Default: tipo 503 (scorrevole + anta apribile) se ha ferramenta 710
-                            tipoFinstral = "503";
-                            isScorrevole = true;
-                            console.log(`🚪 Pos ${index+1}: SCORREVOLE riconosciuto da ferramenta1="${ferramenta1}" → tipo 503`);
-                        }
-                        // ✅ PRIORITÀ 1: Usa codiceModello se è un codice Finstral valido (NON scorrevole)
-                        else if (codiceModello && /^\d{3}$/.test(codiceModello)) {
-                            tipoFinstral = codiceModello;
-                            console.log(`📌 Pos ${index+1}: Uso codiceModello="${codiceModello}" per calcolo prezzo`);
-                        }
-                        // ✅ PRIORITÀ 2: Usa numero ante estratto dal tipo (più robusto!)
-                        else if (numAnteInfisso >= 3) {
-                            tipoFinstral = "420";  // 3+ ante con montante mobile
-                            console.log(`📌 Pos ${index+1}: ${numAnteInfisso} ante → tipo 420 (montante mobile)`);
-                        } else if (numAnteInfisso === 2) {
-                            tipoFinstral = "401";  // 2 ante con montante mobile
-                            console.log(`📌 Pos ${index+1}: 2 ante → tipo 401 (montante mobile)`);
-                        }
-                        // PRIORITÀ 3: Deduci da stringa tipo infisso
-                        else if (tipoInfisso.includes('fisso') || tipoInfisso.includes('f0') || apertura.includes('fisso')) {
-                            tipoFinstral = "102";
-                        }
+                        console.log(`🏷️ Pos ${index+1}: tipoVisualizzato="${tipoVisualizzato}", tipoFinstral="${tipoFinstral}", isScorrevole=${isScorrevole}`);
                         
                         // Determina materiale
                         // ✅ v7.73 FIX: Usa finituraEst per determinare se esterno è alluminio
@@ -23418,7 +23510,9 @@ const FLESSYA_2025 = {
                         righe.push({
                             posizione: index + 1,
                             ambiente: pos.ambiente || pos.nome || pos.stanza || `Pos ${index + 1}`,
-                            tipo: `Infisso ${infisso.tipo || 'F2'}`,
+                            tipo: isScorrevole ? tipoVisualizzato : `Infisso ${tipoVisualizzato}`,  // ✅ v8.467
+                            tipoFinstral: tipoFinstral,  // ✅ v8.467: Codice Finstral
+                            isScorrevole: isScorrevole,  // ✅ v8.467
                             azienda: infisso.azienda || data.configInfissi?.azienda || 'Finstral',
                             telaio: telaio,  // ✅ v8.10: Solo codice telaio (es. "961")
                             tipoAnta: tipoAnta,  // ✅ v8.10: Tipo anta separato (es. "Nova-line")
@@ -25007,6 +25101,9 @@ const FLESSYA_2025 = {
                 const azienda = rigaPreventivo.azienda || 'N/D';
                 const ambiente = rigaPreventivo.ambiente || `Pos ${posIndex}`;
                 const tipo = rigaPreventivo.tipo || 'Infisso';
+                const tipoFinstral = rigaPreventivo.tipoFinstral || '';  // ✅ v8.467
+                const isScorrevole = rigaPreventivo.isScorrevole || false;  // ✅ v8.467
+                const icona = isScorrevole ? '🚪' : '🪟';  // ✅ v8.467
                 
                 // Prezzi dal preventivo
                 const prezzoBase = parseFloat(rigaPreventivo.prezzoBase) || 0;
@@ -25025,11 +25122,11 @@ const FLESSYA_2025 = {
                 let dettaglioHTML = `
                 <div style="padding: 1.5rem;">
                     <!-- HEADER -->
-                    <div style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    <div style="background: linear-gradient(135deg, ${isScorrevole ? '#1e40af' : '#065f46'} 0%, ${isScorrevole ? '#3b82f6' : '#10b981'} 100%); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="margin: 0; font-size: 1.25rem;">🪟 ${tipo} - Posizione ${posIndex}</h3>
-                                <p style="margin: 0.25rem 0 0 0; opacity: 0.9;">${ambiente}</p>
+                                <h3 style="margin: 0; font-size: 1.25rem;">${icona} ${tipo} - Posizione ${posIndex}</h3>
+                                <p style="margin: 0.25rem 0 0 0; opacity: 0.9;">${ambiente}${tipoFinstral ? ` • Tipo ${tipoFinstral}` : ''}</p>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 1.5rem; font-weight: 700;">€ ${totale.toFixed(2)}</div>
@@ -25218,13 +25315,18 @@ const FLESSYA_2025 = {
                     </div>
                     
                     <!-- INFO AGGIUNTIVE -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr${tipoFinstral ? ' 1fr' : ''}; gap: 1rem; font-size: 0.85rem;">
                         <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.375rem;">
                             <strong>🏭 Azienda:</strong> ${azienda}
                         </div>
                         <div style="background: #f9fafb; padding: 0.75rem; border-radius: 0.375rem;">
                             <strong>🔲 Telaio:</strong> ${telaio}
                         </div>
+                        ${tipoFinstral ? `
+                        <div style="background: ${isScorrevole ? '#dbeafe' : '#f9fafb'}; padding: 0.75rem; border-radius: 0.375rem;">
+                            <strong>📋 Tipo:</strong> ${tipoFinstral}${isScorrevole ? ' (Scorr.)' : ''}
+                        </div>
+                        ` : ''}
                     </div>
                     ${tipoAnta ? `
                     <div style="margin-top: 0.5rem; font-size: 0.85rem;">
