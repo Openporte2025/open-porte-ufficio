@@ -11,7 +11,25 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.467 - CHANGELOG
+    DASHBOARD RILIEVI v8.468 - CHANGELOG
+    
+    🆕 v8.468 (23 DIC 2025) - SISTEMA VALIDAZIONE PREVENTIVI:
+    - ✅ Schema validazione prodotti (infisso, persiana, tapparella, cassonetto, motore)
+    - ✅ Gerarchia campi: 🔴 Critico → 🟠 Necessario → 🟡 Importante → 🟢 Opzionale
+    - ✅ Funzione validaProdotto() con calcolo affidabilità
+    - ✅ Funzione validaProgetto() per analisi completa
+    - ✅ Popup validazione PRIMA del calcolo preventivo
+    - ✅ Badge stato (✅🟡🟠🔴) accanto al tipo in tabella
+    - ✅ Tooltip con dettaglio problemi al hover sul badge
+    
+    📊 CAMPI VALIDATI INFISSO FINSTRAL:
+    ┌────────────────┬───────────────────────────────────────┐
+    │ 🔴 CRITICI     │ BRM_L, BRM_H, codiceModello          │
+    │ 🟠 NECESSARI   │ telaio, tipoAnta, ferramenta1,       │
+    │                │ finituraEst                          │
+    │ 🟡 IMPORTANTI  │ coloreEst, coloreInt, vetro, maniglia│
+    │ 🟢 OPZIONALI   │ tagliTelaio, allarme, cerniere       │
+    └────────────────┴───────────────────────────────────────┘
     
     🆕 v8.467 (23 DIC 2025) - RICONOSCIMENTO TIPO CENTRALIZZATO:
     - ✅ Nuova funzione determinaTipoInfisso() centralizzata
@@ -1645,12 +1663,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.467 - Riconoscimento Tipo Centralizzato</title>
+    <title>Dashboard Rilievi v8.468 - Sistema Validazione</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.467";
+        const DASHBOARD_VERSION = "8.468";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11676,7 +11694,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.467</span>
+                <span class="logo-version" id="version-badge">v8.468</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -20502,6 +20520,498 @@ const FLESSYA_2025 = {
             return prezzo + supplComando;
         }
 
+        // ═══════════════════════════════════════════════════════════════════════════
+        // ✅ v8.468: SISTEMA VALIDAZIONE PREVENTIVI
+        // Valida i dati di ogni prodotto prima del calcolo prezzo
+        // ═══════════════════════════════════════════════════════════════════════════
+        
+        /**
+         * SCHEMA VALIDAZIONE INFISSI FINSTRAL
+         * Definisce quali campi sono necessari e a che livello
+         */
+        const SCHEMA_VALIDAZIONE = {
+            infisso: {
+                nome: "Infisso Finstral",
+                campi: {
+                    // 🔴 CRITICI - senza questi NO calcolo
+                    BRM_L: { 
+                        livello: 'critico', 
+                        label: 'Larghezza BRM',
+                        messaggio: 'Misura larghezza mancante',
+                        default: null 
+                    },
+                    BRM_H: { 
+                        livello: 'critico', 
+                        label: 'Altezza BRM',
+                        messaggio: 'Misura altezza mancante',
+                        default: null 
+                    },
+                    codiceModello: { 
+                        livello: 'critico', 
+                        label: 'Tipo/Modello',
+                        messaggio: 'Codice modello Finstral mancante (101, 401, 420, 500...)',
+                        default: null,
+                        valoriValidi: ['101', '102', '301', '401', '420', '421', '500', '501', '503', '504', '505', '510', '511', '513', '514']
+                    },
+                    
+                    // 🟠 NECESSARI - warning + default, errore 5-15%
+                    telaio: { 
+                        livello: 'necessario', 
+                        label: 'Telaio',
+                        messaggio: 'Telaio non specificato',
+                        default: '961',
+                        margineErrore: 5
+                    },
+                    tipoAnta: { 
+                        livello: 'necessario', 
+                        label: 'Tipo Anta',
+                        messaggio: 'Tipo anta non specificato',
+                        default: 'step-line',
+                        margineErrore: 8
+                    },
+                    ferramenta1: { 
+                        livello: 'necessario', 
+                        label: 'Ferramenta',
+                        messaggio: 'Ferramenta non specificata',
+                        default: '411',
+                        margineErrore: 5
+                    },
+                    finituraEst: { 
+                        livello: 'necessario', 
+                        label: 'Finitura Esterna',
+                        messaggio: 'Finitura esterna non specificata',
+                        default: 'pvc',
+                        margineErrore: 10
+                    },
+                    
+                    // 🟡 IMPORTANTI - info + default, errore 2-5%
+                    coloreEst: { 
+                        livello: 'importante', 
+                        label: 'Colore Esterno',
+                        messaggio: 'Colore esterno non specificato',
+                        default: '42 - Bianco',
+                        margineErrore: 3
+                    },
+                    coloreInt: { 
+                        livello: 'importante', 
+                        label: 'Colore Interno',
+                        messaggio: 'Colore interno non specificato',
+                        default: '42 - Bianco',
+                        margineErrore: 2
+                    },
+                    vetro: { 
+                        livello: 'importante', 
+                        label: 'Vetro',
+                        messaggio: 'Tipo vetro non specificato',
+                        default: 'standard',
+                        margineErrore: 5
+                    },
+                    maniglia: { 
+                        livello: 'importante', 
+                        label: 'Maniglia',
+                        messaggio: 'Maniglia non specificata',
+                        default: 'standard',
+                        margineErrore: 1
+                    },
+                    
+                    // 🟢 OPZIONALI - nessun problema se mancano
+                    tagliTelaio: { livello: 'opzionale', label: 'Tagli Telaio', default: null },
+                    codTagliValues: { livello: 'opzionale', label: 'Codici Taglio', default: [] },
+                    allarme: { livello: 'opzionale', label: 'Allarme', default: 'no' },
+                    cerniere: { livello: 'opzionale', label: 'Cerniere', default: 'a-vista' }
+                }
+            },
+            
+            persiana: {
+                nome: "Persiana",
+                campi: {
+                    BRM_L: { livello: 'critico', label: 'Larghezza', messaggio: 'Larghezza mancante', default: null },
+                    BRM_H: { livello: 'critico', label: 'Altezza', messaggio: 'Altezza mancante', default: null },
+                    azienda: { livello: 'necessario', label: 'Azienda', messaggio: 'Azienda non specificata', default: 'Punto Persiane', margineErrore: 10 },
+                    modello: { livello: 'necessario', label: 'Modello', messaggio: 'Modello non specificato', default: null, margineErrore: 15 },
+                    numAnte: { livello: 'importante', label: 'Numero Ante', messaggio: 'Numero ante non specificato', default: '2', margineErrore: 5 },
+                    colore: { livello: 'importante', label: 'Colore', messaggio: 'Colore non specificato', default: 'RAL 9010', margineErrore: 3 }
+                }
+            },
+            
+            tapparella: {
+                nome: "Tapparella",
+                campi: {
+                    larghezza: { livello: 'critico', label: 'Larghezza', messaggio: 'Larghezza mancante', default: null },
+                    altezza: { livello: 'critico', label: 'Altezza', messaggio: 'Altezza mancante', default: null },
+                    azienda: { livello: 'necessario', label: 'Azienda', messaggio: 'Azienda non specificata', default: 'Plasticino', margineErrore: 5 },
+                    modello: { livello: 'necessario', label: 'Modello', messaggio: 'Modello non specificato', default: 'Mini', margineErrore: 10 },
+                    materiale: { livello: 'importante', label: 'Materiale', messaggio: 'Materiale non specificato', default: 'PVC', margineErrore: 5 }
+                }
+            },
+            
+            cassonetto: {
+                nome: "Cassonetto",
+                campi: {
+                    larghezza: { livello: 'critico', label: 'Larghezza', messaggio: 'Larghezza mancante', default: null },
+                    tipo: { livello: 'necessario', label: 'Tipo', messaggio: 'Tipo cassonetto non specificato', default: 'standard', margineErrore: 10 }
+                }
+            },
+            
+            motore: {
+                nome: "Motore Somfy",
+                campi: {
+                    modello: { livello: 'critico', label: 'Modello', messaggio: 'Modello motore mancante', default: null },
+                    larghezzaTapparella: { livello: 'importante', label: 'Larghezza Tapparella', messaggio: 'Larghezza per calcolo coppia', default: 1500, margineErrore: 5 }
+                }
+            }
+        };
+
+        /**
+         * Valida un prodotto secondo lo schema
+         * @param {string} tipoProdotto - 'infisso', 'persiana', 'tapparella', etc.
+         * @param {object} prodotto - Dati del prodotto da validare
+         * @param {object} configGlobale - Configurazione globale (fallback)
+         * @returns {object} { valido, errori[], warning[], info[], margineErrore, affidabilita }
+         */
+        function validaProdotto(tipoProdotto, prodotto, configGlobale = {}) {
+            const schema = SCHEMA_VALIDAZIONE[tipoProdotto];
+            if (!schema) {
+                return { 
+                    valido: false, 
+                    errori: [{campo: 'tipo', messaggio: `Schema validazione non trovato per: ${tipoProdotto}`}],
+                    warning: [],
+                    info: [],
+                    margineErrore: 100,
+                    affidabilita: 0
+                };
+            }
+            
+            const risultato = {
+                valido: true,
+                errori: [],      // 🔴 Critici
+                warning: [],     // 🟠 Necessari mancanti
+                info: [],        // 🟡 Importanti mancanti
+                defaultUsati: [], // Campi dove è stato usato il default
+                margineErrore: 0,
+                affidabilita: 100
+            };
+            
+            // Controlla ogni campo dello schema
+            for (const [nomeCampo, config] of Object.entries(schema.campi)) {
+                // Cerca valore nel prodotto o nella config globale
+                let valore = prodotto?.[nomeCampo];
+                if (valore === undefined || valore === null || valore === '') {
+                    // Prova config globale
+                    valore = configGlobale?.[nomeCampo];
+                }
+                
+                const mancante = (valore === undefined || valore === null || valore === '');
+                
+                if (mancante) {
+                    const item = {
+                        campo: nomeCampo,
+                        label: config.label,
+                        messaggio: config.messaggio || `${config.label} mancante`,
+                        default: config.default,
+                        margineErrore: config.margineErrore || 0
+                    };
+                    
+                    switch (config.livello) {
+                        case 'critico':
+                            risultato.errori.push(item);
+                            risultato.valido = false;
+                            risultato.affidabilita = 0;
+                            break;
+                            
+                        case 'necessario':
+                            risultato.warning.push(item);
+                            risultato.margineErrore += item.margineErrore;
+                            if (config.default !== null) {
+                                risultato.defaultUsati.push({
+                                    campo: nomeCampo,
+                                    label: config.label,
+                                    valore: config.default
+                                });
+                            }
+                            break;
+                            
+                        case 'importante':
+                            risultato.info.push(item);
+                            risultato.margineErrore += item.margineErrore;
+                            if (config.default !== null) {
+                                risultato.defaultUsati.push({
+                                    campo: nomeCampo,
+                                    label: config.label,
+                                    valore: config.default
+                                });
+                            }
+                            break;
+                            
+                        // 'opzionale' non genera messaggi
+                    }
+                }
+                
+                // Valida valore se presente e ci sono valori validi
+                if (!mancante && config.valoriValidi) {
+                    if (!config.valoriValidi.includes(String(valore))) {
+                        risultato.warning.push({
+                            campo: nomeCampo,
+                            label: config.label,
+                            messaggio: `${config.label} "${valore}" non riconosciuto`,
+                            valoreAttuale: valore,
+                            valoriValidi: config.valoriValidi
+                        });
+                    }
+                }
+            }
+            
+            // Calcola affidabilità
+            if (risultato.valido) {
+                risultato.affidabilita = Math.max(0, 100 - risultato.margineErrore);
+            }
+            
+            // Stato complessivo
+            if (risultato.errori.length > 0) {
+                risultato.stato = 'errore';
+                risultato.icona = '🔴';
+                risultato.colore = '#dc2626';
+            } else if (risultato.warning.length > 0) {
+                risultato.stato = 'warning';
+                risultato.icona = '🟠';
+                risultato.colore = '#f97316';
+            } else if (risultato.info.length > 0) {
+                risultato.stato = 'info';
+                risultato.icona = '🟡';
+                risultato.colore = '#eab308';
+            } else {
+                risultato.stato = 'completo';
+                risultato.icona = '✅';
+                risultato.colore = '#22c55e';
+            }
+            
+            return risultato;
+        }
+
+        /**
+         * Valida tutte le posizioni di un progetto
+         * @param {array} positions - Array posizioni dal JSON
+         * @param {object} configGlobale - Configurazioni globali
+         * @returns {object} { riepilogo, dettagli[] }
+         */
+        function validaProgetto(positions, configGlobale = {}) {
+            const risultato = {
+                totalePositioni: positions.length,
+                completi: 0,
+                conWarning: 0,
+                conErrori: 0,
+                dettagli: [],
+                affidabilitaMedia: 0
+            };
+            
+            let sommaAffidabilita = 0;
+            let contaProdotti = 0;
+            
+            positions.forEach((pos, index) => {
+                const posDetail = {
+                    posizione: index + 1,
+                    ambiente: pos.ambiente || `Pos ${index + 1}`,
+                    prodotti: []
+                };
+                
+                // Valida Infisso
+                if (pos.infisso && (pos.infisso.qta > 0 || pos.infisso.BRM_L)) {
+                    const valInfisso = validaProdotto('infisso', pos.infisso, configGlobale.configInfissi);
+                    valInfisso.tipo = 'Infisso';
+                    posDetail.prodotti.push(valInfisso);
+                    sommaAffidabilita += valInfisso.affidabilita;
+                    contaProdotti++;
+                    
+                    if (valInfisso.stato === 'errore') risultato.conErrori++;
+                    else if (valInfisso.stato === 'warning') risultato.conWarning++;
+                    else risultato.completi++;
+                }
+                
+                // Valida Persiana
+                if (pos.persiana && pos.persiana.servePersiana) {
+                    const valPersiana = validaProdotto('persiana', pos.persiana, configGlobale.configPersiane);
+                    valPersiana.tipo = 'Persiana';
+                    posDetail.prodotti.push(valPersiana);
+                    sommaAffidabilita += valPersiana.affidabilita;
+                    contaProdotti++;
+                }
+                
+                // Valida Tapparella
+                if (pos.tapparella && pos.tapparella.serveTapparella) {
+                    const valTapp = validaProdotto('tapparella', pos.tapparella, configGlobale.configTapparelle);
+                    valTapp.tipo = 'Tapparella';
+                    posDetail.prodotti.push(valTapp);
+                    sommaAffidabilita += valTapp.affidabilita;
+                    contaProdotti++;
+                }
+                
+                // Valida Cassonetto
+                if (pos.cassonetto && pos.cassonetto.qta > 0) {
+                    const valCass = validaProdotto('cassonetto', pos.cassonetto, configGlobale.configCassonetti);
+                    valCass.tipo = 'Cassonetto';
+                    posDetail.prodotti.push(valCass);
+                    sommaAffidabilita += valCass.affidabilita;
+                    contaProdotti++;
+                }
+                
+                risultato.dettagli.push(posDetail);
+            });
+            
+            risultato.affidabilitaMedia = contaProdotti > 0 ? 
+                Math.round(sommaAffidabilita / contaProdotti) : 100;
+            
+            return risultato;
+        }
+
+        /**
+         * Genera HTML popup validazione
+         */
+        function generaHTMLValidazione(validazione) {
+            const { totalePositioni, completi, conWarning, conErrori, dettagli, affidabilitaMedia } = validazione;
+            
+            // Colore affidabilità
+            let coloreAff = '#22c55e';
+            if (affidabilitaMedia < 70) coloreAff = '#dc2626';
+            else if (affidabilitaMedia < 85) coloreAff = '#f97316';
+            else if (affidabilitaMedia < 95) coloreAff = '#eab308';
+            
+            let html = `
+            <div style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+                <!-- HEADER RIEPILOGO -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #22c55e;">✅ ${completi}</div>
+                        <div style="font-size: 0.875rem; color: #166534;">Completi</div>
+                    </div>
+                    <div style="background: #fff7ed; border: 2px solid #f97316; border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #f97316;">🟠 ${conWarning}</div>
+                        <div style="font-size: 0.875rem; color: #9a3412;">Warning</div>
+                    </div>
+                    <div style="background: #fef2f2; border: 2px solid #dc2626; border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: #dc2626;">🔴 ${conErrori}</div>
+                        <div style="font-size: 0.875rem; color: #991b1b;">Errori</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 2px solid ${coloreAff}; border-radius: 0.5rem; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 700; color: ${coloreAff};">${affidabilitaMedia}%</div>
+                        <div style="font-size: 0.875rem; color: #475569;">Affidabilità</div>
+                    </div>
+                </div>
+            `;
+            
+            // Dettaglio per posizione (solo se ci sono problemi)
+            const posizioniConProblemi = dettagli.filter(d => 
+                d.prodotti.some(p => p.stato !== 'completo')
+            );
+            
+            if (posizioniConProblemi.length > 0) {
+                html += `
+                <div style="background: #f9fafb; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: #374151;">📋 Dettaglio Problemi</h4>
+                `;
+                
+                posizioniConProblemi.forEach(pos => {
+                    pos.prodotti.filter(p => p.stato !== 'completo').forEach(prod => {
+                        html += `
+                        <div style="background: white; border-left: 4px solid ${prod.colore}; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 0 0.25rem 0.25rem 0;">
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">
+                                ${prod.icona} Pos.${pos.posizione} ${pos.ambiente} - ${prod.tipo}
+                            </div>
+                        `;
+                        
+                        // Errori critici
+                        prod.errori?.forEach(err => {
+                            html += `<div style="color: #dc2626; font-size: 0.875rem; margin-left: 1rem;">🔴 ${err.messaggio}</div>`;
+                        });
+                        
+                        // Warning
+                        prod.warning?.forEach(warn => {
+                            html += `<div style="color: #f97316; font-size: 0.875rem; margin-left: 1rem;">🟠 ${warn.messaggio}${warn.default ? ` → default: ${warn.default}` : ''}</div>`;
+                        });
+                        
+                        // Info
+                        prod.info?.forEach(info => {
+                            html += `<div style="color: #eab308; font-size: 0.875rem; margin-left: 1rem;">🟡 ${info.messaggio}${info.default ? ` → default: ${info.default}` : ''}</div>`;
+                        });
+                        
+                        if (prod.affidabilita < 100) {
+                            html += `<div style="color: #6b7280; font-size: 0.75rem; margin-left: 1rem; margin-top: 0.25rem;">📈 Affidabilità: ${prod.affidabilita}% (margine errore ±${prod.margineErrore}%)</div>`;
+                        }
+                        
+                        html += `</div>`;
+                    });
+                });
+                
+                html += `</div>`;
+            } else {
+                html += `
+                <div style="background: #f0fdf4; border: 1px solid #22c55e; border-radius: 0.5rem; padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">✅</div>
+                    <div style="font-size: 1.125rem; font-weight: 600; color: #166534;">Tutti i dati sono completi!</div>
+                    <div style="font-size: 0.875rem; color: #15803d; margin-top: 0.25rem;">Il calcolo sarà accurato al 100%</div>
+                </div>
+                `;
+            }
+            
+            html += `</div>`;
+            
+            return html;
+        }
+
+        /**
+         * Mostra popup validazione
+         */
+        function mostraPopupValidazione(validazione, callback) {
+            const html = generaHTMLValidazione(validazione);
+            const hasErrori = validazione.conErrori > 0;
+            const hasWarning = validazione.conWarning > 0;
+            
+            // Crea modal
+            const modal = document.createElement('div');
+            modal.id = 'modal-validazione';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 0.75rem; max-width: 700px; width: 90%; max-height: 85vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+                    <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: 1.25rem;">📋 Validazione Preventivo</h3>
+                        <button onclick="document.getElementById('modal-validazione').remove()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+                    </div>
+                    ${html}
+                    <div style="padding: 1rem 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                        ${hasErrori ? `
+                            <button onclick="document.getElementById('modal-validazione').remove()" style="padding: 0.625rem 1.25rem; background: #6b7280; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 500;">
+                                ❌ Chiudi e correggi
+                            </button>
+                        ` : `
+                            <button onclick="document.getElementById('modal-validazione').remove()" style="padding: 0.625rem 1.25rem; background: #6b7280; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 500;">
+                                Annulla
+                            </button>
+                            <button id="btn-procedi-calcolo" style="padding: 0.625rem 1.25rem; background: ${hasWarning ? '#f97316' : '#22c55e'}; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-weight: 500;">
+                                ${hasWarning ? '⚠️ Procedi con warning' : '✅ Calcola preventivo'}
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Handler bottone procedi
+            const btnProcedi = document.getElementById('btn-procedi-calcolo');
+            if (btnProcedi && callback) {
+                btnProcedi.onclick = () => {
+                    document.getElementById('modal-validazione').remove();
+                    callback();
+                };
+            }
+        }
+
+        // Esponi funzioni globalmente
+        window.validaProdotto = validaProdotto;
+        window.validaProgetto = validaProgetto;
+        window.mostraPopupValidazione = mostraPopupValidazione;
+        window.SCHEMA_VALIDAZIONE = SCHEMA_VALIDAZIONE;
+
         // ═══════════════════════════════════════════════════════════════════
         // ✅ v8.467: FUNZIONE CENTRALIZZATA DETERMINAZIONE TIPO INFISSO
         // Questa funzione determina il tipo corretto dell'infisso basandosi su:
@@ -23507,12 +24017,16 @@ const FLESSYA_2025 = {
                         // Totale riga
                         const totaleRiga = prezzoUnitario * quantita;
                         
+                        // ✅ v8.468: Validazione prodotto
+                        const validazioneInfisso = validaProdotto('infisso', infisso, data.configInfissi);
+                        
                         righe.push({
                             posizione: index + 1,
                             ambiente: pos.ambiente || pos.nome || pos.stanza || `Pos ${index + 1}`,
                             tipo: isScorrevole ? tipoVisualizzato : `Infisso ${tipoVisualizzato}`,  // ✅ v8.467
                             tipoFinstral: tipoFinstral,  // ✅ v8.467: Codice Finstral
                             isScorrevole: isScorrevole,  // ✅ v8.467
+                            validazione: validazioneInfisso,  // ✅ v8.468: Stato validazione
                             azienda: infisso.azienda || data.configInfissi?.azienda || 'Finstral',
                             telaio: telaio,  // ✅ v8.10: Solo codice telaio (es. "961")
                             tipoAnta: tipoAnta,  // ✅ v8.10: Tipo anta separato (es. "Nova-line")
@@ -24434,7 +24948,7 @@ const FLESSYA_2025 = {
                 tr.innerHTML = `
                     <td>${riga.posizione}</td>
                     <td style="text-align: left;">${riga.ambiente}</td>
-                    <td>${riga.tipo}${isClickable ? ' <span style="font-size: 0.7rem; color: #3b82f6;">🔍</span>' : ''}</td>
+                    <td>${riga.tipo}${isClickable ? ' <span style="font-size: 0.7rem; color: #3b82f6;">🔍</span>' : ''}${riga.validazione ? ` <span title="${riga.validazione.stato === 'completo' ? 'Dati completi' : (riga.validazione.errori?.map(e=>e.messaggio).join(', ') || riga.validazione.warning?.map(w=>w.messaggio).join(', ') || '')}" style="cursor: help;">${riga.validazione.icona}</span>` : ''}</td>
                     <td>${riga.azienda}</td>
                     <td>${riga.telaio}</td>
                     <td>${riga.larghezza}</td>
@@ -26281,13 +26795,47 @@ const FLESSYA_2025 = {
         window.righePreventivo = [];
 
         // Funzione: Ricalcola preventivo (chiamata da select IVA)
-        function ricalcolaPreventivo() {
+        // ✅ v8.468: Funzione ricalcola con validazione
+        function ricalcolaPreventivo(skipValidazione = false) {
             const currentData = window.currentData;
-            if (currentData && currentData.posizioni) {
+            if (!currentData || !currentData.positions) {
+                console.warn('⚠️ Nessun dato progetto caricato');
+                return;
+            }
+            
+            // Se skipValidazione è true, procedi direttamente
+            if (skipValidazione) {
                 renderVistaPreventivo(currentData);
-                console.log('🔄 Preventivo ricalcolato');
+                console.log('🔄 Preventivo ricalcolato (validazione saltata)');
+                return;
+            }
+            
+            // Esegui validazione
+            const validazione = validaProgetto(currentData.positions, {
+                configInfissi: currentData.configInfissi,
+                configPersiane: currentData.configPersiane,
+                configTapparelle: currentData.configTapparelle,
+                configCassonetti: currentData.configCassonetti
+            });
+            
+            console.log('📋 Validazione progetto:', validazione);
+            
+            // Se ci sono errori critici o warning, mostra popup
+            if (validazione.conErrori > 0 || validazione.conWarning > 0) {
+                mostraPopupValidazione(validazione, () => {
+                    // Callback quando utente clicca "Procedi"
+                    renderVistaPreventivo(currentData);
+                    console.log('🔄 Preventivo ricalcolato dopo validazione');
+                });
+            } else {
+                // Tutto ok, procedi direttamente
+                renderVistaPreventivo(currentData);
+                console.log('🔄 Preventivo ricalcolato (tutto completo)');
             }
         }
+        
+        // Alias per compatibilità
+        window.ricalcolaPreventivo = ricalcolaPreventivo;
 
         // Funzione: Export Excel preventivo (TODO)
         function exportPreventivoExcel() {
