@@ -1668,7 +1668,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.468c";
+        const DASHBOARD_VERSION = "8.468d";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -24900,12 +24900,14 @@ const FLESSYA_2025 = {
                 
                 // 🆕 v7.996: TUTTI i tipi sono cliccabili per dettaglio (incluso cassonetto)
                 // 🔌 v8.09: Aggiunto Motore
+                // ✅ v8.468c: Aggiunto Scorrevole
                 const isTapparella = riga.tipo.toLowerCase().includes('tapparella');
                 const isPersiana = riga.tipo.toLowerCase().includes('persiana');
                 const isCassonetto = riga.tipo.toLowerCase().includes('cassonetto');
                 const isMotore = riga.tipo.toLowerCase().includes('motore') || riga._tipoMotore;
                 const isInfisso = riga.tipo.toLowerCase().includes('infisso') || 
                                   riga.tipo.toLowerCase().includes('finestra') ||
+                                  riga.tipo.toLowerCase().includes('scorrevole') ||  // ✅ v8.468c
                                   riga.tipo.toLowerCase().includes('porta');
                 const isBlindato = riga.tipo.toLowerCase().includes('blindata') || riga._tipoBlindato;
                 const isPortoncino = riga.tipo.toLowerCase().includes('portoncino') || riga._tipoPortoncino;
