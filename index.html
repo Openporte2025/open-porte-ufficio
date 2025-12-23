@@ -1668,7 +1668,7 @@
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.468";
+        const DASHBOARD_VERSION = "8.468b";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -23814,6 +23814,10 @@ const FLESSYA_2025 = {
                         const tipoVisualizzato = tipoInfo.tipoVisualizzato;
                         const ferramenta1 = infisso.ferramenta1 || '';
                         
+                        // ✅ v8.468 FIX: Ripristina variabili per compatibilità
+                        const tipoInfisso = (infisso.tipo || tipoVisualizzato || '').toLowerCase();
+                        const apertura = infisso.apertura || infisso.tipo || 'battente';
+                        
                         console.log(`🏷️ Pos ${index+1}: tipoVisualizzato="${tipoVisualizzato}", tipoFinstral="${tipoFinstral}", isScorrevole=${isScorrevole}`);
                         
                         // Determina materiale
@@ -23969,8 +23973,9 @@ const FLESSYA_2025 = {
                         // ✅ v7.74: Supplemento SOGLIA se porta-finestra (PF1, PF2, o H>=1800)
                         let supplementoSoglia = 0;
                         let supplementoManigliettaPF = 0;  // ✅ v8.10: Maniglietta esterna PF
-                        // FIX: 'pf2'.includes('p2') = FALSE! Usiamo startsWith + controllo altezza
-                        const isPortaFinestra = tipoInfisso.startsWith('pf') || tipoInfisso.startsWith('p1') || tipoInfisso.startsWith('p2') ||
+                        // ✅ v8.468 FIX: Usa tipoInfo.isPortaFinestra + fallback su stringa tipo
+                        const isPortaFinestra = tipoInfo.isPortaFinestra || 
+                                               tipoInfisso.startsWith('pf') || tipoInfisso.startsWith('p1') || tipoInfisso.startsWith('p2') ||
                                                tipoInfisso.includes('porta') || apertura.includes('porta') ||
                                                H_mm >= 1800;  // Logica Finstral: altezza >= 1800mm = porta-finestra
                         if (isPortaFinestra) {
