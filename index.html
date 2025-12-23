@@ -11,7 +11,34 @@
     
     <!--
     ═══════════════════════════════════════════════════════════════════════════════
-    DASHBOARD RILIEVI v8.465 - CHANGELOG
+    DASHBOARD RILIEVI v8.466 - CHANGELOG
+    
+    🆕 v8.466 (23 DIC 2025) - SUPPORTO SCORREVOLI FINSTRAL:
+    - ✅ Riconoscimento scorrevoli da codiceModello (500-514) o ferramenta (710-722)
+    - ✅ Calcolo prezzo base per tipi compositi scorrevoli
+    - ✅ Supplementi ferramenta scorrevole:
+      • 710/720: +€760 (scorrevole parallelo/parallelo a ribalta)
+      • 711/721: +€859 (+ doppia maniglia)
+      • 722: +€760 (montante mobile scorrevole)
+    - ✅ Supplemento ferramenta 430: +€14.80 (anta apribile per tipo 503)
+    - ✅ Fattore correzione scorrevoli: 1.236
+    
+    📊 TIPI SCORREVOLI SUPPORTATI:
+    ┌──────┬──────────────────────────────────────────────────┐
+    │ 500  │ Scorrevole montante mobile                       │
+    │ 501  │ Scorrevole + fisso                               │
+    │ 503  │ Scorrevole + anta apribile (campo1: 430)         │
+    │ 504  │ Scorrevole maniglia estraibile                   │
+    │ 510  │ Scorrevole 2 ante                                │
+    │ 511  │ Fisso + scorrevole                               │
+    │ 513  │ Fisso + scorrevole + fisso                       │
+    └──────┴──────────────────────────────────────────────────┘
+    
+    📊 VERIFICA tipo 503 (2050×2070):
+      • Prezzo base: 2×tabella101 = ~€1286 ✓
+      • Ferramenta 710: +€760
+      • Ferramenta 430: +€14.80
+      • Totale ferramenta: €774.80 (Finstral: €774.80) ✓
     
     🔧 FIX v8.465 (17 DIC 2025) - FATTORI VERIFICATI SISTEMATICAMENTE:
     - ✅ Analizzate TUTTE le 9 posizioni ordine Ruggeri
@@ -1603,12 +1630,12 @@
     ═══════════════════════════════════════════════════════════════════════════════
     -->
     
-    <title>Dashboard Rilievi v8.465 - Fattori verificati sistematicamente</title>
+    <title>Dashboard Rilievi v8.466 - Supporto Scorrevoli Finstral</title>
     <script>
         // ═══════════════════════════════════════════════════════════════════════
         // ✅ VERSIONE CENTRALIZZATA - MODIFICARE SOLO QUI!
         // ═══════════════════════════════════════════════════════════════════════
-        const DASHBOARD_VERSION = "8.465";
+        const DASHBOARD_VERSION = "8.466";
         const DASHBOARD_DATE = "17 DIC 2025";
         
         // ═══════════════════════════════════════════════════════════════════════
@@ -11634,7 +11661,7 @@ if (typeof module !== 'undefined' && module.exports) {
             
             <div class="logo">
                 Dashboard Rilievi 
-                <span class="logo-version" id="version-badge">v8.465</span>
+                <span class="logo-version" id="version-badge">v8.466</span>
                 <span class="logo-subtitle">- Calcolo Completo</span>
             </div>
             <nav class="main-nav">
@@ -19852,6 +19879,47 @@ const FLESSYA_2025 = {
                 allargamento30K: 25.90   // +30mm alluminio
             },
             
+            // ✅ v8.466: SUPPLEMENTI FERRAMENTA SCORREVOLE (EUR/pezzo)
+            // Riferimento: Listino Finstral EUR 2025/10 pag.201
+            supplementiFerramenta: {
+                // Ferramenta scorrevole parallelo a ribalta
+                "710": 760,      // codice 710.0
+                "710.0": 760,
+                "711": 859,      // codice 711.0.0 (+ doppia maniglia e serratura)
+                "711.0": 859,
+                // Ferramenta scorrevole parallelo
+                "720": 760,      // codice 720.0
+                "720.0": 760,
+                "721": 859,      // codice 721.0 (+ doppia maniglia e serratura)
+                "721.0": 859,
+                // Ferramenta montante mobile scorrevole
+                "722": 760,      // codice 722.0
+                "722.0": 760,
+                // Ferramenta apertura ad anta (per tipo 503)
+                "430": 14.80,    // codice 430.0 (cerniere in vista)
+                "430.0": 14.80,
+                "230": 20.70,    // codice 230.0 (cerniere a scomparsa)
+                "230.0": 20.70,
+                // Sicurezza ferramenta scorrevole
+                "710.4": 6.12,   // Scontri sicurezza perimetrali
+                "710.3": 27.90,  // Scontri sicurezza multipli
+            },
+            
+            // ✅ v8.466: CONFIGURAZIONE TIPI SCORREVOLI
+            // Riferimento: Listino Finstral EUR 2025/10 pag.156
+            tipiScorrevoli: {
+                // codiceModello: { campi: [tipi tabella], ferramenta: [codici] }
+                "500": { descrizione: "Scorrevole montante mobile", campi: ["101"], note: "esecuzione con montante mobile" },
+                "501": { descrizione: "Scorrevole + fisso", campi: ["101", "102"], note: "campo1 anta + campo2 fisso" },
+                "503": { descrizione: "Scorrevole + anta apribile", campi: ["101", "101"], ferramenta430: true, note: "campo1 anta(430) + campo2 scorrevole" },
+                "504": { descrizione: "Scorrevole maniglia estraibile", campi: ["101", "101"], note: "apertura tramite maniglia estraibile" },
+                "505": { descrizione: "Scorrevole + anta + fisso", campi: ["101", "101", "102"], note: "3 campi" },
+                "510": { descrizione: "Scorrevole 2 ante", campi: ["101", "101"], note: "anta che apre per prima e anta secondaria" },
+                "511": { descrizione: "Fisso + scorrevole", campi: ["102", "101"], note: "campo1 fisso + campo2 scorrevole" },
+                "513": { descrizione: "Fisso + scorrevole + fisso", campi: ["102", "101", "102"], note: "3 campi" },
+                "514": { descrizione: "4 campi misti", campi: ["102", "101", "101", "102"], note: "4 campi" },
+            },
+            
             // ✅ v7.73: SUPPLEMENTO PROFILO ANTA (EUR/ml) - NUOVO!
             // Riferimento: Listino Finstral pag.85 (Classic), pag.92 (Step-line)
             // Questo è il supplemento per il TIPO di profilo anta, separato dal colore
@@ -20476,6 +20544,62 @@ const FLESSYA_2025 = {
                             FINSTRAL_PREZZI.getFattoreCorrezione(altezza, tipo) : 
                             (FINSTRAL_PREZZI.fattoreCorrezione || 1.0);
             
+            // ═══════════════════════════════════════════════════════════════════
+            // ✅ v8.466: GESTIONE TIPI SCORREVOLI (500, 501, 503, etc.)
+            // Fonte: Listino Finstral EUR 2025/10 - Procedura calcolo prezzo pag.156
+            // 
+            // REGOLA SCORREVOLI:
+            // - tipo 500: tabella 101 (montante mobile)
+            // - tipo 501: campo1 (101) + campo2 (102)
+            // - tipo 503: campo1 (101) + campo2 (101) - anta apribile + scorrevole
+            // - tipo 510: campo1 (101) + campo2 (101)
+            // - tipo 511: campo1 (102) + campo2 (101) - fisso + scorrevole
+            // - tipo 513: campo1+3 (102) + campo2 (101)
+            // ═══════════════════════════════════════════════════════════════════
+            const configScorrevole = FINSTRAL_PREZZI.tipiScorrevoli?.[tipo];
+            if (configScorrevole) {
+                const campi = configScorrevole.campi || ["101"];
+                const numCampi = campi.length;
+                
+                // Proporzioni campi - per ora divido equamente
+                const larghezzaCampo = Math.round(larghezza / numCampi);
+                
+                let prezzoTotale = 0;
+                const dettagliCampi = [];
+                
+                for (let i = 0; i < numCampi; i++) {
+                    const tipoTabella = campi[i];
+                    const tabella = FINSTRAL_PREZZI["tipo" + tipoTabella];
+                    
+                    if (!tabella) {
+                        console.warn(`⚠️ Tabella tipo${tipoTabella} non trovata per campo ${i+1}`);
+                        continue;
+                    }
+                    
+                    const risultato = cercaPrezzoInTabella(tabella, larghezzaCampo, altezza);
+                    if (risultato) {
+                        prezzoTotale += risultato.prezzo;
+                        dettagliCampi.push(`Campo${i+1}(tipo${tipoTabella}): L=${larghezzaCampo} → €${risultato.prezzo}`);
+                    }
+                }
+                
+                if (prezzoTotale > 0) {
+                    // ✅ v8.466: Fattore correzione per scorrevoli (~1.23)
+                    // Verificato: €1286 (Finstral) / €1040 (tabella) ≈ 1.236
+                    const fattoreScorrevole = 1.236;  // Fattore specifico per scorrevoli
+                    const prezzoCorretto = Math.round(prezzoTotale * fattoreScorrevole * 100) / 100;
+                    
+                    console.log(`🚪 tipo${tipo} SCORREVOLE: L=${larghezza}, H=${altezza}`);
+                    dettagliCampi.forEach(d => console.log(`   ${d}`));
+                    console.log(`   Base EUR 2025/3: €${prezzoTotale}`);
+                    console.log(`   × fattore ${fattoreScorrevole} = €${prezzoCorretto} (EUR 2025/10)`);
+                    return prezzoCorretto;
+                } else {
+                    console.warn(`⚠️ tipo${tipo} SCORREVOLE: impossibile calcolare prezzo`);
+                    return null;
+                }
+            }
+            
             // TIPI COMPOSITI - Calcolo per somma campi
             if (tipo === "420" || tipo === "421") {
                 // Proporzioni verificate da conferme ordine Finstral
@@ -20768,15 +20892,33 @@ const FLESSYA_2025 = {
             }
             
             // 🆕 v8.45: Supplemento Ferramenta (se configurato)
+            // ✅ v8.466: Supporto ferramenta scorrevole
             if (config.ferramenta1) {
-                const ferrData = FINSTRAL_FERRAMENTA_PREZZI[config.ferramenta1];
-                if (ferrData) {
+                // Prima cerca in FINSTRAL_FERRAMENTA_PREZZI (ferramenta standard)
+                const ferrData = FINSTRAL_FERRAMENTA_PREZZI?.[config.ferramenta1];
+                // Poi cerca in supplementiFerramenta (scorrevoli)
+                const ferrScorrevole = FINSTRAL_PREZZI.supplementiFerramenta?.[config.ferramenta1];
+                
+                if (ferrScorrevole) {
+                    risultato.dettaglio.supplementoFerramenta = ferrScorrevole;
+                    risultato.dettaglio.ferramentaCodice = config.ferramenta1;
+                    risultato.dettaglio.ferramentaDescrizione = `Scorrevole ${config.ferramenta1}`;
+                    console.log(`🚪 Ferramenta scorrevole ${config.ferramenta1}: €${ferrScorrevole}`);
+                } else if (ferrData) {
                     risultato.dettaglio.supplementoFerramenta = ferrData.prezzo || 0;
                     risultato.dettaglio.ferramentaCodice = config.ferramenta1;
                     risultato.dettaglio.ferramentaDescrizione = ferrData.descrizione;
                     console.log(`🔧 Ferramenta ${config.ferramenta1}: €${risultato.dettaglio.supplementoFerramenta}`);
                 } else {
                     risultato.dettaglio.supplementoFerramenta = 0;
+                }
+                
+                // ✅ v8.466: Per tipo 503, aggiungi supplemento ferramenta 430 (anta apribile)
+                const configScorrevole = FINSTRAL_PREZZI.tipiScorrevoli?.[tipo];
+                if (configScorrevole?.ferramenta430) {
+                    const suppl430 = FINSTRAL_PREZZI.supplementiFerramenta?.["430"] || 14.80;
+                    risultato.dettaglio.supplementoFerramenta430 = suppl430;
+                    console.log(`🚪 Supplemento ferramenta 430 (anta apribile): €${suppl430}`);
                 }
             } else {
                 risultato.dettaglio.supplementoFerramenta = 0;
@@ -20805,6 +20947,7 @@ const FLESSYA_2025 = {
             // ✅ v7.73: Aggiunto supplementoProfiloAnta e supplementoMontante
             // ✅ v8.44: Aggiunto bancale e anta twin
             // ✅ v8.45: Aggiunto ferramenta e accessori
+            // ✅ v8.466: Aggiunto supplementoFerramenta430 per tipo 503
             risultato.totale = Math.round((
                 risultato.dettaglio.prezzoBase +
                 risultato.dettaglio.supplementoTelaio +
@@ -20816,6 +20959,7 @@ const FLESSYA_2025 = {
                 (risultato.dettaglio.bancale?.prezzo || 0) +
                 (risultato.dettaglio.antaTwin?.prezzo || 0) +
                 (risultato.dettaglio.supplementoFerramenta || 0) +
+                (risultato.dettaglio.supplementoFerramenta430 || 0) +  // ✅ v8.466
                 (risultato.dettaglio.supplementoAccessori || 0)
             ) * 100) / 100;
             
@@ -23030,11 +23174,30 @@ const FLESSYA_2025 = {
                         const apertura = infisso.apertura || infisso.tipo || 'battente';
                         const tipoInfisso = (infisso.tipo || '').toLowerCase();
                         const codiceModello = infisso.codiceModello || '';
+                        const ferramenta1 = infisso.ferramenta1 || '';
                         
                         let tipoFinstral = "101"; // Default: 1 anta
+                        let isScorrevole = false;
                         
-                        // ✅ PRIORITÀ 1: Usa codiceModello se è un codice Finstral valido
-                        if (codiceModello && /^\d{3}$/.test(codiceModello)) {
+                        // ✅ v8.466: RICONOSCIMENTO SCORREVOLI
+                        // Codici scorrevoli: 500, 501, 503, 504, 505, 510, 511, 513, 514
+                        // Ferramenta scorrevole: 710, 711, 720, 721, 722
+                        const codiciScorrevoli = ["500", "501", "503", "504", "505", "510", "511", "513", "514"];
+                        const ferramentaScorrevole = ["710", "711", "720", "721", "722"];
+                        
+                        if (codiciScorrevoli.includes(codiceModello)) {
+                            tipoFinstral = codiceModello;
+                            isScorrevole = true;
+                            console.log(`🚪 Pos ${index+1}: SCORREVOLE riconosciuto da codiceModello="${codiceModello}"`);
+                        } else if (ferramentaScorrevole.some(f => ferramenta1.startsWith(f))) {
+                            // Determina tipo scorrevole dalla ferramenta
+                            // Default: tipo 503 (scorrevole + anta apribile) se ha ferramenta 710
+                            tipoFinstral = "503";
+                            isScorrevole = true;
+                            console.log(`🚪 Pos ${index+1}: SCORREVOLE riconosciuto da ferramenta1="${ferramenta1}" → tipo 503`);
+                        }
+                        // ✅ PRIORITÀ 1: Usa codiceModello se è un codice Finstral valido (NON scorrevole)
+                        else if (codiceModello && /^\d{3}$/.test(codiceModello)) {
                             tipoFinstral = codiceModello;
                             console.log(`📌 Pos ${index+1}: Uso codiceModello="${codiceModello}" per calcolo prezzo`);
                         }
@@ -23069,7 +23232,7 @@ const FLESSYA_2025 = {
                             mappaColoreACodiceFinstral(coloreEsterno, 'alluminio') : null;
                         
                         // ✅ CALCOLO FINSTRAL COMPLETO CON COLORI
-                        console.log(`🚀 Chiamata calcolaPrezzoFinstral con materiale="${materiale}"`);
+                        console.log(`🚀 Chiamata calcolaPrezzoFinstral con materiale="${materiale}"${isScorrevole ? ', SCORREVOLE' : ''}`);
                         const risultatoFinstral = calcolaPrezzoFinstral({
                             tipo: tipoFinstral,
                             larghezza: L_mm,
@@ -23078,7 +23241,9 @@ const FLESSYA_2025 = {
                             materiale: materiale,
                             tipoAnta: tipoAnta,
                             colorePVC: codicePVC,
-                            coloreAlluminio: codiceAlluminio
+                            coloreAlluminio: codiceAlluminio,
+                            ferramenta1: ferramenta1,  // ✅ v8.466: Per scorrevoli
+                            isScorrevole: isScorrevole
                         });
                         
                         let prezzoBase = 400; // Fallback
